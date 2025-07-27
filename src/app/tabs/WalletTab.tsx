@@ -103,19 +103,19 @@ export default function WalletTab() {
   // Konstanten für Token mit BASE-Contract-Adressen
 
   const DFAITH_TOKEN = {
-    address: "0xeB6f60E08AaAd7951896BdefC65cB789633BbeAd", // D.FAITH Token NEU (getauscht)
+    address: "0x69eFD833288605f320d77eB2aB99DDE62919BbC1", // D.FAITH Token NEU
     decimals: 2, 
     symbol: "D.FAITH"
   };
 
   const DINVEST_TOKEN = {
-    address: "0x9D7a06c24F114f987d8C08f0fc8Aa422910F3902", // D.INVEST Token NEU (getauscht)
+    address: "0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb", // D.INVEST Token NEU
     decimals: 0, 
     symbol: "D.INVEST"
   };
 
   const STAKING_CONTRACT = {
-    address: "0x6Ea0f270FfE448D85cCf68F90B5405F30b1bA479", // Korrekte Staking Contract Adresse
+    address: "0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940", // Korrekte Staking Contract Adresse (NEU)
     name: "D.INVEST Staking"
   };
 
@@ -230,7 +230,7 @@ export default function WalletTab() {
       const stakingContract = getContract({ 
         client, 
         chain: base, 
-        address: "0x6Ea0f270FfE448D85cCf68F90B5405F30b1bA479" // Korrekte Staking Contract Adresse
+        address: STAKING_CONTRACT.address // Korrekte Staking Contract Adresse (NEU)
       });
 
       // Verwende die korrekte Funktion wie in StakeTab
@@ -249,7 +249,7 @@ export default function WalletTab() {
         const stakingContract = getContract({ 
           client, 
           chain: base, 
-          address: "0x6Ea0f270FfE448D85cCf68F90B5405F30b1bA479"
+          address: STAKING_CONTRACT.address
         });
         
         const userInfo = await readContract({

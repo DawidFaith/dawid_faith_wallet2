@@ -7,8 +7,8 @@ import { getContract, prepareContractCall } from "thirdweb";
 import { client } from "../../client";
 import { balanceOf } from "thirdweb/extensions/erc20";
 
-// ÜBERPRÜFUNG: Ist das die korrekte D.FAITH Contract-Adresse auf Base?
-const DFAITH_TOKEN = "0xeB6f60E08AaAd7951896BdefC65cB789633BbeAd"; // D.FAITH auf Base (NEU Juli 2025)
+// D.FAITH Token-Adresse auf Base (aktualisiert Juli 2025)
+const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1";
 const DFAITH_DECIMALS = 2;
 
 export default function SellTab() {

@@ -7,9 +7,9 @@ import { NATIVE_TOKEN_ADDRESS, getContract, prepareContractCall, sendAndConfirmT
 import { client } from "../../client";
 import { balanceOf, approve } from "thirdweb/extensions/erc20";
 
-const DFAITH_TOKEN = "0xeB6f60E08AaAd7951896BdefC65cB789633BbeAd"; // D.FAITH Token auf Base (NEU Juli 2025)
+const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1"; // D.FAITH Token auf Base (aktualisiert Juli 2025)
 const DFAITH_DECIMALS = 2; // Dezimalstellen
-const DINVEST_TOKEN = "0x9D7a06c24F114f987d8C08f0fc8Aa422910F3902"; // D.INVEST Token auf Base (NEU Juli 2025)
+const DINVEST_TOKEN = "0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb"; // D.INVEST Token auf Base (aktualisiert Juli 2025)
 const DINVEST_DECIMALS = 0; // D.INVEST hat keine Dezimalstellen
 const ETH_TOKEN = "0x0000000000000000000000000000000000000000"; // Native ETH
 const ETH_DECIMALS = 18;

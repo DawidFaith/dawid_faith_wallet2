@@ -2,6 +2,11 @@ import { useCallback } from "react";
 import { useState, useEffect } from "react";
 import { Button } from "../../../../components/ui/button";
 import { FaPaperPlane, FaArrowDown, FaExchangeAlt, FaCoins, FaLock } from "react-icons/fa";
+
+// Token-Adressen (aktualisiert Juli 2025)
+const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1";
+const DINVEST_TOKEN = "0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb";
+
 import { useActiveAccount } from "thirdweb/react";
 
 type Transaction = {

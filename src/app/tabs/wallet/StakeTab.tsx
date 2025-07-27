@@ -8,10 +8,10 @@ import { base } from "thirdweb/chains";
 import { useSendTransaction } from "thirdweb/react";
 import { balanceOf, approve } from "thirdweb/extensions/erc20";
 
-const STAKING_CONTRACT = "0x6Ea0f270FfE448D85cCf68F90B5405F30b1bA479"; // Staking Contract - KORREKT!
-const DFAITH_TOKEN = "0xeB6f60E08AaAd7951896BdefC65cB789633BbeAd"; // D.FAITH Token
+const STAKING_CONTRACT = "0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940"; // Staking Contract - NEU!
+const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1"; // D.FAITH Token NEU
 const DFAITH_DECIMALS = 2;
-const DINVEST_TOKEN = "0x9D7a06c24F114f987d8C08f0fc8Aa422910F3902"; // D.INVEST Token
+const DINVEST_TOKEN = "0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb"; // D.INVEST Token NEU
 const DINVEST_DECIMALS = 0;
 const client = createThirdwebClient({ clientId: process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID! });
 
@@ -31,18 +31,18 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const [txStatus, setTxStatus] = useState<string | null>(null);
   const [currentStage, setCurrentStage] = useState(1);
   const [currentRewardRate, setCurrentRewardRate] = useState(10); // Default auf 10 (erste Stufe)
-  const [totalRewardsDistributed, setTotalRewardsDistributed] = useState("0");
   const [totalStakedTokens, setTotalStakedTokens] = useState("0");
+  const [totalRewardsDistributed, setTotalRewardsDistributed] = useState("0.00");
   const [userCount, setUserCount] = useState(0);
   const [dfaithBalance, setDfaithBalance] = useState("0.00");
   const [dinvestBalance, setDinvestBalance] = useState("0");
   const [stakeTimestamp, setStakeTimestamp] = useState<number>(0);
   const [canUnstake, setCanUnstake] = useState(false);
-  const [timeUntilUnstake, setTimeUntilUnstake] = useState<number>(0);
   const [canClaim, setCanClaim] = useState(false);
-  const [timeUntilNextClaim, setTimeUntilNextClaim] = useState<number>(0);
   const [minClaimAmount, setMinClaimAmount] = useState("0.01");
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [nextClaimTimestamp, setNextClaimTimestamp] = useState<number>(0);
+  const [secondsPerClaim, setSecondsPerClaim] = useState<number>(0);
 
   // Korrekte API-Funktion für Balance-Abfrage auf Base Chain
   const fetchTokenBalanceViaInsightApi = async (
@@ -83,362 +83,77 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     }
   };
 
-  // Fetch balances und Contract-Status
-  // Funktion zum Aktualisieren der Stake-Informationen
+  // Neue Funktion: Hole alle User- und Contractdaten mit neuen Methoden
   const fetchStakeInfo = async () => {
     if (!account?.address) return;
-    
+    setLoading(true);
     try {
       const staking = getContract({ client, chain: base, address: STAKING_CONTRACT });
-      
-      // User's Complete Stake Info abrufen - mit verbesserter Fallback-Strategie
-      try {
-        console.log("🔄 Versuche getUserStakeInfo aufzurufen...");
-        const userInfo = await readContract({
-          contract: staking,
-          method: "function getUserStakeInfo(address) view returns (uint256, uint256, uint256, uint256, bool, uint256, bool)",
-          params: [account.address]
-        });
-        
-        console.log("✅ getUserStakeInfo erfolgreich:", userInfo);
-        // userInfo = [stakedAmount, claimableReward, stakeTimestamp, timeUntilUnstake, canUnstake, timeUntilNextClaim, canClaim]
-        setStaked(userInfo[0].toString());
-        setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
-        setStakeTimestamp(Number(userInfo[2]));
-        setTimeUntilUnstake(Number(userInfo[3]));
-        setCanUnstake(userInfo[4]);
-        setTimeUntilNextClaim(Number(userInfo[5]));
-        setCanClaim(userInfo[6]);
-      } catch (fallbackError) {
-        console.log("❌ getUserStakeInfo fehlgeschlagen, verwende Fallback-Strategie:", fallbackError);
-        
-        // Fallback: Direkte Contract-Calls für einzelne Werte
-        try {
-          const stakedAmount = await readContract({
-            contract: staking,
-            method: "function stakes(address) view returns (uint256)",
-            params: [account.address]
-          });
-          setStaked(stakedAmount.toString());
-          
-          const claimable = await readContract({
-            contract: staking,
-            method: "function getClaimableReward(address) view returns (uint256)",
-            params: [account.address]
-          });
-          setClaimableRewards((Number(claimable) / Math.pow(10, 2)).toFixed(2));
-          
-          const timestamp = await readContract({
-            contract: staking,
-            method: "function stakeTimestamps(address) view returns (uint256)",
-            params: [account.address]
-          });
-          setStakeTimestamp(Number(timestamp));
-          
-          const canUnstakeValue = await readContract({
-            contract: staking,
-            method: "function canUnstake(address) view returns (bool)",
-            params: [account.address]
-          });
-          setCanUnstake(canUnstakeValue);
-          
-          const canClaimValue = await readContract({
-            contract: staking,
-            method: "function canClaim(address) view returns (bool)",
-            params: [account.address]
-          });
-          setCanClaim(canClaimValue);
-          
-          // Zeit-basierte Berechnungen
-          const timeToUnstake = await readContract({
-            contract: staking,
-            method: "function getTimeToUnstake(address) view returns (uint256)",
-            params: [account.address]
-          });
-          setTimeUntilUnstake(Number(timeToUnstake));
-          
-          const timeToMinClaim = await readContract({
-            contract: staking,
-            method: "function getTimeToMinClaim(address) view returns (uint256)",
-            params: [account.address]
-          });
-          setTimeUntilNextClaim(Number(timeToMinClaim));
-          
-        } catch (directError) {
-          console.error("❌ Auch direkte Contract-Calls fehlgeschlagen:", directError);
-          // Setze Fallback-Werte
-          setStaked("0");
-          setClaimableRewards("0.00");
-          setCanUnstake(false);
-          setCanClaim(false);
-          setTimeUntilUnstake(0);
-          setTimeUntilNextClaim(0);
-        }
-      }
-    } catch (error) {
-      console.error("❌ Fehler beim Abrufen der Stake-Informationen:", error);
+      // User Info
+      const userInfo = await readContract({
+        contract: staking,
+        method: "function getUserInfo(address) view returns (uint256,uint256,uint256,bool,bool)",
+        params: [account.address]
+      });
+      // [stakedAmount, claimableReward, stakeTimestamp, canUnstake, canClaim]
+      setStaked(userInfo[0].toString());
+      setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
+      setStakeTimestamp(Number(userInfo[2]));
+      setCanUnstake(userInfo[3]);
+      setCanClaim(userInfo[4]);
+
+      // Detailed Reward Info
+      const detailed = await readContract({
+        contract: staking,
+        method: "function getDetailedRewardInfo(address) view returns (uint256,uint256,uint256,uint256,bool)",
+        params: [account.address]
+      });
+      // [claimableReward, nextClaimTimestamp, secondsPerClaim, currentRatePercent, canClaimNow]
+      setNextClaimTimestamp(Number(detailed[1]));
+      setSecondsPerClaim(Number(detailed[2]));
+      setCurrentRewardRate(Number(detailed[3]));
+      setCanClaim(detailed[4]);
+
+      // Contract Info
+      const contractInfo = await readContract({
+        contract: staking,
+        method: "function getContractInfo() view returns (uint256,uint256,uint8,uint256,uint256,uint256)",
+        params: []
+      });
+      // [totalStakedTokens, rewardBalance, currentStage, currentRate, totalRewardsDistributed, userCount]
+      setTotalStakedTokens(contractInfo[0].toString());
+      setCurrentStage(Number(contractInfo[2]));
+      // totalRewardsDistributed ist [4] (5. Wert)
+      setTotalRewardsDistributed((Number(contractInfo[4]) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
+      // userCount ist [5] (6. Wert)
+      setUserCount(Number(contractInfo[5]));
+
+      // Minimum Claim Amount (Konstant, aber für UI)
+      setMinClaimAmount("0.01");
+    } catch (e) {
+      setStaked("0");
+      setClaimableRewards("0.00");
+      setCanUnstake(false);
+      setCanClaim(false);
+      setNextClaimTimestamp(0);
+      setSecondsPerClaim(0);
+      setCurrentRewardRate(10);
+      setCurrentStage(1);
+      setTotalStakedTokens("0");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (!account?.address) return;
-    setLoading(true);
+    // D.INVEST Balance via Insight API (0 Decimals)
     (async () => {
-      try {
-        // D.INVEST Balance via Insight API (0 Decimals)
-        const dinvestValue = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
-        setAvailable(Math.floor(Number(dinvestValue)).toString());
-        
-        // Staking Contract Daten abrufen
-        const staking = getContract({ client, chain: base, address: STAKING_CONTRACT });
-        
-        // Minimum Claim Amount abrufen
-        try {
-          const minClaim = await readContract({
-            contract: staking,
-            method: "function getMinClaimAmount() view returns (uint256)",
-            params: []
-          });
-          // Contract gibt 1 zurück für 0.01 Token (da 2 Decimals)
-          setMinClaimAmount((Number(minClaim) / Math.pow(10, 2)).toFixed(2));
-        } catch (e) {
-          console.error("Fehler beim Abrufen des Min Claim Amount:", e);
-          setMinClaimAmount("0.01");
-        }
-        
-        // User's Complete Stake Info abrufen - mit verbesserter Fallback-Strategie
-        try {
-          console.log("🔄 Versuche getUserStakeInfo aufzurufen...");
-          const userInfo = await readContract({
-            contract: staking,
-            method: "function getUserStakeInfo(address) view returns (uint256, uint256, uint256, uint256, bool, uint256, bool)",
-            params: [account.address]
-          });
-          
-          console.log("✅ getUserStakeInfo erfolgreich:", userInfo);
-          // userInfo = [stakedAmount, claimableReward, stakeTimestamp, timeUntilUnstake, canUnstake, timeUntilNextClaim, canClaim]
-          setStaked(userInfo[0].toString());
-          setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
-          setStakeTimestamp(Number(userInfo[2]));
-          setTimeUntilUnstake(Number(userInfo[3]));
-          setCanUnstake(userInfo[4]);
-          setTimeUntilNextClaim(Number(userInfo[5]));
-          setCanClaim(userInfo[6]);
-        } catch (e) {
-          console.error("❌ getUserStakeInfo fehlgeschlagen:", e);
-          console.log("🔄 Versuche einzelne Funktionen als verbesserte Fallback-Strategie...");
-          
-          // Verbesserte Fallback-Strategie: Direkt StakeInfo struct abrufen
-          try {
-            console.log("🔄 Versuche stakers mapping direkt abzurufen...");
-            const stakerInfo = await readContract({
-              contract: staking,
-              method: "function stakers(address) view returns (uint256, uint256, uint256, uint256)",
-              params: [account.address]
-            });
-            console.log("✅ stakers mapping erfolgreich:", stakerInfo);
-            
-            // StakeInfo struct: [amount, lastRewardUpdate, stakeTimestamp, accumulatedRewards]
-            const stakedAmount = stakerInfo[0];
-            const lastRewardUpdate = stakerInfo[1];
-            const stakeTime = stakerInfo[2];
-            const accumulatedRewards = stakerInfo[3];
-            
-            setStaked(stakedAmount.toString());
-            setStakeTimestamp(Number(stakeTime));
-            
-            console.log("📊 Stake Info Details:");
-            console.log("- Staked Amount:", stakedAmount.toString());
-            console.log("- Last Reward Update:", lastRewardUpdate.toString());
-            console.log("- Stake Timestamp:", stakeTime.toString());
-            console.log("- Accumulated Rewards:", accumulatedRewards.toString());
-            
-            // Berechne claimable rewards mit separater Funktion
-            let currentClaimableReward = BigInt(0);
-            try {
-              console.log("🔄 Versuche getClaimableReward...");
-              currentClaimableReward = await readContract({
-                contract: staking,
-                method: "function getClaimableReward(address) view returns (uint256)",
-                params: [account.address]
-              });
-              console.log("✅ getClaimableReward erfolgreich:", currentClaimableReward.toString());
-              setClaimableRewards((Number(currentClaimableReward) / Math.pow(10, 2)).toFixed(2));
-            } catch (claimError) {
-              console.error("❌ getClaimableReward fehlgeschlagen:", claimError);
-              console.log("🔄 Verwende accumulated rewards als Fallback...");
-              setClaimableRewards((Number(accumulatedRewards) / Math.pow(10, 2)).toFixed(2));
-              currentClaimableReward = accumulatedRewards;
-            }
-            
-            // Berechne unstake-Verfügbarkeit basierend auf Contract-Logik
-            if (Number(stakeTime) > 0) {
-              const currentTime = Math.floor(Date.now() / 1000);
-              const weekInSeconds = 7 * 24 * 60 * 60;
-              const unlockTime = Number(stakeTime) + weekInSeconds;
-              
-              if (currentTime >= unlockTime) {
-                setCanUnstake(true);
-                setTimeUntilUnstake(0);
-                console.log("✅ Unstaking verfügbar");
-              } else {
-                setCanUnstake(false);
-                setTimeUntilUnstake(unlockTime - currentTime);
-                console.log("⏳ Unstaking in:", unlockTime - currentTime, "Sekunden");
-              }
-            } else {
-              setCanUnstake(false);
-              setTimeUntilUnstake(0);
-              console.log("❌ Nichts gestaked, kein Unstaking möglich");
-            }
-            
-            // Berechne claim-Verfügbarkeit basierend auf MIN_CLAIM_AMOUNT
-            const claimableAmountFromReward = Number(currentClaimableReward) / Math.pow(10, 2);
-            const minClaim = Number(minClaimAmount);
-            
-            if (claimableAmountFromReward >= minClaim) {
-              setCanClaim(true);
-              setTimeUntilNextClaim(0);
-              console.log("✅ Claiming verfügbar:", claimableAmountFromReward, ">=", minClaim);
-            } else {
-              setCanClaim(false);
-              
-              // Berechne Zeit bis zum nächsten Claim mit Contract-Funktion
-              if (Number(stakedAmount) > 0) {
-                try {
-                  console.log("🔄 Versuche getTimeToMinClaim...");
-                  const timeToMinClaim = await readContract({
-                    contract: staking,
-                    method: "function getTimeToMinClaim(uint256) view returns (uint256)",
-                    params: [stakedAmount]
-                  });
-                  console.log("✅ getTimeToMinClaim erfolgreich:", timeToMinClaim.toString());
-                  
-                  // Contract-Wert direkt verwenden - keine unrealistisch großen Werte bei festen Reward-Raten
-                  setTimeUntilNextClaim(Number(timeToMinClaim));
-                  console.log("⏳ Claiming (Contract) in:", Number(timeToMinClaim), "Sekunden");
-                  
-                  // Validation: Bei 1 D.INVEST Token sollte es ca. 16-17 Stunden dauern (0.01 D.FAITH bei 0.10% pro Woche)
-                  const expectedMinTimeFor1Token = (0.01 * 604800) / (1 * 10 / 100); // ~60480 Sekunden ≈ 16.8 Stunden
-                  console.log("⏳ Erwartete Mindestzeit für 1 Token:", expectedMinTimeFor1Token, "Sekunden (≈", (expectedMinTimeFor1Token / 3600).toFixed(1), "Stunden)");
-                } catch (timeError) {
-                  console.error("❌ getTimeToMinClaim fehlgeschlagen:", timeError);
-                  console.log("🔄 Verwende Fallback-Berechnung für Zeit...");
-                  
-                  // Fallback: Zeit bis MIN_CLAIM_AMOUNT erreicht wird
-                  const remainingRewards = minClaim - claimableAmountFromReward;
-                  const rewardRate = currentRewardRate; // z.B. 10 für 0.10%
-                  
-                  // Korrekte Berechnung: Reward pro Sekunde für gestakte Token
-                  const rewardPerSecond = (Number(stakedAmount) * rewardRate) / (100 * 604800); // 604800 = Sekunden pro Woche
-                  
-                  if (rewardPerSecond > 0) {
-                    const estimatedSeconds = remainingRewards / rewardPerSecond;
-                    setTimeUntilNextClaim(Math.max(0, estimatedSeconds));
-                    console.log("⏳ Claiming (Fallback) in:", estimatedSeconds, "Sekunden");
-                    
-                    // Validation: Bei 1 D.INVEST Token (Rate 10) sollte es ca. 16-17 Stunden dauern
-                    const expectedMinTimeFor1Token = (0.01 * 604800) / (1 * 10 / 100); // ~60480 Sekunden ≈ 16.8 Stunden
-                    console.log("⏳ Erwartete Mindestzeit für 1 Token:", expectedMinTimeFor1Token, "Sekunden (≈", (expectedMinTimeFor1Token / 3600).toFixed(1), "Stunden)");
-                  } else {
-                    setTimeUntilNextClaim(3600);
-                    console.log("⏳ Claiming nicht verfügbar (Rate 0)");
-                  }
-                }
-              } else {
-                setTimeUntilNextClaim(0);
-                console.log("❌ Nichts gestaked, kein Claiming möglich");
-              }
-            }
-            
-          } catch (fallbackError) {
-            console.error("❌ Auch verbesserte Fallback-Methoden fehlgeschlagen:", fallbackError);
-            console.log("🔄 Setze sichere Fallback-Werte...");
-            
-            // Sichere Fallback-Werte setzen
-            setStaked("0");
-            setClaimableRewards("0.00");
-            setStakeTimestamp(0);
-            setTimeUntilUnstake(0);
-            setCanUnstake(false);
-            setTimeUntilNextClaim(0);
-            setCanClaim(false);
-            
-            // Versuche wenigstens grundlegende Contract-Funktionen zu testen
-            try {
-              console.log("🔄 Teste grundlegende Contract-Funktionen...");
-              
-              // Test: Versuche nur die Balance zu lesen
-              const testBalance = await readContract({
-                contract: staking,
-                method: "function totalStakedTokens() view returns (uint256)",
-                params: []
-              });
-              console.log("✅ Contract ist grundsätzlich erreichbar. Total Staked:", testBalance.toString());
-              
-              // Test: Versuche User Count zu lesen
-              const testUserCount = await readContract({
-                contract: staking,
-                method: "function userCount() view returns (uint256)",
-                params: []
-              });
-              console.log("✅ User Count erfolgreich gelesen:", testUserCount.toString());
-              
-            } catch (testError) {
-              console.error("❌ Contract ist möglicherweise nicht erreichbar oder nicht korrekt deployed:", testError);
-            }
-          }
-        }
-        
-        // Staking Status abrufen
-        try {
-          const stakingStatus = await readContract({
-            contract: staking,
-            method: "function getStakingStatus() view returns (uint8, uint256, uint256)",
-            params: []
-          });
-          // Contract gibt Werte zurück: Rate ist in Prozent (z.B. 10 für 0.10%), aber als ganze Zahl
-          setCurrentStage(Number(stakingStatus[0]));
-          setCurrentRewardRate(Number(stakingStatus[1])); // Rate direkt verwenden (z.B. 10 für 0.10%)
-          setTotalRewardsDistributed((Number(stakingStatus[2]) / Math.pow(10, 2)).toFixed(2));
-        } catch (e) {
-          console.error("Fehler beim Abrufen des Staking Status:", e);
-        }
-        
-        // Total Staked Tokens und User Count
-        try {
-          const totalStaked = await readContract({
-            contract: staking,
-            method: "function totalStakedTokens() view returns (uint256)",
-            params: []
-          });
-          setTotalStakedTokens(totalStaked.toString());
-          
-          const users = await readContract({
-            contract: staking,
-            method: "function userCount() view returns (uint256)",
-            params: []
-          });
-          setUserCount(Number(users));
-        } catch (e) {
-          console.error("Fehler beim Abrufen der Contract Stats:", e);
-        }
-        
-      } catch (e) {
-        console.error("Fehler beim Abrufen der Daten:", e);
-        setAvailable("0"); 
-        setStaked("0"); 
-        setClaimableRewards("0.00");
-        setStakeTimestamp(0);
-        setTimeUntilUnstake(0);
-        setCanUnstake(false);
-        setTimeUntilNextClaim(0);
-        setCanClaim(false);
-      } finally {
-        setLoading(false);
-      }
+      const dinvestValue = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
+      setAvailable(Math.floor(Number(dinvestValue)).toString());
+      await fetchStakeInfo();
     })();
-  }, [account?.address, txStatus, minClaimAmount]);
+  }, [account?.address, txStatus]);
 
   // D.FAITH und D.INVEST Balances abrufen
   useEffect(() => {
@@ -935,7 +650,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
 
   // Hilfsfunktion für den User-Reward pro Woche
   const getUserWeeklyReward = () => {
-    // staked ist ein String, currentRewardRate ist direkt die Rate (z.B. 10 für 10%)
     const stakedNum = parseInt(staked) || 0;
     return ((stakedNum * currentRewardRate) / 100).toFixed(2);
   };
@@ -952,32 +666,11 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     return Math.max(0, secondsToMinClaim);
   };
 
-  // Hilfsfunktion: Formatiere Zeit in Sekunden zu lesbarer Form mit intelligentem Fallback
-  const formatTime = (seconds: number, stakedAmount?: number) => {
+  // Hilfsfunktion: Formatiere Zeit in Sekunden zu lesbarer Form
+  const formatTime = (seconds: number) => {
     if (seconds <= 0) return "0h 0m";
-    
-    // Prüfe auf Contract-Bugs (uint256.max oder unrealistische Werte)
-    const MAX_UINT256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
-    const isContractBug = seconds.toString() === MAX_UINT256 || seconds > 1e15 || seconds > 604800; // > 1 Woche = Bug
-    
-    if (isContractBug && stakedAmount) {
-      console.warn("formatTime: Contract-Bug erkannt, verwende korrekte Berechnung für", stakedAmount, "Token");
-      // Fallback: Korrekte Berechnung
-      const correctTime = calculateCorrectClaimTime(stakedAmount, currentRewardRate, Number(minClaimAmount));
-      seconds = correctTime;
-      
-      // Wenn immer noch problematisch, verwende Mindestzeit für 1 Token
-      if (seconds > 604800 || seconds <= 0) {
-        seconds = calculateCorrectClaimTime(1, currentRewardRate, Number(minClaimAmount));
-        console.warn("formatTime: Verwende Mindestzeit für 1 Token:", seconds, "Sekunden");
-      }
-    }
-    
-    // Normale Zeitformatierung
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
-    // Nur Stunden und Minuten anzeigen
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
@@ -986,6 +679,15 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     }
     return "< 1m";
   };
+
+  // Zeit bis Unstaking möglich ist (in Sekunden)
+  const timeUntilUnstake = useMemo(() => {
+    if (!stakeTimestamp) return 0;
+    const minStakePeriod = 7 * 24 * 60 * 60; // 7 Tage in Sekunden
+    const now = Math.floor(Date.now() / 1000);
+    const unlockTime = stakeTimestamp + minStakePeriod;
+    return Math.max(0, unlockTime - now);
+  }, [stakeTimestamp]);
 
   return (
     <div className="flex flex-col gap-3 p-6">
@@ -1203,8 +905,8 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             <div>
               <h3 className="font-bold text-amber-400">Verfügbare Belohnungen</h3>
               <p className="text-xs text-zinc-500">
-                {!canClaim && timeUntilNextClaim > 0 
-                  ? `Nächster Claim in: ${formatTime(timeUntilNextClaim, parseInt(staked))}`
+                {!canClaim && nextClaimTimestamp > 0 
+                  ? `Nächster Claim in: ${formatTime(nextClaimTimestamp)}`
                   : `Kontinuierliche D.FAITH Belohnungen (min. ${minClaimAmount})`
                 }
               </p>
@@ -1223,7 +925,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         >
           <FaCoins className="inline mr-2" />
           {txStatus === "pending" ? "Wird verarbeitet..." : 
-           !canClaim && timeUntilNextClaim > 0 ? `Warten: ${formatTime(timeUntilNextClaim, parseInt(staked))}` : 
+           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(nextClaimTimestamp)}` : 
            !canClaim ? `Mindestbetrag: ${minClaimAmount} D.FAITH` : 
            "Belohnungen einfordern"}
         </Button>
