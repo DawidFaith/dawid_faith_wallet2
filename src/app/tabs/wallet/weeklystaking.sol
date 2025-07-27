@@ -169,30 +169,25 @@ contract WeeklyTokenStaking is ReentrancyGuard {
     function getDetailedRewardInfo(address _user) external view returns (
         uint256 claimableReward,           // Normale claimable rewards (2 decimals)
         uint256 nextClaimTimestamp,        // Timestamp wann nächster Claim möglich ist
-        uint256 minutesPerClaim,           // Minuten pro 0.01 D.FAITH für 1000 Tokens
+        uint256 secondsPerClaim,           // Sekunden pro 0.01 D.FAITH für 1000 Tokens
         uint256 currentRatePercent,        // Aktuelle Rate in Prozent
         bool canClaimNow                   // Kann jetzt claimen?
     ) {
         StakeInfo storage user = stakers[_user];
         currentRatePercent = getCurrentRewardRate();
         
-        // Berechne minutesPerClaim für 1000 gestakte Tokens
+        // Berechne secondsPerClaim für 1000 gestakte Tokens
         if (currentRatePercent > 0) {
-            // Berechnung: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent * 60)
+            // Berechnung: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent)
             uint256 numerator = MIN_CLAIM_AMOUNT * 604800 * 100;
-            uint256 denominator = 1000 * currentRatePercent * 60;
-            minutesPerClaim = numerator / denominator;
-            
-            // Fallback falls Ergebnis 0 ist (bei sehr hohen Raten)
-            if (minutesPerClaim == 0) {
-                minutesPerClaim = 1; // Mindestens 1 Minute anzeigen
-            }
+            uint256 denominator = 1000 * currentRatePercent;
+            secondsPerClaim = numerator / denominator;
         } else {
-            minutesPerClaim = type(uint256).max;
+            secondsPerClaim = type(uint256).max;
         }
         
         if (user.amount == 0) {
-            return (0, 0, minutesPerClaim, currentRatePercent, false);
+            return (0, 0, secondsPerClaim, currentRatePercent, false);
         }
         
         // Berechne claimableReward basierend auf timeElapsed seit letztem Update
@@ -304,6 +299,11 @@ contract WeeklyTokenStaking is ReentrancyGuard {
             nextStageThreshold = stages[currentStage - 1].maxTotalDistributed;
             remainingUntilNextStage = nextStageThreshold - currentTotalDistributed;
         } else {
+            nextStageThreshold = type(uint256).max;
+            remainingUntilNextStage = 0;
+        }
+    }
+}
             nextStageThreshold = type(uint256).max;
             remainingUntilNextStage = 0;
         }
