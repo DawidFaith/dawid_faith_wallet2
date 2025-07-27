@@ -137,12 +137,19 @@ contract WeeklyTokenStaking is ReentrancyGuard {
 
         // Update rewards to current time
         _updateRewards(msg.sender);
-
+        
+        // 1. Rewards werden aktualisiert (accumulatedRewards wird erhöht)
         uint256 reward = user.accumulatedRewards;
+        
+        // 2. Alle akkumulierten Rewards werden ausgezahlt
+        // 3. RESET: accumulatedRewards wird auf 0 gesetzt
+        user.accumulatedRewards = 0;
+        
+        // 4. lastRewardUpdate wird NICHT zurückgesetzt (bleibt current timestamp)
+
         require(reward >= MIN_CLAIM_AMOUNT, "Minimum claim amount not reached");
         require(rewardToken.balanceOf(address(this)) >= reward, "Insufficient reward tokens");
 
-        user.accumulatedRewards = 0;
         totalRewardsDistributed += reward;
 
         require(rewardToken.transfer(msg.sender, reward), "Reward transfer failed");
@@ -169,18 +176,18 @@ contract WeeklyTokenStaking is ReentrancyGuard {
     function getDetailedRewardInfo(address _user) external view returns (
         uint256 claimableReward,           // Normale claimable rewards (2 decimals)
         uint256 nextClaimTimestamp,        // Timestamp wann nächster Claim möglich ist
-        uint256 secondsPerClaim,           // Sekunden pro 0.01 D.FAITH für 1000 Tokens
+        uint256 secondsPerClaim,           // Sekunden pro 0.01 D.FAITH für die gestakten Tokens des Users
         uint256 currentRatePercent,        // Aktuelle Rate in Prozent
         bool canClaimNow                   // Kann jetzt claimen?
     ) {
         StakeInfo storage user = stakers[_user];
         currentRatePercent = getCurrentRewardRate();
         
-        // Berechne secondsPerClaim für 1000 gestakte Tokens
-        if (currentRatePercent > 0) {
-            // Berechnung: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent)
+        // Berechne secondsPerClaim für die tatsächlich gestakten Tokens des Users
+        if (currentRatePercent > 0 && user.amount > 0) {
+            // Berechnung: (MIN_CLAIM_AMOUNT * 604800 * 100) / (user.amount * currentRatePercent)
             uint256 numerator = MIN_CLAIM_AMOUNT * 604800 * 100;
-            uint256 denominator = 1000 * currentRatePercent;
+            uint256 denominator = user.amount * currentRatePercent;
             secondsPerClaim = numerator / denominator;
         } else {
             secondsPerClaim = type(uint256).max;
@@ -240,7 +247,7 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         currentStage = getCurrentStage();
         currentRate = getCurrentRewardRate();
     }
-
+}
     // ===== TEST FUNCTIONS (nur für Development) =====
     
     /**
@@ -303,10 +310,4 @@ contract WeeklyTokenStaking is ReentrancyGuard {
             remainingUntilNextStage = 0;
         }
     }
-}
-            nextStageThreshold = type(uint256).max;
-            remainingUntilNextStage = 0;
-        }
-    }
-}
 }
