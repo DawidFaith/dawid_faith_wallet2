@@ -169,25 +169,30 @@ contract WeeklyTokenStaking is ReentrancyGuard {
     function getDetailedRewardInfo(address _user) external view returns (
         uint256 claimableReward,           // Normale claimable rewards (2 decimals)
         uint256 nextClaimTimestamp,        // Timestamp wann nächster Claim möglich ist
-        uint256 hoursPerClaimTimes10,      // Stunden pro 0.01 D.FAITH für 1000 Tokens * 10 (für 1 Dezimalstelle)
+        uint256 minutesPerClaim,           // Minuten pro 0.01 D.FAITH für 1000 Tokens
         uint256 currentRatePercent,        // Aktuelle Rate in Prozent
         bool canClaimNow                   // Kann jetzt claimen?
     ) {
         StakeInfo storage user = stakers[_user];
         currentRatePercent = getCurrentRewardRate();
         
-        // Berechne hoursPerClaimTimes10 für 1000 gestakte Tokens
+        // Berechne minutesPerClaim für 1000 gestakte Tokens
         if (currentRatePercent > 0) {
-            // Berechne Sekunden für 1 wei (MIN_CLAIM_AMOUNT) bei 1000 gestakten Tokens
-            // Formula: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent)
-            uint256 secondsFor001DFAITH = (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent);
-            hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
+            // Berechnung: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent * 60)
+            uint256 numerator = MIN_CLAIM_AMOUNT * 604800 * 100;
+            uint256 denominator = 1000 * currentRatePercent * 60;
+            minutesPerClaim = numerator / denominator;
+            
+            // Fallback falls Ergebnis 0 ist (bei sehr hohen Raten)
+            if (minutesPerClaim == 0) {
+                minutesPerClaim = 1; // Mindestens 1 Minute anzeigen
+            }
         } else {
-            hoursPerClaimTimes10 = type(uint256).max;
+            minutesPerClaim = type(uint256).max;
         }
         
         if (user.amount == 0) {
-            return (0, 0, hoursPerClaimTimes10, currentRatePercent, false);
+            return (0, 0, minutesPerClaim, currentRatePercent, false);
         }
         
         // Berechne claimableReward basierend auf timeElapsed seit letztem Update
@@ -303,4 +308,5 @@ contract WeeklyTokenStaking is ReentrancyGuard {
             remainingUntilNextStage = 0;
         }
     }
+}
 }
