@@ -169,41 +169,47 @@ contract WeeklyTokenStaking is ReentrancyGuard {
     function getDetailedRewardInfo(address _user) external view returns (
         uint256 claimableReward,           // Normale claimable rewards (2 decimals)
         uint256 nextClaimTimestamp,        // Timestamp wann nächster Claim möglich ist
-        uint256 hoursPerClaimTimes10,      // Stunden pro 0.01 D.FAITH * 10 (für 1 Dezimalstelle)
+        uint256 hoursPerClaimTimes10,      // Stunden pro 0.01 D.FAITH für 1000 Tokens * 10 (für 1 Dezimalstelle)
         uint256 currentRatePercent,        // Aktuelle Rate in Prozent
         bool canClaimNow                   // Kann jetzt claimen?
     ) {
         StakeInfo storage user = stakers[_user];
-        
-        // Standard claimable rewards (2 decimals)
-        claimableReward = this.getClaimableReward(_user);
-        canClaimNow = claimableReward >= MIN_CLAIM_AMOUNT;
         currentRatePercent = getCurrentRewardRate();
         
-        if (user.amount == 0) {
-            return (claimableReward, 0, type(uint256).max, currentRatePercent, canClaimNow);
+        // Berechne hoursPerClaimTimes10 für 1000 gestakte Tokens
+        if (currentRatePercent > 0) {
+            // Berechne Sekunden für 1 wei (MIN_CLAIM_AMOUNT) bei 1000 gestakten Tokens
+            // Formula: (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent)
+            uint256 secondsFor001DFAITH = (MIN_CLAIM_AMOUNT * 604800 * 100) / (1000 * currentRatePercent);
+            hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
+        } else {
+            hoursPerClaimTimes10 = type(uint256).max;
         }
         
-        // Berechne wie lange es dauert, 1 wei (0.01 D.FAITH) zu verdienen
-        if (user.amount > 0 && currentRatePercent > 0) {
-            // Berechne Sekunden für 1 wei (MIN_CLAIM_AMOUNT)
-            // Formula: (MIN_CLAIM_AMOUNT * 604800 * 100) / (amount * currentRatePercent)
-            uint256 secondsFor001DFAITH = (MIN_CLAIM_AMOUNT * 604800 * 100) / (user.amount * currentRatePercent);
-            
-            // Konvertiere zu Stunden mit 1 Dezimalstelle (times 10)
-            hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
-            
-            // Berechne Timestamp wann nächster Claim möglich ist
-            if (canClaimNow) {
-                nextClaimTimestamp = block.timestamp; // Sofort möglich
-            } else {
-                uint256 remainingWei = MIN_CLAIM_AMOUNT - claimableReward;
-                uint256 secondsToNextClaim = (remainingWei * 604800 * 100) / (user.amount * currentRatePercent);
-                nextClaimTimestamp = block.timestamp + secondsToNextClaim;
-            }
+        if (user.amount == 0) {
+            return (0, 0, hoursPerClaimTimes10, currentRatePercent, false);
+        }
+        
+        // Berechne claimableReward basierend auf timeElapsed seit letztem Update
+        uint256 timeElapsed = block.timestamp - user.lastRewardUpdate;
+        uint256 pendingRewards = 0;
+        
+        if (timeElapsed > 0 && user.lastRewardUpdate > 0) {
+            pendingRewards = (user.amount * currentRatePercent * timeElapsed) / (604800 * 100);
+        }
+        
+        claimableReward = user.accumulatedRewards + pendingRewards;
+        canClaimNow = claimableReward >= MIN_CLAIM_AMOUNT;
+        
+        // Berechne nextClaimTimestamp
+        if (canClaimNow) {
+            nextClaimTimestamp = block.timestamp; // Sofort möglich
+        } else if (user.amount > 0 && currentRatePercent > 0) {
+            uint256 remainingWei = MIN_CLAIM_AMOUNT - claimableReward;
+            uint256 secondsToNextClaim = (remainingWei * 604800 * 100) / (user.amount * currentRatePercent);
+            nextClaimTimestamp = block.timestamp + secondsToNextClaim;
         } else {
             nextClaimTimestamp = 0; // Nie möglich
-            hoursPerClaimTimes10 = type(uint256).max;
         }
     }
 
