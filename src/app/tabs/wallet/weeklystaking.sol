@@ -3,19 +3,15 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
-    IERC20 public stakingToken;   // 0 Decimals
-    IERC20 public rewardToken;    // 2 Decimals
+contract WeeklyTokenStaking is ReentrancyGuard {
+    IERC20 public immutable stakingToken;   // 0 Decimals (D.INVEST)
+    IERC20 public immutable rewardToken;    // 2 Decimals (D.FAITH)
 
     uint256 public constant WEEK = 7 days;
-    uint256 public constant SECONDS_PER_WEEK = 604800; // 7 * 24 * 60 * 60
-    uint256 public constant MIN_CLAIM_AMOUNT = 1; // 0.01 Token with 2 decimals (1 = 0.01 real tokens)
-    uint256 public constant STAKING_DECIMALS = 0; // D.INVEST has 0 decimals
-    uint256 public constant REWARD_DECIMALS = 2;  // D.FAITH has 2 decimals
-    uint256 public totalStakedTokens;
-    uint256 public userCount;
+    uint256 public constant MIN_CLAIM_AMOUNT = 1; // 0.01 D.FAITH (1 wei = 0.01 token with 2 decimals)
+    
+    uint256 public totalStaked;
     uint256 public totalRewardsDistributed;
 
     struct StakeInfo {
@@ -27,7 +23,7 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
 
     struct RewardStage {
         uint256 maxTotalDistributed;
-        uint256 rewardRate; // Rate pro Woche in Prozent
+        uint256 rewardRatePercent; // Rate pro Woche in Prozent (10 = 10%)
     }
 
     RewardStage[] public stages;
@@ -36,7 +32,6 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
     event Staked(address indexed user, uint256 amount);
     event Unstaked(address indexed user, uint256 amount);
     event RewardClaimed(address indexed user, uint256 reward);
-    event RewardTokensReceived(address indexed sender, uint256 amount);
 
     constructor(address _stakingToken, address _rewardToken) {
         require(_stakingToken != address(0), "Invalid staking token");
@@ -46,22 +41,22 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
         stakingToken = IERC20(_stakingToken);
         rewardToken = IERC20(_rewardToken);
 
-        stages.push(RewardStage(10_000 ether, 10)); // 0.1
-        stages.push(RewardStage(20_000 ether, 5));  // 0.05
-        stages.push(RewardStage(40_000 ether, 3));  // 0.03
-        stages.push(RewardStage(60_000 ether, 2));  // 0.02
-        stages.push(RewardStage(80_000 ether, 1));  // 0.01
-        stages.push(RewardStage(type(uint256).max, 1)); // stays at 0.01
+        // Halving Stages: 10% -> 5% -> 2.5% -> 1.25% -> 0.625% -> 0.3125%
+        stages.push(RewardStage(10000 * 100, 10));     // 0-10,000 D.FAITH: 10%
+        stages.push(RewardStage(20000 * 100, 5));      // 10,000-20,000: 5%
+        stages.push(RewardStage(40000 * 100, 250));    // 20,000-40,000: 2.5% (250 = 2.5 * 100)
+        stages.push(RewardStage(60000 * 100, 125));    // 40,000-60,000: 1.25%
+        stages.push(RewardStage(80000 * 100, 63));     // 60,000-80,000: 0.625% (rounded)
+        stages.push(RewardStage(type(uint256).max, 31)); // 80,000+: 0.31%
     }
 
-    function _getCurrentRewardRate() public view returns (uint256) {
+    function getCurrentRewardRate() public view returns (uint256) {
         for (uint i = 0; i < stages.length; i++) {
             if (totalRewardsDistributed < stages[i].maxTotalDistributed) {
-                return stages[i].rewardRate;
+                return stages[i].rewardRatePercent;
             }
         }
-        // Wenn alle Stufen erreicht sind, verwende die letzte Rate (1%)
-        return stages[stages.length - 1].rewardRate;
+        return stages[stages.length - 1].rewardRatePercent;
     }
 
     function getCurrentStage() public view returns (uint8) {
@@ -81,10 +76,12 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
 
         uint256 timeElapsed = block.timestamp - user.lastRewardUpdate;
         if (timeElapsed > 0) {
-            uint256 rewardRate = _getCurrentRewardRate();
-            // Berechne Reward pro Sekunde mit korrekter Decimal-Anpassung
-            // user.amount (0 decimals) * rewardRate (%) * 10^REWARD_DECIMALS / (100 * SECONDS_PER_WEEK)
-            uint256 rewardPerSecond = (user.amount * rewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
+            uint256 rewardRate = getCurrentRewardRate();
+            
+            // Berechne Rewards pro Sekunde
+            // Formula: (stakedAmount * rewardRate) / 604800 pro Sekunde
+            // stakedAmount hat 0 decimals, rewardRate ist in %, Ergebnis hat 2 decimals
+            uint256 rewardPerSecond = (user.amount * rewardRate) / 604800; // 604800 = seconds per week
             uint256 newRewards = rewardPerSecond * timeElapsed;
             
             user.accumulatedRewards += newRewards;
@@ -92,7 +89,7 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
         }
     }
 
-    function stake(uint256 _amount) external whenNotPaused nonReentrant {
+    function stake(uint256 _amount) external nonReentrant {
         require(_amount > 0, "Amount must be > 0");
         require(stakingToken.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
 
@@ -102,129 +99,119 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
         _updateRewards(msg.sender);
 
         if (user.amount == 0) {
-            userCount += 1;
             user.stakeTimestamp = block.timestamp;
             user.lastRewardUpdate = block.timestamp;
         }
 
         user.amount += _amount;
-        totalStakedTokens += _amount;
+        totalStaked += _amount;
 
         emit Staked(msg.sender, _amount);
     }
 
-    function unstake() external nonReentrant {
+    function unstake(uint256 _amount) external nonReentrant {
         StakeInfo storage user = stakers[msg.sender];
-        require(user.amount > 0, "No tokens to unstake");
-        require(block.timestamp >= user.stakeTimestamp + WEEK, "Minimum staking period of 7 days not met");
+        require(user.amount >= _amount, "Not enough tokens staked");
+        require(_amount > 0, "Amount must be > 0");
 
-        // Update and claim all rewards first
+        // Update rewards first
         _updateRewards(msg.sender);
-        if (user.accumulatedRewards > 0) {
-            _claimAccumulatedRewards(msg.sender);
-        }
 
-        uint256 amountToUnstake = user.amount;
-        user.amount = 0;
-        user.lastRewardUpdate = 0;
-        user.stakeTimestamp = 0;
-        user.accumulatedRewards = 0;
+        user.amount -= _amount;
+        totalStaked -= _amount;
 
-        totalStakedTokens -= amountToUnstake;
-        userCount--;
-
-        require(stakingToken.transfer(msg.sender, amountToUnstake), "Unstake transfer failed");
-
-        emit Unstaked(msg.sender, amountToUnstake);
-    }
-
-    // Partielles Unstaking
-    function unstakePartial(uint256 amount) external nonReentrant {
-        StakeInfo storage user = stakers[msg.sender];
-        require(amount > 0, "Amount must be > 0");
-        require(user.amount >= amount, "Not enough tokens staked");
-        require(block.timestamp >= user.stakeTimestamp + WEEK, "Minimum staking period of 7 days not met");
-
-        // Update and claim all rewards first
-        _updateRewards(msg.sender);
-        if (user.accumulatedRewards > 0) {
-            _claimAccumulatedRewards(msg.sender);
-        }
-
-        user.amount -= amount;
-        totalStakedTokens -= amount;
-
-        // Wenn alles unstaked, setze Felder zurück und dekrementiere userCount
+        // If unstaking everything, reset user data
         if (user.amount == 0) {
             user.lastRewardUpdate = 0;
             user.stakeTimestamp = 0;
-            user.accumulatedRewards = 0;
-            userCount--;
         } else {
             user.lastRewardUpdate = block.timestamp;
         }
 
-        require(stakingToken.transfer(msg.sender, amount), "Unstake transfer failed");
-
-        emit Unstaked(msg.sender, amount);
+        require(stakingToken.transfer(msg.sender, _amount), "Transfer failed");
+        emit Unstaked(msg.sender, _amount);
     }
 
-    function claimReward() public nonReentrant whenNotPaused {
+    function claimReward() external nonReentrant {
         StakeInfo storage user = stakers[msg.sender];
         require(user.amount > 0, "Nothing staked");
 
-        // Update rewards bis zum aktuellen Zeitpunkt
+        // Update rewards to current time
         _updateRewards(msg.sender);
 
-        // Check if minimum claimable amount is reached
-        require(user.accumulatedRewards >= MIN_CLAIM_AMOUNT, "Minimum claimable amount not reached (0.01 tokens)");
-
-        // Claim accumulated rewards
-        _claimAccumulatedRewards(msg.sender);
-    }
-
-    function _claimAccumulatedRewards(address _user) internal {
-        StakeInfo storage user = stakers[_user];
         uint256 reward = user.accumulatedRewards;
+        require(reward >= MIN_CLAIM_AMOUNT, "Minimum claim amount not reached");
+        require(rewardToken.balanceOf(address(this)) >= reward, "Insufficient reward tokens");
 
-        if (reward > 0) {
-            require(rewardToken.balanceOf(address(this)) >= reward, "Insufficient reward tokens");
-            
-            user.accumulatedRewards = 0;
-            totalRewardsDistributed += reward;
-            
-            require(rewardToken.transfer(_user, reward), "Reward transfer failed");
-            emit RewardClaimed(_user, reward);
-        }
+        user.accumulatedRewards = 0;
+        totalRewardsDistributed += reward;
+
+        require(rewardToken.transfer(msg.sender, reward), "Reward transfer failed");
+        emit RewardClaimed(msg.sender, reward);
     }
 
-    function notifyRewardDeposit() external {
-        uint256 currentBalance = rewardToken.balanceOf(address(this));
-        emit RewardTokensReceived(msg.sender, currentBalance);
-    }
-
+    // View Functions
     function getClaimableReward(address _user) external view returns (uint256) {
         StakeInfo storage user = stakers[_user];
         if (user.amount == 0 || user.lastRewardUpdate == 0) {
             return user.accumulatedRewards;
         }
-        
+
         uint256 timeElapsed = block.timestamp - user.lastRewardUpdate;
-        uint256 rewardRate = _getCurrentRewardRate();
-        // Korrigierte Berechnung mit Decimal-Anpassung
-        uint256 rewardPerSecond = (user.amount * rewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
+        uint256 rewardRate = getCurrentRewardRate();
+        uint256 rewardPerSecond = (user.amount * rewardRate) / 604800;
         uint256 pendingRewards = rewardPerSecond * timeElapsed;
-        
+
         return user.accumulatedRewards + pendingRewards;
     }
 
-    function getUserStakeInfo(address _user) external view returns (
+    // Detaillierte Reward-Anzeige für UI
+    function getDetailedRewardInfo(address _user) external view returns (
+        uint256 claimableReward,           // Normale claimable rewards (2 decimals)
+        uint256 nextClaimTimestamp,        // Timestamp wann nächster Claim möglich ist
+        uint256 hoursPerClaimTimes10,      // Stunden pro 0.01 D.FAITH * 10 (für 1 Dezimalstelle)
+        uint256 currentRatePercent,        // Aktuelle Rate in Prozent
+        bool canClaimNow                   // Kann jetzt claimen?
+    ) {
+        StakeInfo storage user = stakers[_user];
+        
+        // Standard claimable rewards (2 decimals)
+        claimableReward = this.getClaimableReward(_user);
+        canClaimNow = claimableReward >= MIN_CLAIM_AMOUNT;
+        currentRatePercent = getCurrentRewardRate();
+        
+        if (user.amount == 0) {
+            return (claimableReward, 0, type(uint256).max, currentRatePercent, canClaimNow);
+        }
+        
+        // Berechne wie lange es dauert, 1 wei (0.01 D.FAITH) zu verdienen
+        // Anstatt rewardPerSecond zu berechnen, nutzen wir direkte Division
+        if (user.amount > 0 && currentRatePercent > 0) {
+            // Zeit für 1 wei: 604800 / (amount * rate)
+            uint256 secondsFor001DFAITH = 604800 / (user.amount * currentRatePercent);
+            // Stunden mit 1 Dezimalstelle: (seconds * 10) / 3600
+            hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
+            
+            // Berechne Timestamp wann nächster Claim möglich ist
+            if (canClaimNow) {
+                nextClaimTimestamp = block.timestamp; // Sofort möglich
+            } else {
+                uint256 remainingWei = MIN_CLAIM_AMOUNT - claimableReward;
+                // Zeit für remaining wei: (remainingWei * 604800) / (amount * rate)
+                uint256 secondsToNextClaim = (remainingWei * 604800) / (user.amount * currentRatePercent);
+                nextClaimTimestamp = block.timestamp + secondsToNextClaim;
+            }
+        } else {
+            nextClaimTimestamp = 0; // Nie möglich
+            hoursPerClaimTimes10 = type(uint256).max;
+        }
+    }
+
+    function getUserInfo(address _user) external view returns (
         uint256 stakedAmount,
         uint256 claimableReward,
         uint256 stakeTimestamp,
-        uint256 timeUntilUnstake,
         bool canUnstake,
-        uint256 timeUntilNextClaim,
         bool canClaim
     ) {
         StakeInfo storage user = stakers[_user];
@@ -232,124 +219,19 @@ contract WeeklyTokenStaking is ReentrancyGuard, Pausable {
         claimableReward = this.getClaimableReward(_user);
         stakeTimestamp = user.stakeTimestamp;
         
-        // Unstake info
-        if (user.stakeTimestamp > 0) {
-            uint256 unlockTime = user.stakeTimestamp + WEEK;
-            if (block.timestamp >= unlockTime) {
-                timeUntilUnstake = 0;
-                canUnstake = true;
-            } else {
-                timeUntilUnstake = unlockTime - block.timestamp;
-                canUnstake = false;
-            }
-        } else {
-            timeUntilUnstake = 0;
-            canUnstake = false;
-        }
-        
-        // Claim info
-        if (claimableReward >= MIN_CLAIM_AMOUNT) {
-            timeUntilNextClaim = 0;
-            canClaim = true;
-        } else if (user.amount > 0 && user.lastRewardUpdate > 0) {
-            // Berechne Zeit bis MIN_CLAIM_AMOUNT erreicht wird
-            uint256 rewardRate = _getCurrentRewardRate();
-            uint256 rewardPerSecond = (user.amount * rewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
-            if (rewardPerSecond > 0) {
-                uint256 remainingRewards = MIN_CLAIM_AMOUNT - claimableReward;
-                timeUntilNextClaim = remainingRewards / rewardPerSecond;
-            } else {
-                timeUntilNextClaim = type(uint256).max; // Praktisch unendlich wenn Rate 0
-            }
-            canClaim = false;
-        } else {
-            timeUntilNextClaim = 0;
-            canClaim = false;
-        }
+        canUnstake = user.amount > 0; // Jederzeit möglich wenn Token gestaked sind
+        canClaim = claimableReward >= MIN_CLAIM_AMOUNT;
     }
 
-    function getStakingStatus() external view returns (
-        uint8 currentStage,
-        uint256 currentRewardRate,
-        uint256 totalDistributed
-    ) {
-        currentRewardRate = _getCurrentRewardRate();
-        totalDistributed = totalRewardsDistributed;
-        currentStage = getCurrentStage();
-    }
-
-    function getRewardTokenBalance() external view returns (uint256) {
-        return rewardToken.balanceOf(address(this));
-    }
-    
     function getContractInfo() external view returns (
-        uint256 totalStaked,
-        uint256 totalUsers,
+        uint256 totalStakedTokens,
         uint256 rewardBalance,
         uint8 currentStage,
         uint256 currentRate
     ) {
-        totalStaked = totalStakedTokens;
-        totalUsers = userCount;
+        totalStakedTokens = totalStaked;
         rewardBalance = rewardToken.balanceOf(address(this));
         currentStage = getCurrentStage();
-        currentRate = _getCurrentRewardRate();
-    }
-
-    // Emergency function to update rewards for a user (can be called by anyone)
-    function updateUserRewards(address _user) external {
-        _updateRewards(_user);
-    }
-
-    // Get current reward rate per second for a given amount
-    function getRewardPerSecond(uint256 _amount) external view returns (uint256) {
-        uint256 rewardRate = _getCurrentRewardRate();
-        return (_amount * rewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
-    }
-
-    // Calculate time needed to reach minimum claimable amount for a given stake
-    function getTimeToMinClaim(uint256 _stakedAmount) external view returns (uint256) {
-        if (_stakedAmount == 0) return type(uint256).max;
-        
-        uint256 rewardRate = _getCurrentRewardRate();
-        uint256 rewardPerSecond = (_stakedAmount * rewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
-        
-        if (rewardPerSecond == 0) return type(uint256).max;
-        // Korrigierte Formel mit Decimal-Anpassung
-        return (MIN_CLAIM_AMOUNT * 100 * SECONDS_PER_WEEK) / (_stakedAmount * rewardRate);
-    }
-
-    // Get minimum claim amount (for UI display)
-    function getMinClaimAmount() external pure returns (uint256) {
-        return MIN_CLAIM_AMOUNT;
-    }
-
-    // Debug function to check reward calculation and contract state
-    function debugUserRewards(address _user) external view returns (
-        uint256 stakedAmount,
-        uint256 accumulatedRewards,
-        uint256 lastRewardUpdate,
-        uint256 timeElapsed,
-        uint256 currentRewardRate,
-        uint256 rewardPerSecond,
-        uint256 pendingRewards,
-        uint256 contractRewardBalance,
-        bool hasEnoughBalance
-    ) {
-        StakeInfo storage user = stakers[_user];
-        stakedAmount = user.amount;
-        accumulatedRewards = user.accumulatedRewards;
-        lastRewardUpdate = user.lastRewardUpdate;
-        
-        if (user.lastRewardUpdate > 0) {
-            timeElapsed = block.timestamp - user.lastRewardUpdate;
-            currentRewardRate = _getCurrentRewardRate();
-            rewardPerSecond = (user.amount * currentRewardRate * (10 ** REWARD_DECIMALS)) / (100 * SECONDS_PER_WEEK);
-            pendingRewards = rewardPerSecond * timeElapsed;
-        }
-        
-        contractRewardBalance = rewardToken.balanceOf(address(this));
-        uint256 totalClaimable = accumulatedRewards + pendingRewards;
-        hasEnoughBalance = contractRewardBalance >= totalClaimable;
+        currentRate = getCurrentRewardRate();
     }
 }
