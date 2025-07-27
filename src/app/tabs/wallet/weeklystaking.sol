@@ -42,12 +42,13 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         rewardToken = IERC20(_rewardToken);
 
         // Halving Stages: 10% -> 5% -> 2.5% -> 1.25% -> 0.625% -> 0.3125%
-        stages.push(RewardStage(10000 * 100, 10));     // 0-10,000 D.FAITH: 10%
-        stages.push(RewardStage(20000 * 100, 5));      // 10,000-20,000: 5%
-        stages.push(RewardStage(40000 * 100, 250));    // 20,000-40,000: 2.5% (250 = 2.5 * 100)
-        stages.push(RewardStage(60000 * 100, 125));    // 40,000-60,000: 1.25%
-        stages.push(RewardStage(80000 * 100, 63));     // 60,000-80,000: 0.625% (rounded)
-        stages.push(RewardStage(type(uint256).max, 31)); // 80,000+: 0.31%
+        // Alle Raten * 100 für konsistente Skalierung
+        stages.push(RewardStage(10000 * 100, 1000));   // 0-10,000 D.FAITH: 10% (1000/100)
+        stages.push(RewardStage(20000 * 100, 500));    // 10,000-20,000: 5% (500/100)
+        stages.push(RewardStage(40000 * 100, 250));    // 20,000-40,000: 2.5% (250/100)
+        stages.push(RewardStage(60000 * 100, 125));    // 40,000-60,000: 1.25% (125/100)
+        stages.push(RewardStage(80000 * 100, 63));     // 60,000-80,000: 0.63% (63/100, rounded from 62.5)
+        stages.push(RewardStage(type(uint256).max, 31)); // 80,000+: 0.31% (31/100, rounded from 31.25)
     }
 
     function getCurrentRewardRate() public view returns (uint256) {
@@ -79,9 +80,9 @@ contract WeeklyTokenStaking is ReentrancyGuard {
             uint256 rewardRate = getCurrentRewardRate();
             
             // Berechne Rewards pro Sekunde
-            // Formula: (stakedAmount * rewardRate) / 604800 pro Sekunde
-            // stakedAmount hat 0 decimals, rewardRate ist in %, Ergebnis hat 2 decimals
-            uint256 rewardPerSecond = (user.amount * rewardRate) / 604800; // 604800 = seconds per week
+            // Formula: (stakedAmount * rewardRate) / (604800 * 100) pro Sekunde
+            // rewardRate ist jetzt * 100 skaliert, daher / 100 zusätzlich
+            uint256 rewardPerSecond = (user.amount * rewardRate) / (604800 * 100);
             uint256 newRewards = rewardPerSecond * timeElapsed;
             
             user.accumulatedRewards += newRewards;
@@ -159,7 +160,7 @@ contract WeeklyTokenStaking is ReentrancyGuard {
 
         uint256 timeElapsed = block.timestamp - user.lastRewardUpdate;
         uint256 rewardRate = getCurrentRewardRate();
-        uint256 rewardPerSecond = (user.amount * rewardRate) / 604800;
+        uint256 rewardPerSecond = (user.amount * rewardRate) / (604800 * 100);
         uint256 pendingRewards = rewardPerSecond * timeElapsed;
 
         return user.accumulatedRewards + pendingRewards;
@@ -187,8 +188,9 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         // Berechne wie lange es dauert, 1 wei (0.01 D.FAITH) zu verdienen
         // Anstatt rewardPerSecond zu berechnen, nutzen wir direkte Division
         if (user.amount > 0 && currentRatePercent > 0) {
-            // Zeit für 1 wei: 604800 / (amount * rate)
-            uint256 secondsFor001DFAITH = 604800 / (user.amount * currentRatePercent);
+            // Zeit für 1 wei: (604800 * 100) / (amount * rate)
+            // rate ist jetzt * 100 skaliert
+            uint256 secondsFor001DFAITH = (604800 * 100) / (user.amount * currentRatePercent);
             // Stunden mit 1 Dezimalstelle: (seconds * 10) / 3600
             hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
             
@@ -197,8 +199,8 @@ contract WeeklyTokenStaking is ReentrancyGuard {
                 nextClaimTimestamp = block.timestamp; // Sofort möglich
             } else {
                 uint256 remainingWei = MIN_CLAIM_AMOUNT - claimableReward;
-                // Zeit für remaining wei: (remainingWei * 604800) / (amount * rate)
-                uint256 secondsToNextClaim = (remainingWei * 604800) / (user.amount * currentRatePercent);
+                // Zeit für remaining wei: (remainingWei * 604800 * 100) / (amount * rate)
+                uint256 secondsToNextClaim = (remainingWei * 604800 * 100) / (user.amount * currentRatePercent);
                 nextClaimTimestamp = block.timestamp + secondsToNextClaim;
             }
         } else {
