@@ -236,4 +236,67 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         currentStage = getCurrentStage();
         currentRate = getCurrentRewardRate();
     }
+
+    // ===== TEST FUNCTIONS (nur für Development) =====
+    
+    /**
+     * @dev TESTFUNKTION: Setze totalRewardsDistributed manuell für Stage-Testing
+     * @param _amount Neuer Wert für totalRewardsDistributed (in wei, 2 decimals)
+     * 
+     * Nützliche Testwerte:
+     * - 0: Stage 1 (10% Rate)
+     * - 1000000: 10,000 D.FAITH → Stage 2 (5% Rate) 
+     * - 2000000: 20,000 D.FAITH → Stage 3 (2.5% Rate)
+     * - 4000000: 40,000 D.FAITH → Stage 4 (1.25% Rate)
+     * - 6000000: 60,000 D.FAITH → Stage 5 (0.63% Rate)
+     * - 8000000: 80,000 D.FAITH → Stage 6 (0.31% Rate)
+     */
+    function setTotalRewardsDistributedForTesting(uint256 _amount) external {
+        totalRewardsDistributed = _amount;
+    }
+
+    /**
+     * @dev TESTFUNKTION: Springe direkt zu einer bestimmten Stage
+     * @param _stage Stage Nummer (1-6)
+     */
+    function jumpToStageForTesting(uint8 _stage) external {
+        require(_stage >= 1 && _stage <= 6, "Invalid stage");
+        
+        if (_stage == 1) {
+            totalRewardsDistributed = 0;                    // Stage 1: 10%
+        } else if (_stage == 2) {
+            totalRewardsDistributed = 10000 * 100;         // Stage 2: 5%
+        } else if (_stage == 3) {
+            totalRewardsDistributed = 20000 * 100;         // Stage 3: 2.5%
+        } else if (_stage == 4) {
+            totalRewardsDistributed = 40000 * 100;         // Stage 4: 1.25%
+        } else if (_stage == 5) {
+            totalRewardsDistributed = 60000 * 100;         // Stage 5: 0.63%
+        } else if (_stage == 6) {
+            totalRewardsDistributed = 80000 * 100;         // Stage 6: 0.31%
+        }
+    }
+
+    /**
+     * @dev TESTFUNKTION: Zeige alle Stage-Informationen
+     */
+    function getStageInfo() external view returns (
+        uint8 currentStage,
+        uint256 currentRate,
+        uint256 currentTotalDistributed,
+        uint256 nextStageThreshold,
+        uint256 remainingUntilNextStage
+    ) {
+        currentStage = getCurrentStage();
+        currentRate = getCurrentRewardRate();
+        currentTotalDistributed = totalRewardsDistributed;
+        
+        if (currentStage < stages.length) {
+            nextStageThreshold = stages[currentStage - 1].maxTotalDistributed;
+            remainingUntilNextStage = nextStageThreshold - currentTotalDistributed;
+        } else {
+            nextStageThreshold = type(uint256).max;
+            remainingUntilNextStage = 0;
+        }
+    }
 }
