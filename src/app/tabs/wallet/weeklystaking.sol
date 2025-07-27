@@ -79,11 +79,9 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         if (timeElapsed > 0) {
             uint256 rewardRate = getCurrentRewardRate();
             
-            // Berechne Rewards pro Sekunde
-            // Formula: (stakedAmount * rewardRate) / (604800 * 100) pro Sekunde
-            // rewardRate ist jetzt * 100 skaliert, daher / 100 zusätzlich
-            uint256 rewardPerSecond = (user.amount * rewardRate) / (604800 * 100);
-            uint256 newRewards = rewardPerSecond * timeElapsed;
+            // Verbesserte Berechnung mit höherer Präzision
+            // Formula: (stakedAmount * rewardRate * timeElapsed) / (604800 * 100)
+            uint256 newRewards = (user.amount * rewardRate * timeElapsed) / (604800 * 100);
             
             user.accumulatedRewards += newRewards;
             user.lastRewardUpdate = block.timestamp;
@@ -160,8 +158,9 @@ contract WeeklyTokenStaking is ReentrancyGuard {
 
         uint256 timeElapsed = block.timestamp - user.lastRewardUpdate;
         uint256 rewardRate = getCurrentRewardRate();
-        uint256 rewardPerSecond = (user.amount * rewardRate) / (604800 * 100);
-        uint256 pendingRewards = rewardPerSecond * timeElapsed;
+        
+        // Verbesserte Berechnung: direkte Multiplikation vermeidet Präzisionsverlust
+        uint256 pendingRewards = (user.amount * rewardRate * timeElapsed) / (604800 * 100);
 
         return user.accumulatedRewards + pendingRewards;
     }
@@ -186,12 +185,12 @@ contract WeeklyTokenStaking is ReentrancyGuard {
         }
         
         // Berechne wie lange es dauert, 1 wei (0.01 D.FAITH) zu verdienen
-        // Anstatt rewardPerSecond zu berechnen, nutzen wir direkte Division
         if (user.amount > 0 && currentRatePercent > 0) {
-            // Zeit für 1 wei: (604800 * 100) / (amount * rate)
-            // rate ist jetzt * 100 skaliert
-            uint256 secondsFor001DFAITH = (604800 * 100) / (user.amount * currentRatePercent);
-            // Stunden mit 1 Dezimalstelle: (seconds * 10) / 3600
+            // Berechne Sekunden für 1 wei (MIN_CLAIM_AMOUNT)
+            // Formula: (MIN_CLAIM_AMOUNT * 604800 * 100) / (amount * currentRatePercent)
+            uint256 secondsFor001DFAITH = (MIN_CLAIM_AMOUNT * 604800 * 100) / (user.amount * currentRatePercent);
+            
+            // Konvertiere zu Stunden mit 1 Dezimalstelle (times 10)
             hoursPerClaimTimes10 = (secondsFor001DFAITH * 10) / 3600;
             
             // Berechne Timestamp wann nächster Claim möglich ist
@@ -199,7 +198,6 @@ contract WeeklyTokenStaking is ReentrancyGuard {
                 nextClaimTimestamp = block.timestamp; // Sofort möglich
             } else {
                 uint256 remainingWei = MIN_CLAIM_AMOUNT - claimableReward;
-                // Zeit für remaining wei: (remainingWei * 604800 * 100) / (amount * rate)
                 uint256 secondsToNextClaim = (remainingWei * 604800 * 100) / (user.amount * currentRatePercent);
                 nextClaimTimestamp = block.timestamp + secondsToNextClaim;
             }
