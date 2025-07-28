@@ -107,9 +107,15 @@ function TokenTransferModal({
         {/* Modal Header */}
         <div className="text-center pb-3 border-b border-zinc-700 mb-4">
           <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
-            <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
+            {token.key === 'DFAITH' ? (
+              <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
+            ) : token.key === 'DINVEST' ? (
+              <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
+            ) : (
+              <span className="text-white text-4xl font-bold">⟠</span>
+            )}
           </div>
-          <h3 className="text-xl font-bold text-white mb-1">D.FAITH senden</h3>
+          <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
           <p className="text-zinc-400 text-xs">Verfügbar: {token.balance} {token.symbol}</p>
         </div>
         
@@ -121,9 +127,23 @@ function TokenTransferModal({
             
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className={`flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0`}>
-                  <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
-                  <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
+                <div className={`flex items-center gap-2 ${
+                  token.key === 'DFAITH' ? 'bg-amber-500/20 border-amber-500/30' : 
+                  token.key === 'DINVEST' ? 'bg-blue-500/20 border-blue-500/30' : 
+                  'bg-purple-500/20 border-purple-500/30'
+                } rounded-lg px-2 py-1 border flex-shrink-0`}>
+                  {token.key === 'DFAITH' ? (
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
+                  ) : token.key === 'DINVEST' ? (
+                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-6 h-6 object-contain" />
+                  ) : (
+                    <span className="text-purple-400 text-sm">⟠</span>
+                  )}
+                  <span className={`${
+                    token.key === 'DFAITH' ? 'text-amber-300' : 
+                    token.key === 'DINVEST' ? 'text-blue-300' : 
+                    'text-purple-300'
+                  } font-semibold text-xs`}>{token.symbol}</span>
                 </div>
                 <input
                   type="number"
@@ -147,7 +167,11 @@ function TokenTransferModal({
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500">Balance: {token.balance}</span>
                 <button
-                  className="text-amber-400 hover:text-amber-300 font-medium px-2 py-1 rounded"
+                  className={`${
+                    token.key === 'DFAITH' ? 'text-amber-400 hover:text-amber-300' : 
+                    token.key === 'DINVEST' ? 'text-blue-400 hover:text-blue-300' : 
+                    'text-purple-400 hover:text-purple-300'
+                  } font-medium px-2 py-1 rounded`}
                   type="button"
                   onClick={handleMax}
                   disabled={isSending}
@@ -194,7 +218,11 @@ function TokenTransferModal({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400">An:</span>
-                  <span className="text-amber-400 font-mono">
+                  <span className={`${
+                    token.key === 'DFAITH' ? 'text-amber-400' : 
+                    token.key === 'DINVEST' ? 'text-blue-400' : 
+                    'text-purple-400'
+                  } font-mono`}>
                     {sendToAddress.slice(0, 6)}...{sendToAddress.slice(-4)}
                   </span>
                 </div>
@@ -447,9 +475,11 @@ export default function SendTab() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                      <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                         {token.key === 'DFAITH' ? (
-                          <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />
+                          <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
+                        ) : token.key === 'DINVEST' ? (
+                          <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
                         ) : (
                           token.icon
                         )}
