@@ -809,7 +809,7 @@ export default function BuyTab() {
                     <label className="block text-sm font-medium text-zinc-300 mb-2">You Receive</label>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0">
-                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />
+                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
                         <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                       </div>
                       <div className="flex-1 min-w-0 text-center">

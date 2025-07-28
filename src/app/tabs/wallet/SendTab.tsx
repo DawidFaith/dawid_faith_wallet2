@@ -492,7 +492,7 @@ export default function SendTab() {
                         ) : token.key === 'DINVEST' ? (
                           <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
                         ) : token.key === 'ETH' ? (
-                          <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
+                          <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
                         ) : (
                           token.icon
                         )}
