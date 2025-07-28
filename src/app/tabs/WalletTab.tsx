@@ -921,11 +921,11 @@ export default function WalletTab() {
             {/* Header mit verbessertem Gold-Akzent und Bild */}
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-r from-amber-500 to-yellow-500 p-0.5 shadow-lg shadow-amber-500/20">
+                <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">
                   <img 
                     src="/Dawid Faith Wallet.png" 
                     alt="Dawid Faith Wallet" 
-                    className="w-full h-full object-contain rounded-full"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <span className="text-base md:text-lg font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
@@ -982,7 +982,10 @@ export default function WalletTab() {
 
             {/* DFAITH Token-Karte - jetzt mit D.FAITH */}
             <div className="flex flex-col items-center p-4 bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl border border-zinc-700 w-full mb-6">
-              <span className="uppercase text-xs tracking-widest text-amber-500/80 mb-2">D.FAITH</span>
+              <div className="flex items-center gap-2 mb-2">
+                <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
+                <span className="uppercase text-xs tracking-widest text-amber-500/80">D.FAITH</span>
+              </div>
               <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 drop-shadow-sm">
                 {dfaithBalance ? dfaithBalance.displayValue : "0.00"}
                 {(isLoadingBalances || isRefreshing) && (
