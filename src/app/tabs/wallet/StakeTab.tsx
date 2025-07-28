@@ -392,6 +392,14 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     }
   }, [stakeAmount, getTimeToMinClaimFromContract]);
 
+  // Hilfsfunktion: Verfügbare Balance aktualisieren
+  const refreshAvailableBalance = useCallback(async () => {
+    if (account?.address) {
+      const balance = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
+      setAvailable(Math.floor(Number(balance)).toString());
+    }
+  }, [account?.address]);
+
   // Stake Function (echtes Staking mit Approval-Check)
   const handleStake = async () => {
     if (!stakeAmount || parseInt(stakeAmount) <= 0 || !account?.address) {
@@ -625,23 +633,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: (result) => {
             console.log("✅ Staking erfolgreich mit korrektem Contract:", result);
             setTxStatus("success");
-            setLastOperation("stake"); // Markiere als Staking-Operation
-            // Stake Amount zurücksetzen
+            setLastOperation("stake");
             setStakeAmount("");
-            // Sofort Parent-Komponente benachrichtigen
-            if (onStakeChanged) {
-              onStakeChanged();
-            }
-            // Sofortige lokale Balance-Aktualisierung
-            if (account?.address) {
-              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                setAvailable(Math.floor(Number(balance)).toString());
-                // Nach Balance-Update auch StakeInfo aktualisieren
-                fetchStakeInfo();
-              });
-            } else {
-              fetchStakeInfo();
-            }
+            if (onStakeChanged) onStakeChanged();
+
+            refreshAvailableBalance();
+
+            setTimeout(async () => {
+              await fetchStakeInfo();
+              refreshAvailableBalance();
+            }, 1000);
+
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
@@ -729,22 +731,16 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: (result) => {
             console.log('Unstaking erfolgreich:', result);
             setTxStatus("success");
-            setLastOperation("unstake"); // Markiere als Unstaking-Operation
-            setUnstakeAmount("");
-            // Sofort Parent-Komponente benachrichtigen
-            if (onStakeChanged) {
-              onStakeChanged();
-            }
-            // Sofortige lokale Balance-Aktualisierung
-            if (account?.address) {
-              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                setAvailable(Math.floor(Number(balance)).toString());
-                // Nach Balance-Update auch StakeInfo aktualisieren
-                fetchStakeInfo();
-              });
-            } else {
-              fetchStakeInfo();
-            }
+            setLastOperation("unstake");
+            if (onStakeChanged) onStakeChanged();
+
+            refreshAvailableBalance();
+
+            setTimeout(async () => {
+              await fetchStakeInfo();
+              refreshAvailableBalance();
+            }, 1000);
+
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
@@ -1316,7 +1312,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 disabled={!unstakeAmount || parseInt(unstakeAmount) <= 0 || parseInt(unstakeAmount) > parseInt(staked) || loading || txStatus === "pending"}
                 onClick={() => {
                   handleUnstake(unstakeAmount);
-                  // Entfernt: setUnstakeAmount(""); // Wird jetzt nach erfolgreichem Unstake gesetzt
+                  setUnstakeAmount("");
                 }}
               >
                 <FaUnlock className="inline mr-2" />
