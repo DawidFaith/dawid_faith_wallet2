@@ -961,19 +961,12 @@ export default function WalletTab() {
             onClick={() => setShowStakeModal(true)}
             className={`relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-amber-400 hover:from-amber-500/30 hover:to-amber-600/30 transition-all border w-full ${
               hasRewards 
-                ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/30 border-amber-500/40 animate-pulse' 
+                ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/30 border-amber-500/40' 
                 : 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 border-amber-500/20'
             }`}
           >
             <FaLock size={14} />
             <span className="text-sm font-medium">Staken & Verdienen</span>
-            
-            {/* Rewards Badge direkt im Button */}
-            {hasRewards && (
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-400 to-emerald-500 text-black text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-bounce">
-                {availableRewards} 💰
-              </div>
-            )}
           </button>
           
           {/* Kompakte Status-Zeile */}
@@ -997,7 +990,7 @@ export default function WalletTab() {
             {hasRewards && (
               <div className="flex items-center gap-1.5 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
                 <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                <span className="text-amber-400 font-medium">{availableRewards} claimbar</span>
+                <span className="text-amber-400 font-medium">{availableRewards} D.FAITH verfügbar</span>
               </div>
             )}
           </div>
