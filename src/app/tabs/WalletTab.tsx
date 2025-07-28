@@ -836,6 +836,9 @@ export default function WalletTab() {
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
+                <span className="text-base md:text-lg font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+                  Dawid Faith Wallet
+                </span>
               </div>
               <ConnectButton
                 client={client}
