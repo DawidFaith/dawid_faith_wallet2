@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "../../../../components/ui/button";
-import { FaCoins, FaLock, FaExchangeAlt, FaSync, FaRegCopy } from "react-icons/fa";
+import { FaLock, FaExchangeAlt, FaSync, FaRegCopy } from "react-icons/fa";
 import { useActiveAccount, useSendTransaction, BuyWidget } from "thirdweb/react";
 import { base } from "thirdweb/chains";
 import { NATIVE_TOKEN_ADDRESS, getContract, prepareContractCall, sendAndConfirmTransaction, readContract } from "thirdweb";
@@ -625,7 +625,7 @@ export default function BuyTab() {
       description: "Dawid Faith Token",
       price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
       sub: dfaithPrice ? `1 ETH = ${(1 / dfaithPrice).toFixed(2)} D.FAITH` : "Wird geladen...",
-      icon: <FaCoins className="text-amber-400" />,
+      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />,
     },
     {
       key: "DINVEST",
@@ -731,7 +731,7 @@ export default function BuyTab() {
                 {/* Professional Buy Widget Header */}
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg">
-                    <FaCoins className="text-black text-lg" />
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.FAITH kaufen</h3>
                   <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
@@ -805,7 +805,7 @@ export default function BuyTab() {
                     <label className="block text-sm font-medium text-zinc-300 mb-2">You Receive</label>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0">
-                        <FaCoins className="text-amber-400 text-sm" />
+                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-4 h-4 object-contain" />
                         <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                       </div>
                       <div className="flex-1 min-w-0">
