@@ -732,48 +732,121 @@ export default function WalletTab() {
 
   if (status !== "connected" || !account?.address) {
     return (
-      <div className="flex flex-col items-center min-h-[70vh] justify-center bg-black py-8">
-        <Card className="w-full max-w-sm bg-gradient-to-br from-zinc-900 to-black rounded-3xl shadow-2xl border border-zinc-700 relative overflow-hidden">
-          {/* Glanzeffekt/Highlight oben */}
-          <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-t-3xl"></div>
+      <div className="flex flex-col items-center min-h-[70vh] justify-center bg-black py-8 relative overflow-hidden">
+        {/* Hintergrund-Animationen */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Animierte Gradient-Kreise */}
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-purple-500/10 via-pink-500/5 to-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
           
-          <CardContent className="p-8 relative z-10">
-            {/* Logo/Header mit großem Bild, ohne Text */}
+          {/* Floating Particles */}
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-amber-400/40 rounded-full animate-bounce" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-yellow-400/60 rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-amber-300/50 rounded-full animate-bounce" style={{ animationDelay: '2.5s' }}></div>
+        </div>
+
+        <Card className="w-full max-w-md bg-gradient-to-br from-zinc-900/95 to-black/95 rounded-3xl shadow-2xl border border-zinc-700/50 relative overflow-hidden backdrop-blur-xl">
+          {/* Erweiterte Glanzeffekte */}
+          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-amber-500/10 via-yellow-500/15 to-orange-500/10 rounded-t-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-purple-500/10 via-pink-500/10 to-transparent rounded-br-3xl"></div>
+          
+          {/* Animierter Border */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-500/20 p-[1px]">
+            <div className="h-full w-full rounded-3xl bg-gradient-to-br from-zinc-900/95 to-black/95"></div>
+          </div>
+          
+          <CardContent className="p-8 md:p-10 relative z-10">
+            {/* Logo mit erweiterten Effekten */}
             <div className="flex flex-col items-center justify-center mb-8">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-1 shadow-2xl shadow-amber-500/30 mb-4">
-                <img 
-                  src="/Dawid Faith Wallet.jpg" 
-                  alt="Dawid Faith Wallet" 
-                  className="w-full h-full object-cover rounded-full"
+              <div className="relative group">
+                {/* Äußerer Ring mit Animation */}
+                <div className="absolute inset-0 w-36 h-36 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 animate-spin opacity-75" style={{ animationDuration: '8s' }}></div>
+                
+                {/* Mittlerer Ring */}
+                <div className="absolute inset-2 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 animate-pulse"></div>
+                
+                {/* Bild Container */}
+                <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-1.5 shadow-2xl shadow-amber-500/40 transform group-hover:scale-105 transition-transform duration-500 z-10">
+                  <img 
+                    src="/Dawid Faith Wallet.jpg" 
+                    alt="Dawid Faith Wallet" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                
+                {/* Glowing Effect */}
+                <div className="absolute inset-0 w-36 h-36 rounded-full bg-gradient-to-r from-amber-400/20 to-yellow-500/20 blur-xl animate-pulse"></div>
+              </div>
+              
+              {/* Willkommens-Text mit Animation */}
+              <div className="mt-6 text-center">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-2 animate-pulse">
+                  Willkommen
+                </h1>
+                <div className="w-20 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            
+            {/* Beschreibung mit besserem Styling */}
+            <div className="text-center mb-8">
+              <p className="text-zinc-300 text-lg mb-2">
+                Verbinde dich mit deiner Wallet
+              </p>
+              <p className="text-zinc-500 text-sm">
+                und entdecke das D.FAITH Ökosystem
+              </p>
+            </div>
+            
+            {/* Connect Button mit erweiterten Effekten */}
+            <div className="flex justify-center w-full">
+              <div className="relative w-full group">
+                {/* Button Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                
+                <ConnectButton
+                  client={client}
+                  connectButton={{ 
+                    label: "🚀 Wallet verbinden",
+                    className: "relative w-full py-4 px-6 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/25 text-lg"
+                  }}
+                  connectModal={{
+                    size: "compact",
+                    title: "Wallet verbinden", 
+                    welcomeScreen: {
+                      title: "Dawid Faith Wallet",
+                      subtitle: "Wähle deine bevorzugte Anmeldemethode"
+                    },
+                  }}
+                  wallets={wallets}
+                  chain={{
+                    id: 8453,
+                    rpc: "https://mainnet.base.org",
+                  }}
                 />
               </div>
             </div>
             
-            <p className="text-zinc-400 text-center mb-8">
-              Verbinde dich, um auf deine Token zuzugreifen
-            </p>
-            
-            <div className="flex justify-center w-full">
-              <ConnectButton
-                client={client}
-                connectButton={{ 
-                  label: "Wallet verbinden",
-                  className: "w-full py-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:opacity-90 transition-opacity"
-                }}
-                connectModal={{
-                  size: "compact",
-                  title: "Wallet verbinden", 
-                  welcomeScreen: {
-                    title: "Dawid Faith Wallet",
-                    subtitle: "Wähle deine bevorzugte Anmeldemethode"
-                  },
-                }}
-                wallets={wallets}
-                chain={{
-                  id: 8453,
-                  rpc: "https://mainnet.base.org",
-                }}
-              />
+            {/* Zusätzliche Features/Info */}
+            <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
+                  <span className="text-amber-400 text-xs">🔒</span>
+                </div>
+                <span className="text-xs text-zinc-400">Sicher</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
+                  <span className="text-amber-400 text-xs">⚡</span>
+                </div>
+                <span className="text-xs text-zinc-400">Schnell</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
+                  <span className="text-amber-400 text-xs">💎</span>
+                </div>
+                <span className="text-xs text-zinc-400">Premium</span>
+              </div>
             </div>
           </CardContent>
         </Card>
