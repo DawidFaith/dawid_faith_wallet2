@@ -747,9 +747,9 @@ export default function WalletTab() {
         </div>
 
         <Card className="w-full max-w-md bg-gradient-to-br from-zinc-900/95 to-black/95 rounded-3xl shadow-2xl border border-zinc-700/50 relative overflow-hidden backdrop-blur-xl">
-          {/* Erweiterte Glanzeffekte */}
-          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-amber-500/10 via-yellow-500/15 to-orange-500/10 rounded-t-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-purple-500/10 via-pink-500/10 to-transparent rounded-br-3xl"></div>
+          {/* Entferne gelbe Glanzeffekte - mache sie schwarz/transparent */}
+          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-zinc-800/20 via-zinc-700/10 to-zinc-900/20 rounded-t-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-zinc-800/10 via-zinc-700/5 to-transparent rounded-br-3xl"></div>
           
           <CardContent className="p-8 md:p-10 relative z-10">
             {/* Logo mit nahtloser Integration */}
@@ -763,18 +763,18 @@ export default function WalletTab() {
                     className="w-full h-full object-cover"
                   />
                   
-                  {/* Gradient Overlay für bessere Integration */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                  {/* Gradient Overlay für bessere Integration - jetzt schwarz */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                 </div>
                 
-                {/* Subtiler Ambient Glow um das Bild */}
-                <div className="absolute inset-0 w-40 h-40 bg-gradient-to-r from-amber-500/5 via-yellow-500/10 to-amber-500/5 blur-3xl animate-pulse"></div>
+                {/* Entferne gelben Ambient Glow - mache ihn sehr subtil grau */}
+                <div className="absolute inset-0 w-40 h-40 bg-gradient-to-r from-zinc-800/5 via-zinc-700/8 to-zinc-800/5 blur-3xl animate-pulse"></div>
                 
-                {/* Kleine Akzent-Punkte um das Bild */}
-                <div className="absolute -top-2 -right-2 w-3 h-3 bg-amber-400/60 rounded-full animate-pulse"></div>
-                <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-yellow-400/40 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute top-1/2 -left-4 w-1.5 h-1.5 bg-amber-300/50 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute top-1/4 -right-4 w-1 h-1 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                {/* Kleine Akzent-Punkte um das Bild - jetzt in gedeckten Farben */}
+                <div className="absolute -top-2 -right-2 w-3 h-3 bg-zinc-400/30 rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-zinc-500/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute top-1/2 -left-4 w-1.5 h-1.5 bg-zinc-400/25 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+                <div className="absolute top-1/4 -right-4 w-1 h-1 bg-zinc-500/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
               </div>
               
               {/* Willkommens-Text mit Animation */}
