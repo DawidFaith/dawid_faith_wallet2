@@ -150,7 +150,7 @@ function TokenTransferModal({
                   placeholder="0.00"
                   min="0"
                   step={token.key === "DINVEST" ? "1" : "0.000001"}
-                  className={`flex-1 bg-transparent text-lg font-bold placeholder-zinc-500 focus:outline-none min-w-0 ${
+                  className={`flex-1 bg-transparent text-lg font-bold placeholder-zinc-500 focus:outline-none min-w-0 text-center ${
                     sendAmount && parseFloat(sendAmount) > parseFloat(token.balance.replace(",", ".")) 
                       ? 'text-red-400' 
                       : 'text-white'
@@ -248,7 +248,11 @@ function TokenTransferModal({
           <Button
             className={`w-full py-3 font-bold rounded-xl text-base transition-all ${
               isAmountValid && sendToAddress && !isSending
-                ? `bg-gradient-to-r ${token.color} text-black hover:opacity-90 transform hover:scale-[1.02]`
+                ? token.key === 'DFAITH' 
+                  ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:from-amber-500 hover:to-yellow-600 transform hover:scale-[1.02]"
+                  : token.key === 'DINVEST'
+                  ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 transform hover:scale-[1.02]"
+                  : "bg-gradient-to-r from-purple-400 to-purple-600 text-white hover:from-purple-500 hover:to-purple-700 transform hover:scale-[1.02]"
                 : "bg-zinc-700 text-zinc-400 cursor-not-allowed"
             }`}
             onClick={handleSend}
