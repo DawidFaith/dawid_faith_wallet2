@@ -751,11 +751,6 @@ export default function WalletTab() {
           <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-amber-500/10 via-yellow-500/15 to-orange-500/10 rounded-t-3xl"></div>
           <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-purple-500/10 via-pink-500/10 to-transparent rounded-br-3xl"></div>
           
-          {/* Animierter Border */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-500/20 p-[1px]">
-            <div className="h-full w-full rounded-3xl bg-gradient-to-br from-zinc-900/95 to-black/95"></div>
-          </div>
-          
           <CardContent className="p-8 md:p-10 relative z-10">
             {/* Logo mit erweiterten Effekten */}
             <div className="flex flex-col items-center justify-center mb-8">
@@ -798,37 +793,32 @@ export default function WalletTab() {
               </p>
             </div>
             
-            {/* Connect Button mit erweiterten Effekten */}
-            <div className="flex justify-center w-full">
-              <div className="relative w-full group">
-                {/* Button Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
-                
-                <ConnectButton
-                  client={client}
-                  connectButton={{ 
-                    label: "🚀 Wallet verbinden",
-                    className: "relative w-full py-4 px-6 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/25 text-lg"
-                  }}
-                  connectModal={{
-                    size: "compact",
-                    title: "Wallet verbinden", 
-                    welcomeScreen: {
-                      title: "Dawid Faith Wallet",
-                      subtitle: "Wähle deine bevorzugte Anmeldemethode"
-                    },
-                  }}
-                  wallets={wallets}
-                  chain={{
-                    id: 8453,
-                    rpc: "https://mainnet.base.org",
-                  }}
-                />
-              </div>
+            {/* Connect Button - vereinfacht und behoben */}
+            <div className="flex justify-center w-full mb-8">
+              <ConnectButton
+                client={client}
+                connectButton={{ 
+                  label: "🚀 Wallet verbinden",
+                  className: "w-full py-4 px-6 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/25 text-lg z-50 relative"
+                }}
+                connectModal={{
+                  size: "compact",
+                  title: "Wallet verbinden", 
+                  welcomeScreen: {
+                    title: "Dawid Faith Wallet",
+                    subtitle: "Wähle deine bevorzugte Anmeldemethode"
+                  },
+                }}
+                wallets={wallets}
+                chain={{
+                  id: 8453,
+                  rpc: "https://mainnet.base.org",
+                }}
+              />
             </div>
             
             {/* Zusätzliche Features/Info */}
-            <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
                   <span className="text-amber-400 text-xs">🔒</span>
