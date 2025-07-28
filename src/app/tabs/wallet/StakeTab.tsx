@@ -633,43 +633,22 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
-            // Sofort verfügbare Balance aktualisieren
-            if (account?.address) {
-              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                setAvailable(Math.floor(Number(balance)).toString());
-              });
+            // Callback für Parent-Komponente sofort ausführen
+            if (onStakeChanged) {
+              onStakeChanged();
             }
             
-            // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
+            // Danach eine einzige lokale Aktualisierung nach 2 Sekunden
             setTimeout(() => {
               fetchStakeInfo();
-              // Nochmals Balance aktualisieren nach 1 Sekunde
+              // Balance einmalig aktualisieren für lokale UI
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
+                  console.log("✅ Staking: Lokale Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
                 });
               }
-            }, 1000); // Erste schnelle Aktualisierung
-            
-            setTimeout(() => {
-              fetchStakeInfo();
-              // Nochmalige Balance-Aktualisierung nach 3 Sekunden für Staking
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 3000); // Zweite Aktualisierung
-            
-            setTimeout(() => {
-              fetchStakeInfo();
-              // Finale Balance-Aktualisierung nach 5 Sekunden für Staking
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 5000); // Finale Aktualisierung mit Balance
+            }, 2000); // Eine einzige Aktualisierung nach 2 Sekunden
             
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -765,14 +744,19 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
-            // Nur eine einzige Aktualisierung nach 2 Sekunden für bessere Zuverlässigkeit
+            // Callback für Parent-Komponente sofort ausführen
+            if (onStakeChanged) {
+              onStakeChanged();
+            }
+            
+            // Danach eine einzige lokale Aktualisierung nach 2 Sekunden
             setTimeout(() => {
               fetchStakeInfo();
-              // Balance einmalig aktualisieren
+              // Balance einmalig aktualisieren für lokale UI
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
-                  console.log("✅ Unstaking: Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
+                  console.log("✅ Unstaking: Lokale Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
                 });
               }
             }, 2000); // Eine einzige Aktualisierung nach 2 Sekunden
