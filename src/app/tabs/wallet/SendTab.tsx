@@ -331,11 +331,13 @@ export default function SendTab() {
       setIsLoadingBalances(true);
       try {
         const balances = await fetchAllBalances(account.address);
+        // Nur aktualisieren wenn neue Werte vorhanden sind, nicht bei undefined
         if (balances.dfaith !== undefined) setDfaithBalance(balances.dfaith);
         if (balances.dinvest !== undefined) setDinvestBalance(balances.dinvest);
         if (balances.eth !== undefined) setEthBalance(balances.eth);
       } catch (error) {
         console.error("Fehler beim Laden der Balances:", error);
+        // Bei Fehler die Balances NICHT auf 0 setzen, sondern alte Werte behalten
       } finally {
         setIsLoadingBalances(false);
       }
@@ -356,11 +358,20 @@ export default function SendTab() {
     };
     for (let i = 0; i < maxTries; i++) {
       await new Promise(res => setTimeout(res, 2000));
-      const balances: Balances = await fetchAllBalances(address);
-      const mappedKey = keyMap[tokenKey] || (tokenKey.toLowerCase() as keyof Balances);
-      let newBalance = balances[mappedKey];
-      if (newBalance !== undefined && newBalance !== oldBalance) {
-        return true;
+      try {
+        const balances: Balances = await fetchAllBalances(address);
+        const mappedKey = keyMap[tokenKey] || (tokenKey.toLowerCase() as keyof Balances);
+        let newBalance = balances[mappedKey];
+        if (newBalance !== undefined && newBalance !== oldBalance) {
+          // Balance hat sich geändert, lokale Balances sofort aktualisieren
+          if (balances.dfaith !== undefined) setDfaithBalance(balances.dfaith);
+          if (balances.dinvest !== undefined) setDinvestBalance(balances.dinvest);
+          if (balances.eth !== undefined) setEthBalance(balances.eth);
+          return true;
+        }
+      } catch (error) {
+        console.error(`Balance-Check Versuch ${i + 1} fehlgeschlagen:`, error);
+        // Bei Fehler weiter versuchen, nicht abbrechen
       }
     }
     return false;
@@ -493,10 +504,9 @@ export default function SendTab() {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-amber-400 text-lg flex items-center justify-end gap-1">
-                        {isLoadingBalances ? (
-                          <span className="animate-spin">↻</span>
-                        ) : (
-                          <span className="tabular-nums">{token.balance}</span>
+                        <span className="tabular-nums">{token.balance}</span>
+                        {isLoadingBalances && (
+                          <span className="animate-spin text-zinc-500 text-sm ml-1">↻</span>
                         )}
                       </div>
                       <div className="text-zinc-500 text-xs font-medium text-right">{token.symbol}</div>
