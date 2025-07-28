@@ -940,6 +940,9 @@ export default function WalletTab() {
 
   // D.INVEST und Staking-Bereich Funktion definieren
   const renderDinvestSection = () => {
+    const hasRewards = parseFloat(availableRewards) > 0;
+    const hasStaked = parseFloat(stakedBalance) > 0;
+    
     return (
       <div className="flex flex-col items-center p-4 bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl border border-zinc-700 w-full">
         <div className="uppercase text-xs tracking-widest text-amber-500/80 mb-2">D.INVEST</div>
@@ -952,44 +955,53 @@ export default function WalletTab() {
           )}
         </div>
         
-        <button 
-          onClick={() => setShowStakeModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 hover:from-amber-500/30 hover:to-amber-600/30 transition-all border border-amber-500/20 mt-2"
-        >
-          <FaLock size={14} />
-          <span className="text-sm font-medium">Staken & Verdienen</span>
-        </button>
-        
-        {/* Verfügbare Rewards im Staking-Bereich anzeigen */}
-        {parseFloat(availableRewards) > 0 && (
-          <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg w-full">
-            <div className="flex items-center justify-center gap-2">
-              <FaCoins className="text-amber-400 text-xs" />
-              <span className="text-sm font-medium text-amber-400">
-                {availableRewards} D.FAITH verfügbar
-              </span>
+        {/* Kompakter Staking Button mit integrierter Rewards-Anzeige */}
+        <div className="w-full space-y-2">
+          <button 
+            onClick={() => setShowStakeModal(true)}
+            className={`relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-amber-400 hover:from-amber-500/30 hover:to-amber-600/30 transition-all border w-full ${
+              hasRewards 
+                ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/30 border-amber-500/40 animate-pulse' 
+                : 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 border-amber-500/20'
+            }`}
+          >
+            <FaLock size={14} />
+            <span className="text-sm font-medium">Staken & Verdienen</span>
+            
+            {/* Rewards Badge direkt im Button */}
+            {hasRewards && (
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-400 to-emerald-500 text-black text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-bounce">
+                {availableRewards} 💰
+              </div>
+            )}
+          </button>
+          
+          {/* Kompakte Status-Zeile */}
+          <div className="flex items-center justify-between text-xs">
+            {/* Gestaked Status */}
+            <div className="flex items-center gap-1.5">
+              {hasStaked ? (
+                <>
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400 font-medium">{stakedBalance} gestaked</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></div>
+                  <span className="text-zinc-500">Nichts gestaked</span>
+                </>
+              )}
             </div>
-            <div className="text-xs text-amber-300/70 mt-1 text-center">
-              Rewards zum Claimen
-            </div>
+            
+            {/* Rewards Status - nur wenn vorhanden */}
+            {hasRewards && (
+              <div className="flex items-center gap-1.5 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
+                <span className="text-amber-400 font-medium">{availableRewards} claimbar</span>
+              </div>
+            )}
           </div>
-        )}
-        
-        {/* Gestaked Anzeige - verbessert */}
-        {parseFloat(stakedBalance) > 0 ? (
-          <div className="mt-3 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-green-400">
-                {stakedBalance} D.INVEST gestaked
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="text-xs text-zinc-500 mt-2">
-            Noch nichts gestaked
-          </div>
-        )}
+        </div>
       </div>
     );
   };
