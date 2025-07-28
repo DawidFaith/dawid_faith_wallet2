@@ -733,29 +733,46 @@ export default function WalletTab() {
   if (status !== "connected" || !account?.address) {
     return (
       <div className="flex flex-col items-center min-h-[70vh] justify-center bg-black py-8 relative overflow-hidden">
-        {/* Hintergrund-Animationen */}
+        {/* Musikalische Hintergrund-Animationen */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Animierte Gradient-Kreise */}
-          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-purple-500/10 via-pink-500/5 to-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          {/* Animierte Schallwellen */}
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-amber-500/8 via-yellow-500/4 to-orange-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '2s' }}></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-purple-500/8 via-pink-500/4 to-amber-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s', animationDuration: '3s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-blue-500/4 via-purple-500/4 to-amber-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '2.5s' }}></div>
           
-          {/* Floating Particles */}
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-amber-400/40 rounded-full animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-          <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-yellow-400/60 rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
-          <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-amber-300/50 rounded-full animate-bounce" style={{ animationDelay: '2.5s' }}></div>
+          {/* Schwebende Musiknoten */}
+          <div className="absolute top-1/4 left-1/4 text-amber-400/30 text-lg animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3s' }}>♪</div>
+          <div className="absolute top-3/4 right-1/4 text-yellow-400/40 text-sm animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '2.5s' }}>♫</div>
+          <div className="absolute bottom-1/4 left-1/3 text-amber-300/35 text-base animate-bounce" style={{ animationDelay: '2.5s', animationDuration: '3.5s' }}>♬</div>
+          <div className="absolute top-1/3 right-1/3 text-orange-400/25 text-xs animate-bounce" style={{ animationDelay: '3s', animationDuration: '2s' }}>♩</div>
         </div>
 
         <Card className="w-full max-w-md bg-gradient-to-br from-zinc-900/95 to-black/95 rounded-3xl shadow-2xl border border-zinc-700/50 relative overflow-hidden backdrop-blur-xl">
-          {/* Entferne gelbe Glanzeffekte - mache sie schwarz/transparent */}
-          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-zinc-800/20 via-zinc-700/10 to-zinc-900/20 rounded-t-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-zinc-800/10 via-zinc-700/5 to-transparent rounded-br-3xl"></div>
+          {/* Musikalische Glanzeffekte */}
+          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/8 to-zinc-900/15 rounded-t-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-zinc-800/8 via-zinc-700/4 to-transparent rounded-br-3xl"></div>
+          
+          {/* Equalizer-Balken als Dekoration */}
+          <div className="absolute top-4 right-4 flex gap-1">
+            <div className="w-1 bg-amber-400/20 rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0s', animationDuration: '1.2s' }}></div>
+            <div className="w-1 bg-amber-400/25 rounded-full animate-pulse" style={{ height: '20px', animationDelay: '0.2s', animationDuration: '1.5s' }}></div>
+            <div className="w-1 bg-amber-400/30 rounded-full animate-pulse" style={{ height: '16px', animationDelay: '0.4s', animationDuration: '1.1s' }}></div>
+            <div className="w-1 bg-amber-400/20 rounded-full animate-pulse" style={{ height: '24px', animationDelay: '0.6s', animationDuration: '1.8s' }}></div>
+            <div className="w-1 bg-amber-400/25 rounded-full animate-pulse" style={{ height: '14px', animationDelay: '0.8s', animationDuration: '1.3s' }}></div>
+          </div>
           
           <CardContent className="p-8 md:p-10 relative z-10">
-            {/* Logo mit nahtloser Integration */}
+            {/* Logo mit musikalischen Effekten */}
             <div className="flex flex-col items-center justify-center mb-8">
               <div className="relative group">
-                {/* Größeres Bild ohne Border - nahtlos integriert */}
+                {/* Schallwellen um das Logo */}
+                <div className="absolute inset-0 w-40 h-40">
+                  <div className="absolute inset-0 border-2 border-amber-400/10 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
+                  <div className="absolute inset-2 border border-amber-400/15 rounded-full animate-ping" style={{ animationDuration: '2s', animationDelay: '0.5s' }}></div>
+                  <div className="absolute inset-4 border border-amber-400/20 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '1s' }}></div>
+                </div>
+                
+                {/* Hauptbild */}
                 <div className="relative w-40 h-40 transform group-hover:scale-105 transition-transform duration-500 z-10">
                   <img 
                     src="/Dawid Faith Wallet.png" 
@@ -764,41 +781,52 @@ export default function WalletTab() {
                   />
                 </div>
                 
-                {/* Entferne gelben Ambient Glow - mache ihn sehr subtil grau */}
-                <div className="absolute inset-0 w-40 h-40 bg-gradient-to-r from-zinc-800/5 via-zinc-700/8 to-zinc-800/5 blur-3xl animate-pulse"></div>
+                {/* Rotierende Musiknoten um das Logo */}
+                <div className="absolute inset-0 w-40 h-40 animate-spin" style={{ animationDuration: '20s' }}>
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-amber-400/40 text-lg">♪</div>
+                  <div className="absolute top-1/2 -right-4 transform -translate-y-1/2 text-yellow-400/40 text-sm">♫</div>
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-amber-300/40 text-base">♬</div>
+                  <div className="absolute top-1/2 -left-4 transform -translate-y-1/2 text-orange-400/40 text-xs">♩</div>
+                </div>
                 
-                {/* Kleine Akzent-Punkte um das Bild - jetzt in gedeckten Farben */}
-                <div className="absolute -top-2 -right-2 w-3 h-3 bg-zinc-400/30 rounded-full animate-pulse"></div>
-                <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-zinc-500/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute top-1/2 -left-4 w-1.5 h-1.5 bg-zinc-400/25 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute top-1/4 -right-4 w-1 h-1 bg-zinc-500/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                {/* Subtiler Ambient Glow */}
+                <div className="absolute inset-0 w-40 h-40 bg-gradient-to-r from-zinc-800/5 via-zinc-700/8 to-zinc-800/5 blur-3xl animate-pulse"></div>
               </div>
               
-              {/* Willkommens-Text mit Animation */}
+              {/* Willkommens-Text mit musikalischem Flair */}
               <div className="mt-6 text-center">
                 <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-2 animate-pulse">
-                  Willkommen
+                  Willkommen ♪
                 </h1>
                 <div className="w-20 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto rounded-full animate-pulse"></div>
+                
+                {/* Kleine Equalizer-Animation unter dem Titel */}
+                <div className="flex justify-center gap-1 mt-3">
+                  <div className="w-0.5 bg-amber-400/30 rounded-full animate-pulse" style={{ height: '6px', animationDelay: '0s', animationDuration: '0.8s' }}></div>
+                  <div className="w-0.5 bg-amber-400/40 rounded-full animate-pulse" style={{ height: '10px', animationDelay: '0.1s', animationDuration: '1.2s' }}></div>
+                  <div className="w-0.5 bg-amber-400/35 rounded-full animate-pulse" style={{ height: '8px', animationDelay: '0.2s', animationDuration: '0.9s' }}></div>
+                  <div className="w-0.5 bg-amber-400/30 rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0.3s', animationDuration: '1.5s' }}></div>
+                  <div className="w-0.5 bg-amber-400/40 rounded-full animate-pulse" style={{ height: '7px', animationDelay: '0.4s', animationDuration: '1.1s' }}></div>
+                </div>
               </div>
             </div>
             
-            {/* Beschreibung mit besserem Styling */}
+            {/* Beschreibung mit musikalischem Bezug */}
             <div className="text-center mb-8">
               <p className="text-zinc-300 text-lg mb-2">
                 Verbinde dich mit deiner Wallet
               </p>
               <p className="text-zinc-500 text-sm">
-                und entdecke das D.FAITH Ökosystem
+                und erlebe das D.FAITH Musik-Ökosystem ♫
               </p>
             </div>
             
-            {/* Connect Button - ohne Rakete */}
+            {/* Connect Button */}
             <div className="flex justify-center w-full mb-8">
               <ConnectButton
                 client={client}
                 connectButton={{ 
-                  label: "Wallet verbinden",
+                  label: "🎵 Wallet verbinden",
                   className: "w-full py-4 px-6 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/25 text-lg z-50 relative"
                 }}
                 connectModal={{
@@ -817,24 +845,25 @@ export default function WalletTab() {
               />
             </div>
             
-            {/* Elegant Stats/Info Bereich */}
+            {/* Musikalische Stats/Info Bereich */}
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center gap-2 text-zinc-400">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-sm">Base Network</span>
+                <span className="text-xs">♪</span>
               </div>
               
               <div className="flex items-center justify-center gap-6 text-xs text-zinc-500">
-                <span>Dezentralisiert</span>
+                <span>🎼 Dezentralisiert</span>
                 <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
-                <span>Sicher</span>
+                <span>🎵 Sicher</span>
                 <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
-                <span>Web3</span>
+                <span>🎶 Web3</span>
               </div>
               
               <div className="pt-4 border-t border-zinc-800/50">
                 <p className="text-xs text-zinc-600">
-                  Powered by Thirdweb & Base Chain
+                  🎤 Powered by Music & Blockchain ♫
                 </p>
               </div>
             </div>
@@ -896,7 +925,7 @@ export default function WalletTab() {
                   <img 
                     src="/Dawid Faith Wallet.png" 
                     alt="Dawid Faith Wallet" 
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-contain rounded-full"
                   />
                 </div>
                 <span className="text-base md:text-lg font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
