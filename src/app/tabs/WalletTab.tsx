@@ -982,15 +982,15 @@ export default function WalletTab() {
 
             {/* DFAITH Token-Karte - jetzt mit D.FAITH */}
             <div className="flex flex-col items-center p-4 bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl border border-zinc-700 w-full mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
-                <span className="uppercase text-xs tracking-widest text-amber-500/80">D.FAITH</span>
-              </div>
-              <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 drop-shadow-sm">
-                {dfaithBalance ? dfaithBalance.displayValue : "0.00"}
-                {(isLoadingBalances || isRefreshing) && (
-                  <span className="ml-2 text-xs text-amber-500/60 animate-pulse">↻</span>
-                )}
+              <span className="uppercase text-xs tracking-widest text-amber-500/80 mb-2">D.FAITH</span>
+              <div className="flex items-center gap-3">
+                <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 drop-shadow-sm">
+                  {dfaithBalance ? dfaithBalance.displayValue : "0.00"}
+                  {(isLoadingBalances || isRefreshing) && (
+                    <span className="ml-2 text-xs text-amber-500/60 animate-pulse">↻</span>
+                  )}
+                </div>
+                <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 md:w-12 md:h-12 object-contain" />
               </div>
               {/* EUR-Wert anzeigen, wenn sowohl Balance als auch ein EUR-Wert vorhanden sind */}
               {dfaithBalance?.displayValue && 
