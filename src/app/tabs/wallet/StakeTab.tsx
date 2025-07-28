@@ -765,43 +765,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
-            // Sofort verfügbare Balance aktualisieren
-            if (account?.address) {
-              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                setAvailable(Math.floor(Number(balance)).toString());
-              });
-            }
-            
-            // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
+            // Nur eine einzige Aktualisierung nach 2 Sekunden für bessere Zuverlässigkeit
             setTimeout(() => {
               fetchStakeInfo();
-              // Nochmals Balance aktualisieren
+              // Balance einmalig aktualisieren
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
+                  console.log("✅ Unstaking: Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
                 });
               }
-            }, 1000); // Erste schnelle Aktualisierung
-            
-            setTimeout(() => {
-              fetchStakeInfo();
-              // Nochmalige Balance-Aktualisierung nach 3 Sekunden für Unstaking
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 3000); // Zweite Aktualisierung
-            
-            setTimeout(() => {
-              fetchStakeInfo();
-              // Finale Balance-Aktualisierung nach 5 Sekunden für Unstaking
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 5000); // Finale Aktualisierung mit Balance
+            }, 2000); // Eine einzige Aktualisierung nach 2 Sekunden
             
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -1319,6 +1293,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               )}
               <span>
                 {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
+                {txStatus === "success" && lastOperation !== "stake" && "✅ Operation erfolgreich abgeschlossen!"}
                 {txStatus === "error" && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
                 {txStatus === "pending" && "⏳ Transaktion wird verarbeitet..."}
                 {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
@@ -1408,6 +1383,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                     )}
                     <span>
                       {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
+                      {txStatus === "success" && lastOperation !== "unstake" && "✅ Operation erfolgreich abgeschlossen!"}
                       {txStatus === "error" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
                       {txStatus === "pending" && "⏳ Unstaking wird verarbeitet..."}
                     </span>
