@@ -625,7 +625,7 @@ export default function BuyTab() {
       description: "Dawid Faith Token",
       price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
       sub: dfaithPrice ? `1 ETH = ${(1 / dfaithPrice).toFixed(2)} D.FAITH` : "Wird geladen...",
-      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />,
+      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 object-contain" />,
     },
     {
       key: "DINVEST",
@@ -679,7 +679,11 @@ export default function BuyTab() {
             >
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                  {token.icon}
+                  {token.key === 'DFAITH' ? (
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />
+                  ) : (
+                    token.icon
+                  )}
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-lg">{token.label}</h3>
@@ -730,8 +734,8 @@ export default function BuyTab() {
               <div className="w-full space-y-4">
                 {/* Professional Buy Widget Header */}
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-                  <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
+                  <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.FAITH kaufen</h3>
                   <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
@@ -805,7 +809,7 @@ export default function BuyTab() {
                     <label className="block text-sm font-medium text-zinc-300 mb-2">You Receive</label>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0">
-                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-5 h-5 object-contain" />
+                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
                         <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                       </div>
                       <div className="flex-1 min-w-0">
