@@ -636,7 +636,7 @@ export default function BuyTab() {
       description: "Investment & Staking Token",
       price: "5€ pro D.INVEST",
       sub: "Minimum: 5 EUR",
-      icon: <FaLock className="text-blue-400" />,
+      icon: <img src="/D.INVEST.png" alt="D.INVEST" className="w-10 h-10 object-contain" />,
     },
     {
       key: "ETH",
@@ -976,8 +976,8 @@ export default function BuyTab() {
             {selectedToken === "DINVEST" && (
               <>
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg">
-                    <FaLock className="text-white text-lg" />
+                  <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
+                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.INVEST kaufen</h3>
                   <p className="text-zinc-400 text-xs">Investment & Staking Token</p>

@@ -396,7 +396,7 @@ export default function SendTab() {
       label: "D.INVEST", 
       symbol: "DINVEST",
       balance: dinvestBalance,
-      icon: "💎",
+      icon: <img src="/D.INVEST.png" alt="D.INVEST" className="w-10 h-10 object-contain" />,
       color: "from-blue-400 to-blue-600",
       description: "Investment Token"
     },
