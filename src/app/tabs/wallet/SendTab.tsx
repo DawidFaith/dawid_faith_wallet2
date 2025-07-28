@@ -106,13 +106,13 @@ function TokenTransferModal({
         
         {/* Modal Header */}
         <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-          <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
+          <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
             {token.key === 'DFAITH' ? (
-              <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
+              <img src="/D.FAITH.png" alt="D.FAITH" className="w-32 h-32 object-contain" />
             ) : token.key === 'DINVEST' ? (
-              <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
+              <img src="/D.INVEST.png" alt="D.INVEST" className="w-32 h-32 object-contain" />
             ) : (
-              <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
+              <img src="/ETH.png" alt="ETH" className="w-32 h-32 object-contain" />
             )}
           </div>
           <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
@@ -133,11 +133,11 @@ function TokenTransferModal({
                   'bg-purple-500/20 border-purple-500/30'
                 } rounded-lg px-2 py-1 border flex-shrink-0`}>
                   {token.key === 'DFAITH' ? (
-                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />
                   ) : token.key === 'DINVEST' ? (
-                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-6 h-6 object-contain" />
+                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-8 h-8 object-contain" />
                   ) : (
-                    <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />
                   )}
                   <span className={`${
                     token.key === 'DFAITH' ? 'text-amber-300' : 
@@ -428,7 +428,7 @@ export default function SendTab() {
       balance: dfaithBalance,
       color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
       description: "Dawid Faith Token",
-      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 object-contain" />,
+      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />,
     },
     { 
       key: "DINVEST", 
@@ -486,13 +486,13 @@ export default function SendTab() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                      <div className={`w-20 h-20 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                         {token.key === 'DFAITH' ? (
-                          <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
+                          <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
                         ) : token.key === 'DINVEST' ? (
-                          <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
+                          <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
                         ) : token.key === 'ETH' ? (
-                          <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
+                          <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
                         ) : (
                           token.icon
                         )}

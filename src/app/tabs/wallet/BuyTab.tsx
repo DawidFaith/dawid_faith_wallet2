@@ -678,13 +678,13 @@ export default function BuyTab() {
               className="relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 bg-zinc-800/50 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/70 hover:scale-[1.02]"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                <div className={`w-20 h-20 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                   {token.key === 'DFAITH' ? (
-                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
                   ) : token.key === 'DINVEST' ? (
-                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
+                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
                   ) : token.key === 'ETH' ? (
-                    <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
                   ) : (
                     token.icon
                   )}
@@ -738,8 +738,8 @@ export default function BuyTab() {
               <div className="w-full space-y-4">
                 {/* Professional Buy Widget Header */}
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-                  <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
-                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
+                  <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-32 h-32 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.FAITH kaufen</h3>
                   <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
@@ -813,7 +813,7 @@ export default function BuyTab() {
                     <label className="block text-sm font-medium text-zinc-300 mb-2">You Receive</label>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0">
-                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
+                        <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />
                         <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -980,8 +980,8 @@ export default function BuyTab() {
             {selectedToken === "DINVEST" && (
               <>
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-                  <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
-                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
+                  <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
+                    <img src="/D.INVEST.png" alt="D.INVEST" className="w-32 h-32 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.INVEST kaufen</h3>
                   <p className="text-zinc-400 text-xs">Investment & Staking Token</p>
