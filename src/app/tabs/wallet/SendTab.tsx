@@ -112,7 +112,9 @@ function TokenTransferModal({
             ) : token.key === 'DINVEST' ? (
               <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
             ) : (
-              <span className="text-white text-4xl font-bold">⟠</span>
+              <div className="w-20 h-20 flex items-center justify-center">
+                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-16 h-16 object-contain" />
+              </div>
             )}
           </div>
           <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
@@ -137,7 +139,7 @@ function TokenTransferModal({
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-6 h-6 object-contain" />
                   ) : (
-                    <span className="text-purple-400 text-sm">⟠</span>
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-5 h-5 object-contain" />
                   )}
                   <span className={`${
                     token.key === 'DFAITH' ? 'text-amber-300' : 
@@ -433,7 +435,7 @@ export default function SendTab() {
       label: "Ethereum", 
       symbol: "ETH",
       balance: ethBalance,
-      icon: "⟠",
+      icon: <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-10 h-10 object-contain" />,
       color: "from-purple-400 to-purple-600",
       description: "Native ETH"
     },
@@ -481,7 +483,7 @@ export default function SendTab() {
                         ) : token.key === 'DINVEST' ? (
                           <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
                         ) : (
-                          token.icon
+                          <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-12 h-12 object-contain" />
                         )}
                       </div>
                       <div>

@@ -642,7 +642,7 @@ const tokenOptions = [
     description: "Ethereum Native Token",
     price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
     sub: "via Transak verkaufen",
-    icon: <span className="text-white text-lg font-bold">⟠</span>,
+    icon: <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-10 h-10 object-contain" />,
   },
 ];
 
@@ -674,6 +674,8 @@ const tokenOptions = [
                 <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                   {token.key === 'DFAITH' ? (
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
+                  ) : token.key === 'ETH' ? (
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-12 h-12 object-contain" />
                   ) : (
                     token.icon
                   )}

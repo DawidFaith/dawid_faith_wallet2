@@ -647,7 +647,7 @@ export default function BuyTab() {
       description: "Ethereum Native Token",
       price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
       sub: "mit EUR kaufen",
-      icon: <span className="text-white text-lg font-bold">⟠</span>,
+      icon: <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-10 h-10 object-contain" />,
     },
   ];
 
@@ -683,6 +683,8 @@ export default function BuyTab() {
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
+                  ) : token.key === 'ETH' ? (
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-12 h-12 object-contain" />
                   ) : (
                     token.icon
                   )}
