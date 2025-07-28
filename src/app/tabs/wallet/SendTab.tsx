@@ -163,15 +163,12 @@ function TokenTransferModal({
                   }}
                   disabled={isSending}
                 />
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-zinc-500">Balance: {token.balance}</span>
                 <button
                   className={`${
                     token.key === 'DFAITH' ? 'text-amber-400 hover:text-amber-300' : 
                     token.key === 'DINVEST' ? 'text-blue-400 hover:text-blue-300' : 
                     'text-purple-400 hover:text-purple-300'
-                  } font-medium px-2 py-1 rounded`}
+                  } font-medium px-2 py-1 rounded flex-shrink-0`}
                   type="button"
                   onClick={handleMax}
                   disabled={isSending}
@@ -428,7 +425,7 @@ export default function SendTab() {
     {
       key: "DFAITH",
       label: "D.FAITH",
-      symbol: "DFAITH",
+      symbol: "D.FAITH",
       balance: dfaithBalance,
       color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
       description: "Dawid Faith Token",
@@ -437,7 +434,7 @@ export default function SendTab() {
     { 
       key: "DINVEST", 
       label: "D.INVEST", 
-      symbol: "DINVEST",
+      symbol: "D.INVEST",
       balance: dinvestBalance,
       icon: <img src="/D.INVEST.png" alt="D.INVEST" className="w-10 h-10 object-contain" />,
       color: "from-blue-400 to-blue-600",
