@@ -502,15 +502,6 @@ export default function SendTab() {
                         <p className="text-zinc-400 text-xs">{token.description}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-bold text-amber-400 text-lg flex items-center justify-end gap-1">
-                        <span className="tabular-nums">{token.balance}</span>
-                        {isLoadingBalances && (
-                          <span className="animate-spin text-zinc-500 text-sm ml-1">↻</span>
-                        )}
-                      </div>
-                      <div className="text-zinc-500 text-xs font-medium text-right">{token.symbol}</div>
-                    </div>
                   </div>
                 </div>
               ))}
