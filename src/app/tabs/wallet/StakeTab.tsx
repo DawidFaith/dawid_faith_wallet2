@@ -89,18 +89,39 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     setLoading(true);
     try {
       const staking = getContract({ client, chain: base, address: STAKING_CONTRACT });
-      // User Info
-      const userInfo = await readContract({
-        contract: staking,
-        method: "function getUserInfo(address) view returns (uint256,uint256,uint256,bool,bool)",
-        params: [account.address]
-      });
-      // [stakedAmount, claimableReward, stakeTimestamp, canUnstake, canClaim]
-      setStaked(userInfo[0].toString());
-      setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
-      setStakeTimestamp(Number(userInfo[2]));
-      setCanUnstake(userInfo[3]);
-      setCanClaim(userInfo[4]);
+      
+      // Versuche zuerst getUserInfo
+      try {
+        const userInfo = await readContract({
+          contract: staking,
+          method: "function getUserInfo(address) view returns (uint256,uint256,uint256,bool,bool)",
+          params: [account.address]
+        });
+        // [stakedAmount, claimableReward, stakeTimestamp, canUnstake, canClaim]
+        console.log("getUserInfo Ergebnis:", userInfo);
+        setStaked(userInfo[0].toString());
+        setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
+        setStakeTimestamp(Number(userInfo[2]));
+        setCanUnstake(userInfo[3]);
+        setCanClaim(userInfo[4]);
+      } catch (userInfoError) {
+        console.log("getUserInfo fehlgeschlagen, versuche stakes mapping:", userInfoError);
+        
+        // Fallback: Versuche direkt das stakes mapping
+        const stakedAmount = await readContract({
+          contract: staking,
+          method: "function stakes(address) view returns (uint256)",
+          params: [account.address]
+        });
+        console.log("stakes mapping Ergebnis:", stakedAmount.toString());
+        setStaked(stakedAmount.toString());
+        
+        // Setze Defaults für andere Werte
+        setClaimableRewards("0.00");
+        setStakeTimestamp(0);
+        setCanUnstake(false);
+        setCanClaim(false);
+      }
 
       // Detailed Reward Info
       const detailed = await readContract({
@@ -464,7 +485,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             // Stake-Info aktualisieren
             setTimeout(() => {
               fetchStakeInfo();
-            }, 1000);
+            }, 2000); // Längere Wartezeit für Blockchain-Bestätigung
             
             setTimeout(() => setTxStatus(null), 3000);
             resolve();
@@ -578,7 +599,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             // Stake-Info aktualisieren
             setTimeout(() => {
               fetchStakeInfo();
-            }, 1000);
+            }, 2000); // Längere Wartezeit für Blockchain-Bestätigung
             
             setTimeout(() => setTxStatus(null), 3000);
             resolve();

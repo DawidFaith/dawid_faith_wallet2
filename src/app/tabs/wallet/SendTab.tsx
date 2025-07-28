@@ -276,7 +276,6 @@ export default function SendTab() {
   const account = useActiveAccount();
   const { mutateAsync: sendTransaction } = useSendTransaction();
 
-  // Token-Konstanten mit neuen Adressen auf Base (aktualisiert Juli 2025)
   const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1";
   const DFAITH_DECIMALS = TOKEN_DECIMALS.DFAITH;
   const DINVEST_TOKEN = "0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb";

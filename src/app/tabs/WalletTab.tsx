@@ -226,45 +226,64 @@ export default function WalletTab() {
     }
 
     try {
-      // Korrekte Staking Contract Adresse verwenden
+      console.log("🔍 Lade gestakte Balance für Wallet:", account.address);
+      console.log("🔍 Staking Contract:", STAKING_CONTRACT.address);
+      
       const stakingContract = getContract({ 
         client, 
         chain: base, 
-        address: STAKING_CONTRACT.address // Korrekte Staking Contract Adresse (NEU)
+        address: STAKING_CONTRACT.address
       });
 
-      // Verwende die korrekte Funktion wie in StakeTab
-      const stakedAmount = await readContract({
-        contract: stakingContract,
-        method: "function stakes(address) view returns (uint256)",
-        params: [account.address]
-      });
-      
-      console.log("Gestakte Balance abgerufen:", stakedAmount.toString());
-      setStakedBalance(stakedAmount.toString());
-    } catch (error) {
-      console.error("Fehler beim Abrufen der gestakten Balance:", error);
-      // Fallback: Versuche getUserStakeInfo wie in StakeTab
+      // Versuche zuerst getUserInfo (gleiche Methode wie in StakeTab)
       try {
-        const stakingContract = getContract({ 
-          client, 
-          chain: base, 
-          address: STAKING_CONTRACT.address
+        const userInfo = await readContract({
+          contract: stakingContract,
+          method: "function getUserInfo(address) view returns (uint256,uint256,uint256,bool,bool)",
+          params: [account.address]
         });
-        
+        // [stakedAmount, claimableReward, stakeTimestamp, canUnstake, canClaim]
+        console.log("✅ getUserInfo Ergebnis (WalletTab):", userInfo);
+        setStakedBalance(userInfo[0].toString());
+        return;
+      } catch (userInfoError) {
+        console.log("❌ getUserInfo fehlgeschlagen (WalletTab), versuche stakes mapping:", userInfoError);
+      }
+
+      // Fallback: Versuche direkt das stakes mapping
+      try {
+        const stakedAmount = await readContract({
+          contract: stakingContract,
+          method: "function stakes(address) view returns (uint256)",
+          params: [account.address]
+        });
+        console.log("✅ stakes mapping Ergebnis (WalletTab):", stakedAmount.toString());
+        setStakedBalance(stakedAmount.toString());
+        return;
+      } catch (stakesError) {
+        console.log("❌ stakes mapping fehlgeschlagen (WalletTab):", stakesError);
+      }
+
+      // Weitere Fallback-Methoden
+      try {
         const userInfo = await readContract({
           contract: stakingContract,
           method: "function getUserStakeInfo(address) view returns (uint256, uint256, uint256, uint256, bool, uint256, bool)",
           params: [account.address]
         });
-        
-        // userInfo[0] ist die gestakte Menge
-        console.log("Gestakte Balance via getUserStakeInfo:", userInfo[0].toString());
+        console.log("✅ getUserStakeInfo Ergebnis (WalletTab):", userInfo[0].toString());
         setStakedBalance(userInfo[0].toString());
+        return;
       } catch (fallbackError) {
-        console.error("Auch Fallback für gestakte Balance fehlgeschlagen:", fallbackError);
-        setStakedBalance("0");
+        console.error("❌ Alle Fallback-Methoden fehlgeschlagen (WalletTab):", fallbackError);
       }
+
+      // Wenn alle Methoden fehlschlagen, setze auf 0
+      setStakedBalance("0");
+      
+    } catch (error) {
+      console.error("❌ Schwerwiegender Fehler beim Abrufen der gestakten Balance:", error);
+      setStakedBalance("0");
     }
   };
 
@@ -946,7 +965,11 @@ export default function WalletTab() {
             {/* Staking Modal mit verbesserter Integration */}
             <Modal open={showStakeModal} onClose={() => setShowStakeModal(false)} title="Staking">
               <div className="min-h-[400px]">
-                <StakeTab onStakeChanged={fetchStakedBalance} />
+                <StakeTab onStakeChanged={() => {
+                  console.log("🔄 Staking-Änderung erkannt, aktualisiere Balances...");
+                  fetchStakedBalance();
+                  fetchTokenBalances();
+                }} />
               </div>
             </Modal>
 
