@@ -780,9 +780,9 @@ export default function BuyTab() {
                   <div className="bg-zinc-800/50 rounded-xl p-3 border border-zinc-700">
                     <label className="block text-sm font-medium text-zinc-300 mb-2">You Pay</label>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="flex items-center gap-2 bg-blue-500/20 rounded-lg px-2 py-1 border border-blue-500/30 flex-shrink-0">
-                        <span className="text-blue-400 text-sm">⟠</span>
-                        <span className="text-blue-300 font-semibold text-xs">ETH</span>
+                      <div className="flex items-center gap-2 bg-purple-500/20 rounded-lg px-2 py-1 border border-purple-500/30 flex-shrink-0">
+                        <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
+                        <span className="text-purple-300 font-semibold text-xs">ETH</span>
                       </div>
                       <input
                         type="number"
@@ -795,7 +795,7 @@ export default function BuyTab() {
                         disabled={isSwapping || buyStep !== 'initial'}
                       />
                       <button
-                        className="text-blue-400 hover:text-blue-300 font-medium px-2 py-1 rounded flex-shrink-0"
+                        className="text-purple-400 hover:text-purple-300 font-medium px-2 py-1 rounded flex-shrink-0"
                         onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(3))}
                         disabled={isSwapping || parseFloat(ethBalance) <= 0 || buyStep !== 'initial'}
                       >

@@ -802,12 +802,12 @@ const tokenOptions = [
                 <div className="bg-zinc-800/50 rounded-xl p-3 border border-zinc-700">
                   <label className="block text-sm font-medium text-zinc-300 mb-2">You Receive</label>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="flex items-center gap-2 bg-blue-500/20 rounded-lg px-2 py-1 border border-blue-500/30 flex-shrink-0">
-                      <span className="text-blue-400 text-sm">⟠</span>
-                      <span className="text-blue-300 font-semibold text-xs">ETH</span>
+                    <div className="flex items-center gap-2 bg-purple-500/20 rounded-lg px-2 py-1 border border-purple-500/30 flex-shrink-0">
+                      <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
+                      <span className="text-purple-300 font-semibold text-xs">ETH</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-blue-400 text-center">
+                      <div className="text-lg sm:text-xl font-bold text-purple-400 text-center">
                         {sellAmount && parseFloat(sellAmount) > 0 && dfaithPrice 
                           ? (parseFloat(sellAmount) * dfaithPrice).toFixed(6)
                           : "0.000000"
