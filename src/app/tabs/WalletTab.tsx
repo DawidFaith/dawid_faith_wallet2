@@ -956,6 +956,22 @@ export default function WalletTab() {
           <FaLock size={14} />
           <span className="text-sm font-medium">Staken & Verdienen</span>
         </button>
+        
+        {/* Verfügbare Rewards im Smart Contract */}
+        {parseFloat(availableRewards) > 0 && (
+          <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg w-full">
+            <div className="flex items-center justify-center gap-2">
+              <FaCoins className="text-amber-400 text-xs" />
+              <span className="text-sm font-medium text-amber-400">
+                {availableRewards} D.FAITH verfügbar
+              </span>
+            </div>
+            <div className="text-xs text-amber-300/70 mt-1 text-center">
+              Rewards im Smart Contract
+            </div>
+          </div>
+        )}
+        
         {/* Gestaked Anzeige - verbessert */}
         {parseFloat(stakedBalance) > 0 ? (
           <div className="mt-3 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
@@ -1060,21 +1076,6 @@ export default function WalletTab() {
                parseFloat(dfaithEurValue) > 0 && (
                 <div className="text-xs text-zinc-500 mt-2">
                   ≈ {dfaithEurValue} EUR
-                </div>
-              )}
-              
-              {/* Verfügbare Rewards im Smart Contract */}
-              {parseFloat(availableRewards) > 0 && (
-                <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <div className="flex items-center justify-center gap-2">
-                    <FaCoins className="text-amber-400 text-xs" />
-                    <span className="text-sm font-medium text-amber-400">
-                      {availableRewards} D.FAITH verfügbar
-                    </span>
-                  </div>
-                  <div className="text-xs text-amber-300/70 mt-1 text-center">
-                    Rewards im Smart Contract
-                  </div>
                 </div>
               )}
             </div>
