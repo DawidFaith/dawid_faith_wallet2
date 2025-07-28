@@ -642,7 +642,7 @@ const tokenOptions = [
     description: "Ethereum Native Token",
     price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
     sub: "via Transak verkaufen",
-    icon: <img src="/ETH.png" alt="ETH" className="w-10 h-10 object-contain" />,
+    icon: <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />,
   },
 ];
 
@@ -652,7 +652,6 @@ const tokenOptions = [
         <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-2">
           Token verkaufen
         </h2>
-        <p className="text-zinc-400">Wähle einen Token und verkaufe ihn direkt</p>
       </div>
 
       {/* Token-Auswahl Grid */}
@@ -675,7 +674,7 @@ const tokenOptions = [
                   {token.key === 'DFAITH' ? (
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
                   ) : token.key === 'ETH' ? (
-                    <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
                   ) : (
                     token.icon
                   )}

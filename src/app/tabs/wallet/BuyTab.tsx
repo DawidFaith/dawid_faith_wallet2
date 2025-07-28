@@ -647,7 +647,7 @@ export default function BuyTab() {
       description: "Ethereum Native Token",
       price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
       sub: "mit EUR kaufen",
-      icon: <img src="/ETH.png" alt="ETH" className="w-10 h-10 object-contain" />,
+      icon: <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />,
     },
   ];
 
@@ -657,7 +657,6 @@ export default function BuyTab() {
         <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-2">
           Token kaufen
         </h2>
-        <p className="text-zinc-400">Wähle einen Token und kaufe ihn direkt</p>
       </div>
 
       {/* Token-Auswahl Grid */}
@@ -684,7 +683,7 @@ export default function BuyTab() {
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
                   ) : token.key === 'ETH' ? (
-                    <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
                   ) : (
                     token.icon
                   )}

@@ -112,7 +112,7 @@ function TokenTransferModal({
             ) : token.key === 'DINVEST' ? (
               <img src="/D.INVEST.png" alt="D.INVEST" className="w-32 h-32 object-contain" />
             ) : (
-              <img src="/ETH.png" alt="ETH" className="w-32 h-32 object-contain" />
+              <img src="/ETH.png" alt="ETH" className="w-24 h-24 object-contain" />
             )}
           </div>
           <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
@@ -137,7 +137,7 @@ function TokenTransferModal({
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-8 h-8 object-contain" />
                   ) : (
-                    <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
                   )}
                   <span className={`${
                     token.key === 'DFAITH' ? 'text-amber-300' : 
@@ -445,7 +445,7 @@ export default function SendTab() {
       label: "Ethereum", 
       symbol: "ETH",
       balance: ethBalance,
-      icon: <img src="/ETH.png" alt="ETH" className="w-10 h-10 object-contain" />,
+      icon: <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />,
       color: "from-purple-400 to-purple-600",
       description: "Native ETH"
     },
@@ -458,7 +458,6 @@ export default function SendTab() {
         <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent mb-2">
           Token senden
         </h2>
-        <p className="text-zinc-400 text-sm">Wähle einen Token und sende ihn sicher an eine andere Wallet</p>
       </div>
 
       {/* Wallet Status */}
