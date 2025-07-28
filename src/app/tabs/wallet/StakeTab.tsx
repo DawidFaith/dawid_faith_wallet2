@@ -992,40 +992,60 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 </div>
               )}
 
-              {/* Reward Stufen - Vollständig */}
+              {/* Reward Stufen - Übersichtlicher gestaltet */}
               <div className="bg-green-800/20 rounded-xl p-4 border border-green-700/50">
-                <h4 className="font-semibold text-green-400 mb-3">Alle Reward Stufen (Halving System)</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 1:</span>
-                    <span className="text-green-400">10.00% (0-10k D.FAITH verteilt)</span>
+                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen (Halving System)</h4>
+                <div className="space-y-3">
+                  {/* Header */}
+                  <div className="grid grid-cols-3 gap-4 text-xs font-semibold text-zinc-400 border-b border-green-700/30 pb-2">
+                    <span>Stufe</span>
+                    <span className="text-center">Rate/Woche</span>
+                    <span className="text-right">Bereich</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 2:</span>
-                    <span className="text-green-400">5.00% (10k-20k D.FAITH verteilt)</span>
+                  
+                  {/* Reward Stufen */}
+                  <div className="space-y-2 text-sm">
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 1</span>
+                      <span className="text-green-400 text-center font-semibold">10.00%</span>
+                      <span className="text-zinc-400 text-right">0 - 10k</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 2</span>
+                      <span className="text-green-400 text-center font-semibold">5.00%</span>
+                      <span className="text-zinc-400 text-right">10k - 20k</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 3</span>
+                      <span className="text-green-400 text-center font-semibold">2.50%</span>
+                      <span className="text-zinc-400 text-right">20k - 40k</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 4</span>
+                      <span className="text-green-400 text-center font-semibold">1.25%</span>
+                      <span className="text-zinc-400 text-right">40k - 60k</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 5</span>
+                      <span className="text-green-400 text-center font-semibold">0.63%</span>
+                      <span className="text-zinc-400 text-right">60k - 80k</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      <span className="text-zinc-300">Stufe 6+</span>
+                      <span className="text-green-400 text-center font-semibold">0.31%</span>
+                      <span className="text-zinc-400 text-right">ab 80k</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 3:</span>
-                    <span className="text-green-400">2.50% (20k-40k D.FAITH verteilt)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 4:</span>
-                    <span className="text-green-400">1.25% (40k-60k D.FAITH verteilt)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 5:</span>
-                    <span className="text-green-400">0.63% (60k-80k D.FAITH verteilt)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 6+:</span>
-                    <span className="text-green-400">0.31% (ab 80k D.FAITH verteilt)</span>
-                  </div>
-                  <div className="text-center mt-3 pt-2 border-t border-green-700/30">
-                    <span className="text-xs text-zinc-500">
-                      Aktuell verteilt: {totalRewardsDistributed} D.FAITH
-                    </span>
-                    <div className="text-xs text-zinc-400 mt-1">
-                      Bei jeder Stufe halbiert sich die wöchentliche Reward-Rate
+                  
+                  {/* Footer Info */}
+                  <div className="border-t border-green-700/30 pt-3 mt-3">
+                    <div className="text-center">
+                      <div className="text-xs text-zinc-500 mb-1">
+                        Aktuell verteilt: <span className="text-green-400 font-semibold">{totalRewardsDistributed}</span> D.FAITH
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        Alle Bereiche in D.FAITH • Bei jeder Stufe halbiert sich die Rate
+                      </div>
                     </div>
                   </div>
                 </div>
