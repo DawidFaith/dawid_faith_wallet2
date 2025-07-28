@@ -23,6 +23,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const account = useActiveAccount();
   const { mutate: sendTransaction, isPending } = useSendTransaction();
   const [stakeAmount, setStakeAmount] = useState("");
+  const [unstakeAmount, setUnstakeAmount] = useState("");
   const [activeTab, setActiveTab] = useState("stake");
   const [available, setAvailable] = useState("0");
   const [staked, setStaked] = useState("0");
@@ -43,6 +44,18 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [nextClaimTimestamp, setNextClaimTimestamp] = useState<number>(0);
   const [secondsPerClaim, setSecondsPerClaim] = useState<number>(0);
+
+  // Real-time Update für nextClaimTimestamp Anzeige
+  const [currentTime, setCurrentTime] = useState<number>(Math.floor(Date.now() / 1000));
+
+  // Timer für Live-Updates der Wartezeitanzeige
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Math.floor(Date.now() / 1000));
+    }, 1000); // Update jede Sekunde
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Korrekte API-Funktion für Balance-Abfrage auf Base Chain
   const fetchTokenBalanceViaInsightApi = async (
@@ -686,35 +699,24 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         }
       };
 
-  // Unstake Function (supports both full and partial unstaking)
-  const handleUnstake = async (isPartial: boolean = false) => {
-    if (!account?.address || staked === "0" || !canUnstake) {
-      console.log("Keine Token zum Unstaken verfügbar oder Mindestzeit nicht erreicht");
+  // Unstake Function
+  const handleUnstake = async (amountToUnstake: string) => {
+    if (!account?.address || staked === "0") {
+      console.log("Keine Token zum Unstaken verfügbar");
       return;
     }
     
-    let unstakeAmountNum = 0;
+    if (!amountToUnstake || parseInt(amountToUnstake) <= 0) {
+      console.log("Ungültiger Unstake-Betrag");
+      return;
+    }
     
-    if (isPartial) {
-      // Für partielles Unstaking: Benutzer nach Betrag fragen
-      const userInput = prompt(`Wie viele D.INVEST Token möchten Sie unstaken?\nVerfügbar: ${staked} Token`, "");
-      if (!userInput) return; // Benutzer hat abgebrochen
-      
-      unstakeAmountNum = parseInt(userInput);
-      
-      // Validierung
-      if (isNaN(unstakeAmountNum) || unstakeAmountNum <= 0) {
-        console.log("Ungültiger Betrag eingegeben");
-        return;
-      }
-      
-      if (unstakeAmountNum > parseInt(staked)) {
-        console.log("Nicht genügend Token gestaked");
-        return;
-      }
-    } else {
-      // Für vollständiges Unstaking: alle Token
-      unstakeAmountNum = parseInt(staked);
+    const unstakeAmountNum = parseInt(amountToUnstake);
+    
+    // Validierung
+    if (unstakeAmountNum > parseInt(staked)) {
+      console.log("Nicht genügend Token gestaked");
+      return;
     }
     
     setTxStatus("pending");
@@ -722,7 +724,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     try {
       const staking = getContract({ client, chain: base, address: STAKING_CONTRACT });
       
-      console.log(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking:`, unstakeAmountNum, "Token");
+      console.log('Unstaking:', unstakeAmountNum, "Token");
       
       // Der Smart Contract hat nur eine unstake(uint256) Funktion
       // Diese funktioniert sowohl für partielles als auch vollständiges Unstaking
@@ -740,7 +742,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
       await new Promise<void>((resolve, reject) => {
         sendTransaction(unstakeTx, {
           onSuccess: (result) => {
-            console.log(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking erfolgreich:`, result);
+            console.log('Unstaking erfolgreich:', result);
             setTxStatus("success");
             
             // Callback für Parent-Komponente
@@ -748,9 +750,22 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
+            // Sofort verfügbare Balance aktualisieren
+            if (account?.address) {
+              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                setAvailable(Math.floor(Number(balance)).toString());
+              });
+            }
+            
             // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
             setTimeout(() => {
               fetchStakeInfo();
+              // Nochmals Balance aktualisieren
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
             }, 1000); // Erste schnelle Aktualisierung
             
             setTimeout(() => {
@@ -771,7 +786,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             resolve();
           },
           onError: (error) => {
-            console.error(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking fehlgeschlagen:`, error);
+            console.error('Unstaking fehlgeschlagen:', error);
             console.error("Unstake Error Details:", {
               message: error?.message || "Unbekannter Fehler",
               code: (error as any)?.code || "N/A",
@@ -835,7 +850,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     }
   };
 
-  // Reward Rate formatieren - Contract gibt direkte Werte zurück (10 = 10%)
+  // Reward Rate formatieren - Contract gibt Basis-Punkte zurück (1000 = 10.00%)
   const formatRewardRate = (rate: number) => {
     return (rate / 100).toFixed(2);
   };
@@ -843,13 +858,15 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   // Hilfsfunktion für den User-Reward pro Woche
   const getUserWeeklyReward = () => {
     const stakedNum = parseInt(staked) || 0;
-    // Korrigierte Berechnung: rate ist bereits der direkte Wert (10 = 0.10 D.FAITH pro Token)
-    const weeklyReward = ((stakedNum * currentRewardRate) / 100).toFixed(2);
-    console.log("Weekly Reward Berechnung:", {
+    // Smart Contract Rate: currentRewardRate ist bereits in Basis-Punkten (z.B. 1000 = 10.00%)
+    // Berechnung: (stakedAmount * rate) / 10000 für korrekte Prozent-Umrechnung
+    const weeklyReward = ((stakedNum * currentRewardRate) / 10000).toFixed(2);
+    console.log("Weekly Reward Berechnung (Contract-konform):", {
       staked: stakedNum,
       currentRewardRate,
       weeklyReward,
-      note: "1 D.INVEST bei Rate 10 = 0.10 D.FAITH/Woche"
+      calculation: `${stakedNum} * ${currentRewardRate} / 10000 = ${weeklyReward}`,
+      note: "Contract verwendet Basis-Punkte (1000 = 10.00%)"
     });
     return weeklyReward;
   };
@@ -858,8 +875,8 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const calculateCorrectClaimTime = (stakedAmount: number, currentRewardRate: number, minClaimAmount: number): number => {
     if (!stakedAmount || !currentRewardRate || !minClaimAmount) return 0;
     
-    // Vereinfachte, mathematisch korrekte Berechnung
-    const weeklyReward = (stakedAmount * currentRewardRate) / 100; // D.FAITH pro Woche
+    // Smart Contract-konforme Berechnung mit Basis-Punkten
+    const weeklyReward = (stakedAmount * currentRewardRate) / 10000; // D.FAITH pro Woche (Basis-Punkte)
     const weeksToMinClaim = minClaimAmount / weeklyReward;
     const secondsToMinClaim = weeksToMinClaim * 604800; // 604800 = Sekunden pro Woche
     
@@ -955,7 +972,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                   </div>
                   <div>
                     <span className="text-zinc-500">Aktuelle Stufe:</span>
-                    <div className="text-blue-400 font-semibold">Stufe {currentStage} - {(currentRewardRate / 100).toFixed(2)} D.FAITH pro D.INVEST pro Woche</div>
+                    <div className="text-blue-400 font-semibold">Stufe {currentStage} - {(currentRewardRate / 10000).toFixed(4)} D.FAITH pro D.INVEST pro Woche</div>
                   </div>
                   <div>
                     <span className="text-zinc-500">Mindest-Claim:</span>
@@ -1127,7 +1144,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           <div>
             <div className="text-sm font-medium text-blue-400">Aktuelle Reward-Stufe</div>
             <div className="text-xs text-zinc-500">
-              {(currentRewardRate / 100).toFixed(2)} D.FAITH pro D.INVEST pro Woche
+              {(currentRewardRate / 10000).toFixed(4)} D.FAITH pro D.INVEST pro Woche
             </div>
           </div>
           <div className="text-right">
@@ -1210,7 +1227,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         >
           <FaCoins className="inline mr-2" />
           {txStatus === "pending" ? "Wird verarbeitet..." : 
-           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(Math.max(0, nextClaimTimestamp - Math.floor(Date.now() / 1000)))}` : 
+           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(Math.max(0, nextClaimTimestamp - currentTime))}` : 
            !canClaim ? `Mindestbetrag: ${minClaimAmount} D.FAITH` : 
            "Belohnungen einfordern"}
         </Button>
@@ -1303,13 +1320,13 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             <div className="bg-zinc-800/60 rounded-xl p-4 border border-zinc-700 flex flex-col items-center mt-2">
               <div className="text-xs text-zinc-400 mb-1">Ihr wöchentlicher Reward (Stufe {currentStage}):</div>
               <div className="text-2xl font-bold text-amber-400">
-                {/* Reward pro Woche nach Contract-Logik: (amount * rate) / 100 */}
-                {/* Korrekt: 1 D.INVEST bei Rate 10 = 0.10 D.FAITH/Woche */}
+                {/* Smart Contract konforme Berechnung: (amount * rate) / 10000 */}
+                {/* Basis-Punkte: 1000 = 10.00% = 0.10 D.FAITH pro D.INVEST/Woche */}
                 {(() => {
                   const amount = parseInt(stakeAmount);
                   const rate = currentRewardRate;
                   if (isNaN(amount) || isNaN(rate)) return "-";
-                  const reward = (amount * rate) / 100;
+                  const reward = (amount * rate) / 10000; // Basis-Punkte Konvertierung
                   return reward.toFixed(2);
                 })()} D.FAITH
               </div>
@@ -1333,7 +1350,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                   // Debug-Log für 1 Token
                   if (amount === 1) {
                     console.log("⏳ Korrekte Zeit für 1 Token:", correctTime, "Sekunden (≈", (correctTime / 3600).toFixed(1), "Stunden)");
-                    console.log("⏳ Wöchentlicher Reward:", (amount * rate) / 100, "D.FAITH");
+                    console.log("⏳ Wöchentlicher Reward (Contract-konform):", (amount * rate) / 10000, "D.FAITH");
                   }
                   
                   return `Nächster Claim möglich in: ${formatTime(correctTime)}`;
@@ -1396,17 +1413,15 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 <span className="text-blue-400 text-xs">ℹ</span>
               </div>
               <div className="text-sm text-zinc-300">
-                <div className="font-medium">Unstaking Optionen</div>
+                <div className="font-medium">Unstaking</div>
                 <div className="text-xs text-zinc-500 mt-1">
-                  Gestakt: {staked} D.INVEST Token.
-                  Unstaking ist jederzeit möglich (vollständig oder teilweise).
                   Beim Unstaking werden automatisch alle verfügbaren Rewards ausgezahlt.
                 </div>
               </div>
             </div>
           </div>
 
-          {staked === "0" && (
+          {staked === "0" ? (
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -1417,34 +1432,78 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 </div>
               </div>
             </div>
+          ) : (
+            <>
+              {/* Eingabe und gestakte Balance */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-medium text-zinc-300">D.INVEST Betrag</label>
+                  <div className="flex items-center gap-2 bg-zinc-800/60 px-2 py-1 rounded-lg">
+                    <span className="text-xs text-zinc-500">Gestaked:</span>
+                    <span className="text-xs font-bold text-purple-400">{loading ? "Laden..." : staked}</span>
+                    <button 
+                      className="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded hover:bg-purple-500/30 transition ml-2"
+                      onClick={() => setUnstakeAmount(staked)}
+                      disabled={loading || parseInt(staked) <= 0}
+                    >
+                      MAX
+                    </button>
+                  </div>
+                </div>
+                <input 
+                  type="number"
+                  placeholder="0"
+                  className="w-full bg-zinc-900/80 border border-zinc-600 rounded-xl py-4 px-4 text-lg font-bold text-purple-400 focus:border-purple-500 focus:outline-none"
+                  value={unstakeAmount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Nur positive ganze Zahlen erlauben, mindestens 1
+                    if (value === "" || (Number(value) >= 0 && Number.isInteger(Number(value)))) {
+                      setUnstakeAmount(value);
+                    }
+                  }}
+                  min="1"
+                  step="1"
+                />
+              </div>
+
+              <Button
+                className="w-full bg-gradient-to-r from-purple-400 to-purple-500 text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!unstakeAmount || parseInt(unstakeAmount) <= 0 || parseInt(unstakeAmount) > parseInt(staked) || loading || txStatus === "pending"}
+                onClick={() => {
+                  handleUnstake(unstakeAmount);
+                  setUnstakeAmount("");
+                }}
+              >
+                <FaUnlock className="inline mr-2" />
+                {txStatus === "pending" && "Wird verarbeitet..."}
+                {!txStatus && (!unstakeAmount || parseInt(unstakeAmount) <= 0) && "Betrag eingeben (min. 1)"}
+                {!txStatus && unstakeAmount && parseInt(unstakeAmount) > parseInt(staked) && "Nicht genügend Token gestaked"}
+                {!txStatus && unstakeAmount && parseInt(unstakeAmount) > 0 && parseInt(unstakeAmount) <= parseInt(staked) && `${unstakeAmount} D.INVEST unstaken`}
+              </Button>
+
+              {/* Status kompakt als Info-Box */}
+              {(txStatus === "success" || txStatus === "error" || txStatus === "pending") && (
+                <div className={`mt-4 p-3 rounded-lg text-center text-sm font-medium border ${
+                  txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
+                  txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
+                  txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
+                  ""
+                }`}>
+                  <div className="flex items-center justify-center gap-2">
+                    {txStatus === "pending" && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                    )}
+                    <span>
+                      {txStatus === "success" && "✅ Unstaking erfolgreich abgeschlossen!"}
+                      {txStatus === "error" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
+                      {txStatus === "pending" && "⏳ Unstaking wird verarbeitet..."}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
-
-          {/* Unstaking Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Partial Unstaking */}
-            <Button 
-              className="w-full bg-orange-700/50 hover:bg-orange-600/50 text-orange-300 font-bold py-3 rounded-xl border border-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={staked === "0" || loading || txStatus === "pending"}
-              onClick={() => handleUnstake(true)}
-            >
-              <FaUnlock className="inline mr-2" />
-              {txStatus === "pending" && "Wird verarbeitet..."}
-              {!txStatus && staked === "0" && "Keine Token gestaked"}
-              {!txStatus && staked !== "0" && "Teilweise unstaken"}
-            </Button>
-
-            {/* Full Unstaking */}
-            <Button 
-              className="w-full bg-zinc-700/50 hover:bg-zinc-600/50 text-zinc-300 font-bold py-3 rounded-xl border border-zinc-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={staked === "0" || loading || txStatus === "pending"}
-              onClick={() => handleUnstake(false)}
-            >
-              <FaUnlock className="inline mr-2" />
-              {txStatus === "pending" && "Wird verarbeitet..."}
-              {!txStatus && staked === "0" && "Keine Token gestaked"}
-              {!txStatus && staked !== "0" && `Alle ${staked} D.INVEST unstaken`}
-            </Button>
-          </div>
         </div>
       )}
     </div>
