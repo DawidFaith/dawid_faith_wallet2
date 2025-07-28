@@ -612,9 +612,22 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
+            // Sofort verfügbare Balance aktualisieren
+            if (account?.address) {
+              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                setAvailable(Math.floor(Number(balance)).toString());
+              });
+            }
+            
             // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
             setTimeout(() => {
               fetchStakeInfo();
+              // Nochmals Balance aktualisieren
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
             }, 1000); // Erste schnelle Aktualisierung
             
             setTimeout(() => {
@@ -830,11 +843,13 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   // Hilfsfunktion für den User-Reward pro Woche
   const getUserWeeklyReward = () => {
     const stakedNum = parseInt(staked) || 0;
+    // Korrigierte Berechnung: rate ist bereits der direkte Wert (10 = 0.10 D.FAITH pro Token)
     const weeklyReward = ((stakedNum * currentRewardRate) / 100).toFixed(2);
     console.log("Weekly Reward Berechnung:", {
       staked: stakedNum,
       currentRewardRate,
-      weeklyReward
+      weeklyReward,
+      note: "1 D.INVEST bei Rate 10 = 0.10 D.FAITH/Woche"
     });
     return weeklyReward;
   };
@@ -965,27 +980,27 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 1 (0-10.000 D.FAITH):</span>
-                    <span className="text-green-400">10.00% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">10.00% (0.10 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 2 (10.000-20.000 D.FAITH):</span>
-                    <span className="text-green-400">5.00% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">5.00% (0.05 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 3 (20.000-40.000 D.FAITH):</span>
-                    <span className="text-green-400">2.50% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">2.50% (0.025 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 4 (40.000-60.000 D.FAITH):</span>
-                    <span className="text-green-400">1.25% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">1.25% (0.0125 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 5 (60.000-80.000 D.FAITH):</span>
-                    <span className="text-green-400">0.63% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">0.63% (0.0063 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 6+ (80.000+ D.FAITH):</span>
-                    <span className="text-green-400">0.31% D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">0.31% (0.0031 D.FAITH pro D.INVEST/Woche)</span>
                   </div>
                 </div>
               </div>
@@ -1174,20 +1189,15 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         
         {/* Sekunden pro Claim Anzeige */}
         {staked !== "0" && secondsPerClaim > 0 && (
-          <div className="bg-blue-800/20 rounded-xl p-4 border border-blue-700/50 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-full">
+          <div className="bg-blue-800/20 rounded-xl p-3 border border-blue-700/50 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <FaClock className="text-blue-400 text-sm" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-blue-400">Claim-Takt für Ihre gestakten Token</div>
-                <div className="text-xs text-zinc-400 mt-1">
-                  Mit {staked} D.INVEST erhalten Sie alle <span className="text-blue-300 font-bold">{formatTime(secondsPerClaim)}</span> den Mindestbetrag von {minClaimAmount} D.FAITH
-                </div>
+                <div className="text-sm font-medium text-blue-400">Claim-Takt</div>
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold text-blue-400">{formatTime(secondsPerClaim)}</div>
-                <div className="text-xs text-zinc-500">pro {minClaimAmount} D.FAITH</div>
+                <div className="text-xs text-zinc-500">für {minClaimAmount} D.FAITH</div>
               </div>
             </div>
           </div>
@@ -1200,7 +1210,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         >
           <FaCoins className="inline mr-2" />
           {txStatus === "pending" ? "Wird verarbeitet..." : 
-           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(nextClaimTimestamp)}` : 
+           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(Math.max(0, nextClaimTimestamp - Math.floor(Date.now() / 1000)))}` : 
            !canClaim ? `Mindestbetrag: ${minClaimAmount} D.FAITH` : 
            "Belohnungen einfordern"}
         </Button>
@@ -1294,6 +1304,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               <div className="text-xs text-zinc-400 mb-1">Ihr wöchentlicher Reward (Stufe {currentStage}):</div>
               <div className="text-2xl font-bold text-amber-400">
                 {/* Reward pro Woche nach Contract-Logik: (amount * rate) / 100 */}
+                {/* Korrekt: 1 D.INVEST bei Rate 10 = 0.10 D.FAITH/Woche */}
                 {(() => {
                   const amount = parseInt(stakeAmount);
                   const rate = currentRewardRate;
@@ -1379,21 +1390,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
       {/* Unstake Interface */}
       {activeTab === "unstake" && (
         <div className="bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl p-6 border border-zinc-700 space-y-6">
-          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4">
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center">
-                <span className="text-orange-400 text-xs">⚠</span>
+              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <span className="text-blue-400 text-xs">ℹ</span>
               </div>
               <div className="text-sm text-zinc-300">
                 <div className="font-medium">Unstaking Optionen</div>
                 <div className="text-xs text-zinc-500 mt-1">
                   Gestakt: {staked} D.INVEST Token.
-                  Unstaking ist nur nach mindestens 7 Tagen möglich.
-                  {!canUnstake && timeUntilUnstake > 0 && (
-                    <span className="block text-orange-400 mt-1">
-                      Unstaking möglich in: {formatTime(timeUntilUnstake)}
-                    </span>
-                  )}
+                  Unstaking ist jederzeit möglich (vollständig oder teilweise).
+                  Beim Unstaking werden automatisch alle verfügbaren Rewards ausgezahlt.
                 </div>
               </div>
             </div>
@@ -1417,27 +1424,25 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             {/* Partial Unstaking */}
             <Button 
               className="w-full bg-orange-700/50 hover:bg-orange-600/50 text-orange-300 font-bold py-3 rounded-xl border border-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={staked === "0" || loading || txStatus === "pending" || !canUnstake}
+              disabled={staked === "0" || loading || txStatus === "pending"}
               onClick={() => handleUnstake(true)}
             >
               <FaUnlock className="inline mr-2" />
               {txStatus === "pending" && "Wird verarbeitet..."}
               {!txStatus && staked === "0" && "Keine Token gestaked"}
-              {!txStatus && staked !== "0" && !canUnstake && `Warten: ${formatTime(timeUntilUnstake)}`}
-              {!txStatus && staked !== "0" && canUnstake && "Teilweise unstaken"}
+              {!txStatus && staked !== "0" && "Teilweise unstaken"}
             </Button>
 
             {/* Full Unstaking */}
             <Button 
               className="w-full bg-zinc-700/50 hover:bg-zinc-600/50 text-zinc-300 font-bold py-3 rounded-xl border border-zinc-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={staked === "0" || loading || txStatus === "pending" || !canUnstake}
+              disabled={staked === "0" || loading || txStatus === "pending"}
               onClick={() => handleUnstake(false)}
             >
               <FaUnlock className="inline mr-2" />
               {txStatus === "pending" && "Wird verarbeitet..."}
               {!txStatus && staked === "0" && "Keine Token gestaked"}
-              {!txStatus && staked !== "0" && !canUnstake && `Warten: ${formatTime(timeUntilUnstake)}`}
-              {!txStatus && staked !== "0" && canUnstake && `Alle ${staked} D.INVEST unstaken`}
+              {!txStatus && staked !== "0" && `Alle ${staked} D.INVEST unstaken`}
             </Button>
           </div>
         </div>
