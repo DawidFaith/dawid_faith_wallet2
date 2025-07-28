@@ -863,7 +863,7 @@ export default function WalletTab() {
               
               <div className="pt-4 border-t border-zinc-800/50">
                 <p className="text-xs text-zinc-600">
-                  🎤 Powered by Music & Blockchain ♫
+                  🎤 Powered by Dawid Faith ♫
                 </p>
               </div>
             </div>
