@@ -752,22 +752,29 @@ export default function WalletTab() {
           <div className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-tl from-purple-500/10 via-pink-500/10 to-transparent rounded-br-3xl"></div>
           
           <CardContent className="p-8 md:p-10 relative z-10">
-            {/* Logo mit erweiterten Effekten */}
+            {/* Logo mit nahtloser Integration */}
             <div className="flex flex-col items-center justify-center mb-8">
               <div className="relative group">
-                {/* Entferne die rotierenden Ringe */}
-                
-                {/* Bild Container - ohne gelben Ring, nur subtiler Glow */}
-                <div className="relative w-32 h-32 rounded-full overflow-hidden shadow-2xl shadow-amber-500/30 transform group-hover:scale-105 transition-transform duration-500 z-10">
+                {/* Größeres Bild ohne Border - nahtlos integriert */}
+                <div className="relative w-40 h-40 transform group-hover:scale-105 transition-transform duration-500 z-10">
                   <img 
                     src="/Dawid Faith Wallet.jpg" 
                     alt="Dawid Faith Wallet" 
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-cover"
                   />
+                  
+                  {/* Gradient Overlay für bessere Integration */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 </div>
                 
-                {/* Subtiler Glowing Effect */}
-                <div className="absolute inset-0 w-32 h-32 rounded-full bg-gradient-to-r from-amber-400/10 to-yellow-500/10 blur-2xl animate-pulse"></div>
+                {/* Subtiler Ambient Glow um das Bild */}
+                <div className="absolute inset-0 w-40 h-40 bg-gradient-to-r from-amber-500/5 via-yellow-500/10 to-amber-500/5 blur-3xl animate-pulse"></div>
+                
+                {/* Kleine Akzent-Punkte um das Bild */}
+                <div className="absolute -top-2 -right-2 w-3 h-3 bg-amber-400/60 rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-yellow-400/40 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute top-1/2 -left-4 w-1.5 h-1.5 bg-amber-300/50 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+                <div className="absolute top-1/4 -right-4 w-1 h-1 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
               </div>
               
               {/* Willkommens-Text mit Animation */}
