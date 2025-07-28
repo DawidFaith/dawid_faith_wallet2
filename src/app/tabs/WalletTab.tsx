@@ -990,7 +990,7 @@ export default function WalletTab() {
             {hasRewards && (
               <div className="flex items-center gap-1.5 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
                 <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                <span className="text-amber-400 font-medium">{availableRewards} D.FAITH verfügbar</span>
+                <span className="text-amber-400 font-medium">{availableRewards} D.FAITH</span>
               </div>
             )}
           </div>

@@ -45,6 +45,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [nextClaimTimestamp, setNextClaimTimestamp] = useState<number>(0);
   const [secondsPerClaim, setSecondsPerClaim] = useState<number>(0);
+  const [availableRewards, setAvailableRewards] = useState("0.00");
 
   // Real-time Update für nextClaimTimestamp Anzeige
   const [currentTime, setCurrentTime] = useState<number>(Math.floor(Date.now() / 1000));
@@ -244,6 +245,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         // [totalStakedTokens, rewardBalance, currentStage, currentRate]
         console.log("getContractInfo Ergebnis:", contractInfo);
         setTotalStakedTokens(contractInfo[0].toString());
+        setAvailableRewards((Number(contractInfo[1]) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
         setCurrentStage(Number(contractInfo[2]));
         // Verwende currentRate aus getContractInfo als Fallback
         if (currentRewardRate === 10) { // Falls noch auf Default
@@ -304,6 +306,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     } catch (e) {
       setStaked("0");
       setClaimableRewards("0.00");
+      setAvailableRewards("0.00");
       setCanUnstake(false);
       setCanClaim(false);
       setNextClaimTimestamp(0);
@@ -1074,6 +1077,14 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                   <div>
                     <span className="text-zinc-500">Total Staked:</span>
                     <div className="text-zinc-300">{totalStakedTokens} D.INVEST</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Total Rewards verteilt:</span>
+                    <div className="text-zinc-300">{totalRewardsDistributed} D.FAITH</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Verfügbare Rewards:</span>
+                    <div className="text-amber-400 font-semibold">{availableRewards} D.FAITH</div>
                   </div>
                 </div>
               </div>
