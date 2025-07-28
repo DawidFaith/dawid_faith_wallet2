@@ -621,7 +621,7 @@ export default function BuyTab() {
       label: "D.FAITH",
       symbol: "DFAITH",
       balance: dfaithBalance,
-      color: "from-amber-400 to-yellow-500",
+      color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
       description: "Dawid Faith Token",
       price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
       sub: dfaithPrice ? `1 ETH = ${(1 / dfaithPrice).toFixed(2)} D.FAITH` : "Wird geladen...",
@@ -678,7 +678,7 @@ export default function BuyTab() {
               className="relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 bg-zinc-800/50 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/70 hover:scale-[1.02]"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${token.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                <div className={`w-12 h-12 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                   {token.icon}
                 </div>
                 <div>
