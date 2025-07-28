@@ -643,7 +643,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
             setTimeout(() => {
               fetchStakeInfo();
-              // Nochmals Balance aktualisieren
+              // Nochmals Balance aktualisieren nach 1 Sekunde
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
@@ -653,11 +653,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             
             setTimeout(() => {
               fetchStakeInfo();
+              // Nochmalige Balance-Aktualisierung nach 3 Sekunden für Staking
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
             }, 3000); // Zweite Aktualisierung
             
             setTimeout(() => {
               fetchStakeInfo();
-              // Aktualisiere auch die verfügbare Balance
+              // Finale Balance-Aktualisierung nach 5 Sekunden für Staking
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
@@ -1054,6 +1060,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                   <div>• <strong>Unstaking:</strong> Jederzeit möglich (ganz oder teilweise)</div>
                   <div>• <strong>Rewards:</strong> Kontinuierliche Berechnung, Claim ab {minClaimAmount} D.FAITH</div>
                   <div>• <strong>Automatik:</strong> Beim Unstaking werden Rewards automatisch ausgezahlt</div>
+                  <div>• <strong>Sicherheit:</strong> D.FAITH Token können nur durch D.INVEST herausgeholt werden, nicht durch Owner</div>
                 </div>
               </div>
 
@@ -1128,7 +1135,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               <h3 className="font-bold text-amber-400">Verfügbare Belohnungen</h3>
               <p className="text-xs text-zinc-500">
                 {secondsPerClaim > 0 && staked !== "0"
-                  ? `Claim-Takt: alle ${formatTime(secondsPerClaim)} → ${minClaimAmount} D.FAITH`
+                  ? `Kontinuierliche Belohnung alle ${formatTime(secondsPerClaim)} → ${minClaimAmount} D.FAITH`
                   : `Kontinuierliche D.FAITH Belohnungen (min. ${minClaimAmount})`
                 }
               </p>
