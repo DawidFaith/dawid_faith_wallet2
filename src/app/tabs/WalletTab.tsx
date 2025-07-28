@@ -755,14 +755,10 @@ export default function WalletTab() {
             {/* Logo mit erweiterten Effekten */}
             <div className="flex flex-col items-center justify-center mb-8">
               <div className="relative group">
-                {/* Äußerer Ring mit Animation */}
-                <div className="absolute inset-0 w-36 h-36 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 animate-spin opacity-75" style={{ animationDuration: '8s' }}></div>
+                {/* Entferne die rotierenden Ringe */}
                 
-                {/* Mittlerer Ring */}
-                <div className="absolute inset-2 w-32 h-32 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 animate-pulse"></div>
-                
-                {/* Bild Container */}
-                <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-1.5 shadow-2xl shadow-amber-500/40 transform group-hover:scale-105 transition-transform duration-500 z-10">
+                {/* Bild Container - ohne gelben Ring, nur subtiler Glow */}
+                <div className="relative w-32 h-32 rounded-full overflow-hidden shadow-2xl shadow-amber-500/30 transform group-hover:scale-105 transition-transform duration-500 z-10">
                   <img 
                     src="/Dawid Faith Wallet.jpg" 
                     alt="Dawid Faith Wallet" 
@@ -770,8 +766,8 @@ export default function WalletTab() {
                   />
                 </div>
                 
-                {/* Glowing Effect */}
-                <div className="absolute inset-0 w-36 h-36 rounded-full bg-gradient-to-r from-amber-400/20 to-yellow-500/20 blur-xl animate-pulse"></div>
+                {/* Subtiler Glowing Effect */}
+                <div className="absolute inset-0 w-32 h-32 rounded-full bg-gradient-to-r from-amber-400/10 to-yellow-500/10 blur-2xl animate-pulse"></div>
               </div>
               
               {/* Willkommens-Text mit Animation */}
@@ -793,12 +789,12 @@ export default function WalletTab() {
               </p>
             </div>
             
-            {/* Connect Button - vereinfacht und behoben */}
+            {/* Connect Button - ohne Rakete */}
             <div className="flex justify-center w-full mb-8">
               <ConnectButton
                 client={client}
                 connectButton={{ 
-                  label: "🚀 Wallet verbinden",
+                  label: "Wallet verbinden",
                   className: "w-full py-4 px-6 bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/25 text-lg z-50 relative"
                 }}
                 connectModal={{
@@ -817,25 +813,25 @@ export default function WalletTab() {
               />
             </div>
             
-            {/* Zusätzliche Features/Info */}
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
-                  <span className="text-amber-400 text-xs">🔒</span>
-                </div>
-                <span className="text-xs text-zinc-400">Sicher</span>
+            {/* Elegant Stats/Info Bereich */}
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-2 text-zinc-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm">Base Network</span>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
-                  <span className="text-amber-400 text-xs">⚡</span>
-                </div>
-                <span className="text-xs text-zinc-400">Schnell</span>
+              
+              <div className="flex items-center justify-center gap-6 text-xs text-zinc-500">
+                <span>Dezentralisiert</span>
+                <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
+                <span>Sicher</span>
+                <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
+                <span>Web3</span>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center mb-2 border border-amber-400/30">
-                  <span className="text-amber-400 text-xs">💎</span>
-                </div>
-                <span className="text-xs text-zinc-400">Premium</span>
+              
+              <div className="pt-4 border-t border-zinc-800/50">
+                <p className="text-xs text-zinc-600">
+                  Powered by Thirdweb & Base Chain
+                </p>
               </div>
             </div>
           </CardContent>
