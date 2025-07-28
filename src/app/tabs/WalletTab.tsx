@@ -71,6 +71,7 @@ export default function WalletTab() {
   const [dfaithBalance, setDfaithBalance] = useState<{ displayValue: string } | null>(null);
   const [dinvestBalance, setDinvestBalance] = useState<{ displayValue: string } | null>(null);
   const [stakedBalance, setStakedBalance] = useState<string>("0");
+  const [availableRewards, setAvailableRewards] = useState<string>("0.00");
 
   const [dfaithEurValue, setDfaithEurValue] = useState<string>("0.00");
   const [dfaithPriceEur, setDfaithPriceEur] = useState<number>(0);
@@ -203,6 +204,9 @@ export default function WalletTab() {
       // Gestakte Balance aus Staking Contract abrufen
       await fetchStakedBalance();
       
+      // Verfügbare Rewards aus Staking Contract abrufen
+      await fetchAvailableRewards();
+      
       // EUR-Wert berechnen (verwende zentrale Funktion)
       const newEurValue = calculateEurValue(dfaithDisplay);
       setDfaithEurValue(newEurValue);
@@ -287,6 +291,65 @@ export default function WalletTab() {
     }
   };
 
+  // Funktion zum Abrufen der verfügbaren Rewards im Smart Contract
+  const fetchAvailableRewards = async () => {
+    try {
+      console.log("💰 Lade verfügbare Rewards aus Smart Contract...");
+      
+      const stakingContract = getContract({ 
+        client, 
+        chain: base, 
+        address: STAKING_CONTRACT.address
+      });
+
+      // Versuche getContractInfo für rewardBalance
+      try {
+        const contractInfo = await readContract({
+          contract: stakingContract,
+          method: "function getContractInfo() view returns (uint256,uint256,uint8,uint256)",
+          params: []
+        });
+        // [totalStakedTokens, rewardBalance, currentStage, currentRate]
+        const rewardBalance = contractInfo[1];
+        const formattedRewards = (Number(rewardBalance) / Math.pow(10, DFAITH_TOKEN.decimals)).toFixed(DFAITH_TOKEN.decimals);
+        console.log("✅ Verfügbare Rewards (WalletTab):", formattedRewards);
+        setAvailableRewards(formattedRewards);
+        return;
+      } catch (contractInfoError) {
+        console.log("❌ getContractInfo fehlgeschlagen (WalletTab), versuche D.FAITH Balance vom Contract:", contractInfoError);
+      }
+
+      // Fallback: D.FAITH Balance des Staking Contracts direkt abfragen
+      try {
+        const dfaithContract = getContract({ 
+          client, 
+          chain: base, 
+          address: DFAITH_TOKEN.address
+        });
+        
+        const contractBalance = await readContract({
+          contract: dfaithContract,
+          method: "function balanceOf(address) view returns (uint256)",
+          params: [STAKING_CONTRACT.address]
+        });
+        
+        const formattedBalance = (Number(contractBalance) / Math.pow(10, DFAITH_TOKEN.decimals)).toFixed(DFAITH_TOKEN.decimals);
+        console.log("✅ Contract D.FAITH Balance (Fallback):", formattedBalance);
+        setAvailableRewards(formattedBalance);
+        return;
+      } catch (balanceError) {
+        console.log("❌ Fallback Balance-Abfrage fehlgeschlagen:", balanceError);
+      }
+
+      // Wenn alle Methoden fehlschlagen, setze auf 0
+      setAvailableRewards("0.00");
+      
+    } catch (error) {
+      console.error("❌ Schwerwiegender Fehler beim Abrufen der verfügbaren Rewards:", error);
+      setAvailableRewards("0.00");
+    }
+  };
+
   // Funktion für manuelle Aktualisierung der Balance mit Animation
   const refreshBalances = async () => {
     if (!account?.address || isRefreshing) return;
@@ -297,6 +360,7 @@ export default function WalletTab() {
       await fetchTokenBalances();
       await fetchDfaithPrice();
       await fetchStakedBalance(); // Gestakte Balance auch beim manuellen Refresh aktualisieren
+      await fetchAvailableRewards(); // Verfügbare Rewards auch beim manuellen Refresh aktualisieren
     } finally {
       // Nach einer kurzen Verzögerung den Refresh-Status zurücksetzen (Animation)
       setTimeout(() => setIsRefreshing(false), 800);
@@ -329,6 +393,7 @@ export default function WalletTab() {
       console.log("🔄 Starte vollständige Aktualisierung (mit Preisen)...");
       await fetchTokenBalances();
       await fetchDfaithPrice();
+      await fetchAvailableRewards(); // Auch Rewards beim initialen Laden
     };
     
     // Initiales Laden mit Preisen
@@ -997,6 +1062,21 @@ export default function WalletTab() {
                   ≈ {dfaithEurValue} EUR
                 </div>
               )}
+              
+              {/* Verfügbare Rewards im Smart Contract */}
+              {parseFloat(availableRewards) > 0 && (
+                <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <div className="flex items-center justify-center gap-2">
+                    <FaCoins className="text-amber-400 text-xs" />
+                    <span className="text-sm font-medium text-amber-400">
+                      {availableRewards} D.FAITH verfügbar
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-300/70 mt-1 text-center">
+                    Rewards im Smart Contract
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -1066,6 +1146,7 @@ export default function WalletTab() {
                   console.log("🔄 Staking-Änderung erkannt, aktualisiere Balances...");
                   fetchStakedBalance();
                   fetchTokenBalances();
+                  fetchAvailableRewards(); // Auch Rewards nach Staking-Änderung aktualisieren
                 }} />
               </div>
             </Modal>
