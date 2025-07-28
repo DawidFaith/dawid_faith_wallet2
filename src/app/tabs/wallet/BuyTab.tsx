@@ -742,7 +742,7 @@ export default function BuyTab() {
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-32 h-32 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.FAITH kaufen</h3>
-                  <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
+                  <p className="text-zinc-400 text-xs">Verfügbar: {ethBalance} ETH</p>
                   {dfaithPriceEur && (
                     <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                       <span className="text-amber-400 text-xs font-semibold">
@@ -790,16 +790,13 @@ export default function BuyTab() {
                         min="0"
                         step="0.001"
                         placeholder="0.0"
-                        className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-white focus:outline-none min-w-0"
+                        className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-white focus:outline-none min-w-0 text-center"
                         value={swapAmountEth}
                         onChange={e => setSwapAmountEth(e.target.value)}
                         disabled={isSwapping || buyStep !== 'initial'}
                       />
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-zinc-500">Balance: {ethBalance} ETH</span>
                       <button
-                        className="text-blue-400 hover:text-blue-300 font-medium px-2 py-1 rounded"
+                        className="text-blue-400 hover:text-blue-300 font-medium px-2 py-1 rounded flex-shrink-0"
                         onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(3))}
                         disabled={isSwapping || parseFloat(ethBalance) <= 0 || buyStep !== 'initial'}
                       >
@@ -816,7 +813,7 @@ export default function BuyTab() {
                         <img src="/D.FAITH.png" alt="D.FAITH" className="w-8 h-8 object-contain" />
                         <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-center">
                         <div className="text-lg sm:text-xl font-bold text-amber-400">
                           {swapAmountEth && parseFloat(swapAmountEth) > 0 && dfaithPrice 
                             ? (parseFloat(swapAmountEth) / dfaithPrice).toFixed(2)

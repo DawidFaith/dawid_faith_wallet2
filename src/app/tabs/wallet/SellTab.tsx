@@ -808,7 +808,7 @@ const tokenOptions = [
                       <span className="text-blue-300 font-semibold text-xs">ETH</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-blue-400">
+                      <div className="text-lg sm:text-xl font-bold text-blue-400 text-center">
                         {sellAmount && parseFloat(sellAmount) > 0 && dfaithPrice 
                           ? (parseFloat(sellAmount) * dfaithPrice).toFixed(6)
                           : "0.000000"
