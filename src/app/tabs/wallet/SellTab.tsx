@@ -17,6 +17,7 @@ export default function SellTab() {
   const [dfaithBalance, setDfaithBalance] = useState("0.00");
   // const [dinvestBalance, setDinvestBalance] = useState("0");
   const [dfaithPrice, setDfaithPrice] = useState<number | null>(null);
+  const [dfaithPriceEur, setDfaithPriceEur] = useState<number | null>(null); // Hinzugefügt
   const [ethPriceEur, setEthPriceEur] = useState<number | null>(null);
   const [showSellModal, setShowSellModal] = useState(false);
   const [slippage, setSlippage] = useState("1");
@@ -118,7 +119,8 @@ export default function SellTab() {
         const ethResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur');
         if (ethResponse.ok) {
           const ethData = await ethResponse.json();
-          setEthPriceEur(ethData['ethereum']?.eur || 3000);
+          const ethEur = ethData['ethereum']?.eur || 3000;
+          setEthPriceEur(ethEur);
         }
         
         const params = new URLSearchParams({
@@ -135,6 +137,9 @@ export default function SellTab() {
           if (data && data.data && data.data.outAmount && data.data.outAmount !== "0") {
             const ethPerDfaith = Number(data.data.outAmount) / Math.pow(10, 18);
             setDfaithPrice(ethPerDfaith);
+            // Berechne EUR-Preis
+            const currentEthEur = ethPriceEur || 3000;
+            setDfaithPriceEur(ethPerDfaith * currentEthEur);
           } else {
             setPriceError("Keine Liquidität für Verkauf verfügbar");
           }
@@ -150,7 +155,7 @@ export default function SellTab() {
     fetchPrice();
     const interval = setInterval(fetchPrice, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [ethPriceEur]);
 
   // Token-Auswahl-Handler
   const handleTokenSelect = (token: "DFAITH" | "ETH") => {
@@ -616,31 +621,30 @@ const handleSellAllInOne = async () => {
   }
 };
 
-  // Token-Auswahl wie im BuyTab
-  const tokenOptions = [
-    {
-      key: "DFAITH",
-      label: "D.FAITH",
-      symbol: "DFAITH",
-      balance: dfaithBalance,
-      color: "from-amber-400 to-yellow-500",
-      description: "Dawid Faith Token",
-      price: dfaithPrice && ethPriceEur ? `~${(dfaithPrice * ethPriceEur).toFixed(4)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
-      sub: dfaithPrice ? `1 D.FAITH = ${dfaithPrice.toFixed(6)} ETH` : "Wird geladen...",
-      icon: <FaCoins className="text-amber-400" />,
-    },
-    {
-      key: "ETH",
-      label: "ETH",
-      symbol: "ETH",
-      balance: "–",
-      color: "from-blue-500 to-blue-700",
-      description: "Ethereum Native Token",
-      price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
-      sub: "via Transak verkaufen",
-      icon: <span className="text-white text-lg font-bold">⟠</span>,
-    },
-  ];
+// Token-Auswahl Options
+const tokenOptions = [
+  {
+    key: "DFAITH",
+    label: "D.FAITH",
+    symbol: "DFAITH",
+    balance: dfaithBalance,
+    color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
+    description: "Dawid Faith Token",
+    price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : "Wird geladen...",
+    icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 object-contain" />,
+  },
+  {
+    key: "ETH",
+    label: "ETH",
+    symbol: "ETH",
+    balance: "–",
+    color: "from-blue-500 to-blue-700",
+    description: "Ethereum Native Token",
+    price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
+    sub: "via Transak verkaufen",
+    icon: <span className="text-white text-lg font-bold">⟠</span>,
+  },
+];
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-lg mx-auto">
@@ -667,8 +671,12 @@ const handleSellAllInOne = async () => {
               className="relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 bg-zinc-800/50 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/70 hover:scale-[1.02]"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${token.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                  {token.icon}
+                <div className={`w-12 h-12 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                  {token.key === 'DFAITH' ? (
+                    <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />
+                  ) : (
+                    token.icon
+                  )}
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-lg">{token.label}</h3>
@@ -722,15 +730,15 @@ const handleSellAllInOne = async () => {
             <div className="w-full space-y-4">
               {/* Professional Sell Widget Header */}
               <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg">
-                  <FaArrowDown className="text-black text-lg" />
+                <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
+                  <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-1">D.FAITH verkaufen</h3>
                 <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
-                {dfaithPrice && ethPriceEur && (
+                {dfaithPriceEur && (
                   <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                     <span className="text-amber-400 text-xs font-semibold">
-                      €{(dfaithPrice * ethPriceEur).toFixed(4)} / D.FAITH
+                      €{dfaithPriceEur.toFixed(4)} / D.FAITH
                     </span>
                   </div>
                 )}
@@ -766,7 +774,7 @@ const handleSellAllInOne = async () => {
                   <label className="block text-sm font-medium text-zinc-300 mb-2">You Sell</label>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0">
-                      <FaCoins className="text-amber-400 text-sm" />
+                      <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
                       <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                     </div>
                     <input

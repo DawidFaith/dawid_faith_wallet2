@@ -106,10 +106,10 @@ function TokenTransferModal({
         
         {/* Modal Header */}
         <div className="text-center pb-3 border-b border-zinc-700 mb-4">
-          <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${token.color} mx-auto mb-2 flex items-center justify-center shadow-lg`}>
-            {getTokenIcon(token.key)}
+          <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center">
+            <img src="/D.FAITH.png" alt="D.FAITH" className="w-20 h-20 object-contain" />
           </div>
-          <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
+          <h3 className="text-xl font-bold text-white mb-1">D.FAITH senden</h3>
           <p className="text-zinc-400 text-xs">Verfügbar: {token.balance} {token.symbol}</p>
         </div>
         
@@ -121,9 +121,9 @@ function TokenTransferModal({
             
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className={`flex items-center gap-2 bg-gradient-to-r ${token.color} bg-opacity-20 rounded-lg px-2 py-1 border border-opacity-30 flex-shrink-0`}>
-                  {getTokenIcon(token.key)}
-                  <span className="text-xs font-semibold">{token.symbol}</span>
+                <div className={`flex items-center gap-2 bg-amber-500/20 rounded-lg px-2 py-1 border border-amber-500/30 flex-shrink-0`}>
+                  <img src="/D.FAITH.png" alt="D.FAITH" className="w-6 h-6 object-contain" />
+                  <span className="text-amber-300 font-semibold text-xs">D.FAITH</span>
                 </div>
                 <input
                   type="number"
@@ -380,15 +380,16 @@ export default function SendTab() {
     setShowSuccessModal(false);
   };
 
+  // Token-Auswahl Options
   const tokenOptions = [
-    { 
-      key: "DFAITH", 
-      label: "D.FAITH", 
+    {
+      key: "DFAITH",
+      label: "D.FAITH",
       symbol: "DFAITH",
       balance: dfaithBalance,
-      icon: "🚀",
-      color: "from-amber-400 to-yellow-500",
-      description: "Dawid Faith Token"
+      color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
+      description: "Dawid Faith Token",
+      icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 object-contain" />,
     },
     { 
       key: "DINVEST", 
@@ -446,8 +447,12 @@ export default function SendTab() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${token.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                        {getTokenIcon(token.key)}
+                      <div className={`w-12 h-12 rounded-full ${token.key === 'DFAITH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                        {token.key === 'DFAITH' ? (
+                          <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />
+                        ) : (
+                          token.icon
+                        )}
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-lg">{token.label}</h3>
