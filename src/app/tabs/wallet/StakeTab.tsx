@@ -628,27 +628,23 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             setLastOperation("stake"); // Markiere als Staking-Operation
             setStakeAmount("");
             
-            // Callback für Parent-Komponente
+            // Sofort Parent-Komponente benachrichtigen
             if (onStakeChanged) {
               onStakeChanged();
             }
             
-            // Callback für Parent-Komponente sofort ausführen
-            if (onStakeChanged) {
-              onStakeChanged();
+            // Sofortige lokale Balance-Aktualisierung
+            if (account?.address) {
+              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                setAvailable(Math.floor(Number(balance)).toString());
+                console.log("✅ Staking: Sofortige Balance-Aktualisierung auf:", Math.floor(Number(balance)).toString());
+              });
             }
             
-            // Danach eine einzige lokale Aktualisierung nach 2 Sekunden
+            // Stake-Info nach kurzer Verzögerung aktualisieren
             setTimeout(() => {
               fetchStakeInfo();
-              // Balance einmalig aktualisieren für lokale UI
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                  console.log("✅ Staking: Lokale Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 2000); // Eine einzige Aktualisierung nach 2 Sekunden
+            }, 1000);
             
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -739,27 +735,23 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             setTxStatus("success");
             setLastOperation("unstake"); // Markiere als Unstaking-Operation
             
-            // Callback für Parent-Komponente
+            // Sofort Parent-Komponente benachrichtigen
             if (onStakeChanged) {
               onStakeChanged();
             }
             
-            // Callback für Parent-Komponente sofort ausführen
-            if (onStakeChanged) {
-              onStakeChanged();
+            // Sofortige lokale Balance-Aktualisierung
+            if (account?.address) {
+              fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                setAvailable(Math.floor(Number(balance)).toString());
+                console.log("✅ Unstaking: Sofortige Balance-Aktualisierung auf:", Math.floor(Number(balance)).toString());
+              });
             }
             
-            // Danach eine einzige lokale Aktualisierung nach 2 Sekunden
+            // Stake-Info nach kurzer Verzögerung aktualisieren
             setTimeout(() => {
               fetchStakeInfo();
-              // Balance einmalig aktualisieren für lokale UI
-              if (account?.address) {
-                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
-                  setAvailable(Math.floor(Number(balance)).toString());
-                  console.log("✅ Unstaking: Lokale Balance aktualisiert auf:", Math.floor(Number(balance)).toString());
-                });
-              }
-            }, 2000); // Eine einzige Aktualisierung nach 2 Sekunden
+            }, 1000);
             
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -903,6 +895,40 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         </div>
         <p className="text-zinc-400">Verdienen Sie kontinuierlich D.FAITH Token durch Staking</p>
       </div>
+
+      {/* Zentrale Status-Meldungen - immer sichtbar oben */}
+      {(txStatus === "success" || txStatus === "error" || txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
+        <div className={`p-4 rounded-xl text-center text-sm font-medium border mb-4 ${
+          txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
+          txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
+          txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
+          txStatus === "approving" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+          txStatus === "staking" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+          ""
+        }`}>
+          <div className="flex items-center justify-center gap-2">
+            {(txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+            )}
+            <span>
+              {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
+              {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
+              {txStatus === "success" && lastOperation === "claim" && "✅ Belohnungen erfolgreich eingefordert!"}
+              {txStatus === "success" && !lastOperation && "✅ Operation erfolgreich abgeschlossen!"}
+              {txStatus === "error" && lastOperation === "stake" && "❌ Staking fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && lastOperation === "unstake" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && lastOperation === "claim" && "❌ Claim fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && !lastOperation && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "pending" && lastOperation === "stake" && "⏳ Staking wird verarbeitet..."}
+              {txStatus === "pending" && lastOperation === "unstake" && "⏳ Unstaking wird verarbeitet..."}
+              {txStatus === "pending" && lastOperation === "claim" && "⏳ Belohnungen werden eingefordert..."}
+              {txStatus === "pending" && !lastOperation && "⏳ Transaktion wird verarbeitet..."}
+              {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
+              {txStatus === "staking" && "🔒 Staking-Vorgang läuft..."}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Info Modal */}
       {showInfoModal && (
@@ -1115,26 +1141,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
            !canClaim ? "Warten" : 
            "Belohnungen einfordern"}
         </Button>
-        {/* Status-Meldungen */}
-        {(txStatus === "success" || txStatus === "error" || txStatus === "pending") && (
-          <div className={`mt-3 p-3 rounded-lg text-center text-sm font-medium border ${
-            txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
-            txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
-            txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
-            ""
-          }`}>
-            <div className="flex items-center justify-center gap-2">
-              {txStatus === "pending" && (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-              )}
-              <span>
-                {txStatus === "success" && lastOperation === "claim" && "✅ Belohnungen erfolgreich eingefordert!"}
-                {txStatus === "error" && "❌ Fehler beim Einfordern der Belohnungen!"}
-                {txStatus === "pending" && "⏳ Belohnungen werden eingefordert..."}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Stake/Unstake Tabs */}
@@ -1261,31 +1267,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             )}
           </Button>
 
-        {/* Status kompakt als Info-Box */}
-        {(txStatus === "success" || txStatus === "error" || txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
-          <div className={`mt-4 p-3 rounded-lg text-center text-sm font-medium border ${
-            txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
-            txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
-            txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
-            txStatus === "approving" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
-            txStatus === "staking" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
-            ""
-          }`}>
-            <div className="flex items-center justify-center gap-2">
-              {(txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-              )}
-              <span>
-                {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
-                {txStatus === "success" && lastOperation !== "stake" && "✅ Operation erfolgreich abgeschlossen!"}
-                {txStatus === "error" && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
-                {txStatus === "pending" && "⏳ Transaktion wird verarbeitet..."}
-                {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
-                {txStatus === "staking" && "🔒 Staking-Vorgang läuft..."}
-              </span>
-            </div>
-          </div>
-        )}
         </div>
       )}
 
@@ -1353,27 +1334,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 {!txStatus && unstakeAmount && parseInt(unstakeAmount) > 0 && parseInt(unstakeAmount) <= parseInt(staked) && `${unstakeAmount} D.INVEST unstaken`}
               </Button>
 
-              {/* Status kompakt als Info-Box */}
-              {(txStatus === "success" || txStatus === "error" || txStatus === "pending") && (
-                <div className={`mt-4 p-3 rounded-lg text-center text-sm font-medium border ${
-                  txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
-                  txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
-                  txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
-                  ""
-                }`}>
-                  <div className="flex items-center justify-center gap-2">
-                    {txStatus === "pending" && (
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-                    )}
-                    <span>
-                      {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
-                      {txStatus === "success" && lastOperation !== "unstake" && "✅ Operation erfolgreich abgeschlossen!"}
-                      {txStatus === "error" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
-                      {txStatus === "pending" && "⏳ Unstaking wird verarbeitet..."}
-                    </span>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
