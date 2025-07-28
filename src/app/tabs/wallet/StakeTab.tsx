@@ -30,6 +30,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   const [claimableRewards, setClaimableRewards] = useState("0");
   const [loading, setLoading] = useState(false);
   const [txStatus, setTxStatus] = useState<string | null>(null);
+  const [lastOperation, setLastOperation] = useState<string | null>(null); // Track welche Operation durchgeführt wurde
   const [currentStage, setCurrentStage] = useState(1);
   const [currentRewardRate, setCurrentRewardRate] = useState(10); // Default auf 10 (erste Stufe)
   const [totalStakedTokens, setTotalStakedTokens] = useState("0");
@@ -56,6 +57,12 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Hilfsfunktion zum Zurücksetzen des Status
+  const resetTxStatus = () => {
+    setTxStatus(null);
+    setLastOperation(null);
+  };
 
   // Korrekte API-Funktion für Balance-Abfrage auf Base Chain
   const fetchTokenBalanceViaInsightApi = async (
@@ -618,6 +625,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: (result) => {
             console.log("✅ Staking erfolgreich mit korrektem Contract:", result);
             setTxStatus("success");
+            setLastOperation("stake"); // Markiere als Staking-Operation
             setStakeAmount("");
             
             // Callback für Parent-Komponente
@@ -657,7 +665,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               }
             }, 5000); // Finale Aktualisierung mit Balance
             
-            setTimeout(() => setTxStatus(null), 3000);
+            setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
           onError: (error: any) => {
@@ -744,6 +752,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: (result) => {
             console.log('Unstaking erfolgreich:', result);
             setTxStatus("success");
+            setLastOperation("unstake"); // Markiere als Unstaking-Operation
             
             // Callback für Parent-Komponente
             if (onStakeChanged) {
@@ -782,7 +791,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               }
             }, 5000); // Finale Aktualisierung mit Balance
             
-            setTimeout(() => setTxStatus(null), 3000);
+            setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
           onError: (error) => {
@@ -831,7 +840,8 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: () => {
             console.log("Claim erfolgreich");
             setTxStatus("success");
-            setTimeout(() => setTxStatus(null), 3000);
+            setLastOperation("claim"); // Markiere als Claim-Operation
+            setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
           onError: (error) => {
@@ -938,198 +948,105 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               </button>
             </div>
             
-            <div className="space-y-6">
-              {/* Contract Übersicht */}
-              <div className="bg-zinc-800/30 rounded-xl p-4 border border-zinc-700">
-                <h4 className="font-semibold text-amber-400 mb-3">Contract Übersicht</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-zinc-500">Contract Name:</span>
-                    <div className="text-zinc-300 font-mono">WeeklyTokenStaking</div>
+            <div className="space-y-4">
+              {/* Hauptinformationen */}
+              <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-xl p-4 border border-amber-500/30">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-amber-500/20 rounded-full">
+                    <FaCoins className="text-amber-400 text-lg" />
                   </div>
                   <div>
-                    <span className="text-zinc-500">Network:</span>
-                    <div className="text-zinc-300">Base Chain (8453)</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Staking Token:</span>
-                    <div className="text-zinc-300">D.INVEST (0 Decimals)</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Reward Token:</span>
-                    <div className="text-zinc-300">D.FAITH (2 Decimals)</div>
+                    <h4 className="font-bold text-amber-400">D.INVEST Staking</h4>
+                    <p className="text-xs text-zinc-400">Verdienen Sie D.FAITH Token durch Staking</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Reward System */}
-              <div className="bg-blue-800/20 rounded-xl p-4 border border-blue-700/50">
-                <h4 className="font-semibold text-blue-400 mb-3">Reward System</h4>
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <span className="text-zinc-500">Berechnungsweise:</span>
-                    <div className="text-zinc-300">Kontinuierliche Berechnung pro Sekunde</div>
-                  </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-zinc-500">Aktuelle Stufe:</span>
-                    <div className="text-blue-400 font-semibold">Stufe {currentStage} - {(currentRewardRate / 10000).toFixed(4)} D.FAITH pro D.INVEST pro Woche</div>
+                    <div className="text-amber-400 font-semibold">Stufe {currentStage}</div>
                   </div>
                   <div>
-                    <span className="text-zinc-500">Mindest-Claim:</span>
-                    <div className="text-zinc-300">{minClaimAmount} D.FAITH</div>
+                    <span className="text-zinc-500">Wöchentliche Rate:</span>
+                    <div className="text-amber-400 font-semibold">{(currentRewardRate / 10000).toFixed(2)} D.FAITH pro Token</div>
                   </div>
-                  <div>
-                    <span className="text-zinc-500">Total verteilt:</span>
-                    <div className="text-zinc-300">{totalRewardsDistributed} D.FAITH</div>
-                  </div>
-                  {secondsPerClaim > 0 && staked !== "0" && (
+                </div>
+              </div>
+
+              {/* Ihr Staking Status */}
+              {staked !== "0" && (
+                <div className="bg-blue-800/20 rounded-xl p-4 border border-blue-700/50">
+                  <h4 className="font-semibold text-blue-400 mb-3">Ihr Staking Status</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-zinc-500">Ihr Claim-Takt:</span>
-                      <div className="text-blue-300 font-semibold">Alle {formatTime(secondsPerClaim)} → {minClaimAmount} D.FAITH</div>
+                      <span className="text-zinc-500">Gestakte Token:</span>
+                      <div className="text-blue-400 font-semibold">{staked} D.INVEST</div>
                     </div>
-                  )}
+                    <div>
+                      <span className="text-zinc-500">Wöchentlicher Reward:</span>
+                      <div className="text-blue-400 font-semibold">{getUserWeeklyReward()} D.FAITH</div>
+                    </div>
+                    {secondsPerClaim > 0 && (
+                      <>
+                        <div>
+                          <span className="text-zinc-500">Claim-Intervall:</span>
+                          <div className="text-blue-400 font-semibold">{formatTime(secondsPerClaim)}</div>
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Verfügbare Rewards:</span>
+                          <div className="text-blue-400 font-semibold">{claimableRewards} D.FAITH</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Reward Stufen */}
+              {/* Reward Stufen - Vereinfacht */}
               <div className="bg-green-800/20 rounded-xl p-4 border border-green-700/50">
-                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen (Halving System)</h4>
+                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 1 (0-10.000 D.FAITH):</span>
-                    <span className="text-green-400">10.00% (0.10 D.FAITH pro D.INVEST/Woche)</span>
+                    <span className="text-zinc-500">Stufe 1:</span>
+                    <span className="text-green-400">10.00% (0-10k D.FAITH verteilt)</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 2 (10.000-20.000 D.FAITH):</span>
-                    <span className="text-green-400">5.00% (0.05 D.FAITH pro D.INVEST/Woche)</span>
+                    <span className="text-zinc-500">Stufe 2:</span>
+                    <span className="text-green-400">5.00% (10k-20k D.FAITH verteilt)</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 3 (20.000-40.000 D.FAITH):</span>
-                    <span className="text-green-400">2.50% (0.025 D.FAITH pro D.INVEST/Woche)</span>
+                    <span className="text-zinc-500">Stufe 3:</span>
+                    <span className="text-green-400">2.50% (20k-40k D.FAITH verteilt)</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 4 (40.000-60.000 D.FAITH):</span>
-                    <span className="text-green-400">1.25% (0.0125 D.FAITH pro D.INVEST/Woche)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 5 (60.000-80.000 D.FAITH):</span>
-                    <span className="text-green-400">0.63% (0.0063 D.FAITH pro D.INVEST/Woche)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 6+ (80.000+ D.FAITH):</span>
-                    <span className="text-green-400">0.31% (0.0031 D.FAITH pro D.INVEST/Woche)</span>
+                  <div className="text-center mt-3">
+                    <span className="text-xs text-zinc-500">
+                      Aktuell verteilt: {totalRewardsDistributed} D.FAITH
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Regeln & Bedingungen */}
+              {/* Wichtige Regeln */}
               <div className="bg-orange-800/20 rounded-xl p-4 border border-orange-700/50">
-                <h4 className="font-semibold text-orange-400 mb-3">Regeln & Bedingungen</h4>
+                <h4 className="font-semibold text-orange-400 mb-3">Wichtige Regeln</h4>
                 <div className="space-y-2 text-sm text-zinc-300">
-                  <div>• <strong>Mindest-Staking-Zeit:</strong> Keine Mindestzeit für Staking</div>
-                  <div>• <strong>Unstaking:</strong> Jederzeit möglich (vollständig oder teilweise)</div>
-                  <div>• <strong>Rewards:</strong> Kontinuierliche Berechnung pro Sekunde</div>
-                  <div>• <strong>Claim-Mindestbetrag:</strong> {minClaimAmount} D.FAITH</div>
-                  <div>• <strong>Halving-System:</strong> Rewards reduzieren sich mit steigender Verteilung</div>
-                  <div>• <strong>Unstake-Funktion:</strong> Einzelne <code>unstake(uint256)</code> für alle Szenarien</div>
-                  <div>• <strong>Automatischer Claim:</strong> Beim Unstaking werden alle Rewards automatisch ausgezahlt</div>
-                  <div>• <strong>Sicherheit:</strong> ReentrancyGuard Schutz</div>
+                  <div>• <strong>Staking:</strong> Jederzeit möglich, mindestens 1 D.INVEST</div>
+                  <div>• <strong>Unstaking:</strong> Jederzeit möglich (ganz oder teilweise)</div>
+                  <div>• <strong>Rewards:</strong> Kontinuierliche Berechnung, Claim ab {minClaimAmount} D.FAITH</div>
+                  <div>• <strong>Automatik:</strong> Beim Unstaking werden Rewards automatisch ausgezahlt</div>
                 </div>
               </div>
 
-              {/* Smart Contract Funktionen */}
-              <div className="bg-purple-800/20 rounded-xl p-4 border border-purple-700/50">
-                <h4 className="font-semibold text-purple-400 mb-3">Smart Contract Funktionen</h4>
-                <div className="space-y-2 text-sm">
+              {/* Network Info - Kompakt */}
+              <div className="bg-zinc-800/30 rounded-xl p-4 border border-zinc-700">
+                <h4 className="font-semibold text-zinc-400 mb-3">Netzwerk & Statistiken</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-zinc-500">Staking:</span>
-                    <div className="text-zinc-300 font-mono text-xs">stake(uint256 _amount)</div>
+                    <span className="text-zinc-500">Netzwerk:</span>
+                    <div className="text-zinc-300">Base Chain</div>
                   </div>
-                  <div>
-                    <span className="text-zinc-500">Unstaking:</span>
-                    <div className="text-zinc-300 font-mono text-xs">unstake(uint256 _amount)</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Claim Rewards:</span>
-                    <div className="text-zinc-300 font-mono text-xs">claimReward()</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">User Info:</span>
-                    <div className="text-zinc-300 font-mono text-xs">getUserInfo(address) → (uint256,uint256,uint256,bool,bool)</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Detailed Rewards:</span>
-                    <div className="text-zinc-300 font-mono text-xs">getDetailedRewardInfo(address) → (uint256,uint256,uint256,uint256,bool)</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Contract Info:</span>
-                    <div className="text-zinc-300 font-mono text-xs">getContractInfo() → (uint256,uint256,uint8,uint256)</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Live Stats */}
-              <div className="bg-purple-800/20 rounded-xl p-4 border border-purple-700/50">
-                <h4 className="font-semibold text-purple-400 mb-3">Live Statistics</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-zinc-500">Total Staked:</span>
-                    <div className="text-purple-400 font-semibold">{totalStakedTokens} D.INVEST</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Current Stage:</span>
-                    <div className="text-purple-400 font-semibold">Stufe {currentStage}</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Rewards Distributed:</span>
-                    <div className="text-purple-400 font-semibold">{totalRewardsDistributed} D.FAITH</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">Current Rate:</span>
-                    <div className="text-purple-400 font-semibold">{(currentRewardRate / 100).toFixed(2)}% / Woche</div>
-                  </div>
-                  {staked !== "0" && (
-                    <>
-                      <div>
-                        <span className="text-zinc-500">Ihre gestakten Token:</span>
-                        <div className="text-purple-400 font-semibold">{staked} D.INVEST</div>
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Ihre wöchentliche Rate:</span>
-                        <div className="text-purple-400 font-semibold">{getUserWeeklyReward()} D.FAITH</div>
-                      </div>
-                    </>
-                  )}
-                  {secondsPerClaim > 0 && staked !== "0" && (
-                    <>
-                      <div>
-                        <span className="text-zinc-500">Claim Interval:</span>
-                        <div className="text-purple-400 font-semibold">{formatTime(secondsPerClaim)}</div>
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Verfügbare Rewards:</span>
-                        <div className="text-purple-400 font-semibold">{claimableRewards} D.FAITH</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Contract Adressen */}
-              <div className="bg-zinc-800/30 rounded-xl p-4 border border-zinc-700">
-                <h4 className="font-semibold text-amber-400 mb-3">Contract Adressen</h4>
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <span className="text-zinc-500">Staking Contract:</span>
-                    <div className="text-zinc-300 font-mono break-all">{STAKING_CONTRACT}</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">D.FAITH Token:</span>
-                    <div className="text-zinc-300 font-mono break-all">{DFAITH_TOKEN}</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500">D.INVEST Token:</span>
-                    <div className="text-zinc-300 font-mono break-all">{DINVEST_TOKEN}</div>
+                    <div className="text-zinc-300">{totalStakedTokens} D.INVEST</div>
                   </div>
                 </div>
               </div>
@@ -1144,7 +1061,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           <div>
             <div className="text-sm font-medium text-blue-400">Aktuelle Reward-Stufe</div>
             <div className="text-xs text-zinc-500">
-              {(currentRewardRate / 10000).toFixed(4)} D.FAITH pro D.INVEST pro Woche
+              {(currentRewardRate / 10000).toFixed(2)} D.FAITH pro D.INVEST pro Woche
             </div>
           </div>
           <div className="text-right">
@@ -1189,9 +1106,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             <div>
               <h3 className="font-bold text-amber-400">Verfügbare Belohnungen</h3>
               <p className="text-xs text-zinc-500">
-                {!canClaim && nextClaimTimestamp > 0 
-                  ? `Nächster Claim in: ${formatTime(Math.max(0, nextClaimTimestamp - Math.floor(Date.now() / 1000)))}`
-                  : secondsPerClaim > 0 && staked !== "0"
+                {secondsPerClaim > 0 && staked !== "0"
                   ? `Claim-Takt: alle ${formatTime(secondsPerClaim)} → ${minClaimAmount} D.FAITH`
                   : `Kontinuierliche D.FAITH Belohnungen (min. ${minClaimAmount})`
                 }
@@ -1204,22 +1119,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           </div>
         </div>
         
-        {/* Sekunden pro Claim Anzeige */}
-        {staked !== "0" && secondsPerClaim > 0 && (
-          <div className="bg-blue-800/20 rounded-xl p-3 border border-blue-700/50 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FaClock className="text-blue-400 text-sm" />
-                <div className="text-sm font-medium text-blue-400">Claim-Takt</div>
-              </div>
-              <div className="text-right">
-                <div className="text-lg font-bold text-blue-400">{formatTime(secondsPerClaim)}</div>
-                <div className="text-xs text-zinc-500">für {minClaimAmount} D.FAITH</div>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <Button 
           className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!canClaim || loading || txStatus === "pending"}
@@ -1227,8 +1126,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         >
           <FaCoins className="inline mr-2" />
           {txStatus === "pending" ? "Wird verarbeitet..." : 
-           !canClaim && nextClaimTimestamp > 0 ? `Warten: ${formatTime(Math.max(0, nextClaimTimestamp - currentTime))}` : 
-           !canClaim ? `Mindestbetrag: ${minClaimAmount} D.FAITH` : 
+           !canClaim ? "Warten" : 
            "Belohnungen einfordern"}
         </Button>
         {/* Status-Meldungen */}
@@ -1244,7 +1142,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
               )}
               <span>
-                {txStatus === "success" && "✅ Belohnungen erfolgreich eingefordert!"}
+                {txStatus === "success" && lastOperation === "claim" && "✅ Belohnungen erfolgreich eingefordert!"}
                 {txStatus === "error" && "❌ Fehler beim Einfordern der Belohnungen!"}
                 {txStatus === "pending" && "⏳ Belohnungen werden eingefordert..."}
               </span>
@@ -1392,7 +1290,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
               )}
               <span>
-                {txStatus === "success" && "✅ Transaktion erfolgreich abgeschlossen!"}
+                {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
                 {txStatus === "error" && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
                 {txStatus === "pending" && "⏳ Transaktion wird verarbeitet..."}
                 {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
@@ -1495,7 +1393,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
                     )}
                     <span>
-                      {txStatus === "success" && "✅ Unstaking erfolgreich abgeschlossen!"}
+                      {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
                       {txStatus === "error" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
                       {txStatus === "pending" && "⏳ Unstaking wird verarbeitet..."}
                     </span>
