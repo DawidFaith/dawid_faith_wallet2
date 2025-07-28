@@ -758,13 +758,10 @@ export default function WalletTab() {
                 {/* Größeres Bild ohne Border - nahtlos integriert */}
                 <div className="relative w-40 h-40 transform group-hover:scale-105 transition-transform duration-500 z-10">
                   <img 
-                    src="/Dawid Faith Wallet.jpg" 
+                    src="/Dawid Faith Wallet.png" 
                     alt="Dawid Faith Wallet" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
-                  
-                  {/* Gradient Overlay für bessere Integration - jetzt schwarz */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                 </div>
                 
                 {/* Entferne gelben Ambient Glow - mache ihn sehr subtil grau */}
@@ -897,7 +894,7 @@ export default function WalletTab() {
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-r from-amber-500 to-yellow-500 p-0.5 shadow-lg shadow-amber-500/20">
                   <img 
-                    src="/Dawid Faith Wallet.jpg" 
+                    src="/Dawid Faith Wallet.png" 
                     alt="Dawid Faith Wallet" 
                     className="w-full h-full object-cover rounded-full"
                   />
