@@ -318,13 +318,23 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
 
   useEffect(() => {
     if (!account?.address) return;
-    // D.INVEST Balance via Insight API (0 Decimals)
+    
+    console.log("🔄 Account geändert oder Tab geladen, aktualisiere Balances...");
+    
+    // D.INVEST Balance via Insight API (0 Decimals) mit verbesserter Aktualisierung
     (async () => {
-      const dinvestValue = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
-      setAvailable(Math.floor(Number(dinvestValue)).toString());
-      await fetchStakeInfo();
+      try {
+        const dinvestValue = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
+        const newBalance = Math.floor(Number(dinvestValue)).toString();
+        console.log("✅ Neue D.INVEST Balance geladen:", newBalance);
+        setAvailable(newBalance);
+        await fetchStakeInfo();
+      } catch (error) {
+        console.error("❌ Fehler beim Laden der initialen Balance:", error);
+        setAvailable("0");
+      }
     })();
-  }, [account?.address, txStatus]);
+  }, [account?.address, txStatus]); // txStatus Abhängigkeit für Aktualisierung nach Transaktionen
 
   // D.FAITH und D.INVEST Balances abrufen
   useEffect(() => {
@@ -392,11 +402,24 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     }
   }, [stakeAmount, getTimeToMinClaimFromContract]);
 
-  // Hilfsfunktion: Verfügbare Balance aktualisieren
+  // Hilfsfunktion: Verfügbare Balance aktualisieren (verbessert für korrekte Aktualisierung)
   const refreshAvailableBalance = useCallback(async () => {
     if (account?.address) {
-      const balance = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
-      setAvailable(Math.floor(Number(balance)).toString());
+      console.log("🔄 Aktualisiere D.INVEST Balance nach Staking-Operation...");
+      try {
+        // Kurze Verzögerung für Blockchain-Bestätigung
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const balance = await fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address);
+        const newBalance = Math.floor(Number(balance)).toString();
+        console.log("✅ Neue D.INVEST Balance:", newBalance);
+        setAvailable(newBalance);
+        
+        // Zusätzlich D.INVEST Balance im State aktualisieren
+        setDinvestBalance(newBalance);
+      } catch (error) {
+        console.error("❌ Fehler beim Aktualisieren der Balance:", error);
+      }
     }
   }, [account?.address]);
 
@@ -635,14 +658,18 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             setTxStatus("success");
             setLastOperation("stake");
             setStakeAmount("");
+            
+            // Callback für Parent-Komponente (WalletTab)
             if (onStakeChanged) onStakeChanged();
 
-            refreshAvailableBalance();
-
+            // Verzögerte Aktualisierung für bessere UX
             setTimeout(async () => {
-              await fetchStakeInfo();
-              refreshAvailableBalance();
-            }, 1000);
+              console.log("🔄 Starte verzögerte Balance-Aktualisierung nach Staking...");
+              await Promise.all([
+                refreshAvailableBalance(),
+                fetchStakeInfo()
+              ]);
+            }, 1500);
 
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -732,14 +759,18 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             console.log('Unstaking erfolgreich:', result);
             setTxStatus("success");
             setLastOperation("unstake");
+            
+            // Callback für Parent-Komponente (WalletTab)
             if (onStakeChanged) onStakeChanged();
 
-            refreshAvailableBalance();
-
+            // Verzögerte Aktualisierung für bessere UX
             setTimeout(async () => {
-              await fetchStakeInfo();
-              refreshAvailableBalance();
-            }, 1000);
+              console.log("🔄 Starte verzögerte Balance-Aktualisierung nach Unstaking...");
+              await Promise.all([
+                refreshAvailableBalance(),
+                fetchStakeInfo()
+              ]);
+            }, 1500);
 
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
@@ -790,7 +821,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
           onSuccess: () => {
             console.log("Claim erfolgreich");
             setTxStatus("success");
-            setLastOperation("claim"); // Markiere als Claim-Operation
+            setLastOperation("claim");
+            
+            // Callback für Parent-Komponente (WalletTab) - Claim ändert keine D.INVEST Balance
+            if (onStakeChanged) onStakeChanged();
+            
+            // Nur Staking-Info aktualisieren, da Claim keine D.INVEST Balance ändert
+            setTimeout(async () => {
+              console.log("🔄 Starte verzögerte Aktualisierung nach Claim...");
+              await fetchStakeInfo();
+            }, 1500);
+            
             setTimeout(() => resetTxStatus(), 3000);
             resolve();
           },
@@ -883,40 +924,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         </div>
         <p className="text-zinc-400">Verdienen Sie kontinuierlich D.FAITH Token durch Staking</p>
       </div>
-
-      {/* Zentrale Status-Meldungen - immer sichtbar oben */}
-      {(txStatus === "success" || txStatus === "error" || txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
-        <div className={`p-4 rounded-xl text-center text-sm font-medium border mb-4 ${
-          txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
-          txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
-          txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
-          txStatus === "approving" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
-          txStatus === "staking" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
-          ""
-        }`}>
-          <div className="flex items-center justify-center gap-2">
-            {(txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-            )}
-            <span>
-              {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
-              {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
-              {txStatus === "success" && lastOperation === "claim" && "✅ Belohnungen erfolgreich eingefordert!"}
-              {txStatus === "success" && !lastOperation && "✅ Operation erfolgreich abgeschlossen!"}
-              {txStatus === "error" && lastOperation === "stake" && "❌ Staking fehlgeschlagen! Bitte versuchen Sie es erneut."}
-              {txStatus === "error" && lastOperation === "unstake" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
-              {txStatus === "error" && lastOperation === "claim" && "❌ Claim fehlgeschlagen! Bitte versuchen Sie es erneut."}
-              {txStatus === "error" && !lastOperation && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
-              {txStatus === "pending" && lastOperation === "stake" && "⏳ Staking wird verarbeitet..."}
-              {txStatus === "pending" && lastOperation === "unstake" && "⏳ Unstaking wird verarbeitet..."}
-              {txStatus === "pending" && lastOperation === "claim" && "⏳ Belohnungen werden eingefordert..."}
-              {txStatus === "pending" && !lastOperation && "⏳ Transaktion wird verarbeitet..."}
-              {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
-              {txStatus === "staking" && "🔒 Staking-Vorgang läuft..."}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Info Modal */}
       {showInfoModal && (
@@ -1130,6 +1137,40 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
            "Belohnungen einfordern"}
         </Button>
       </div>
+
+      {/* Status-Meldungen - verbesserte Position */}
+      {(txStatus === "success" || txStatus === "error" || txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
+        <div className={`p-4 rounded-xl text-center text-sm font-medium border mb-4 ${
+          txStatus === "success" ? "bg-green-500/20 text-green-400 border-green-500/30" :
+          txStatus === "error" ? "bg-red-500/20 text-red-400 border-red-500/30" :
+          txStatus === "pending" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
+          txStatus === "approving" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+          txStatus === "staking" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+          ""
+        }`}>
+          <div className="flex items-center justify-center gap-2">
+            {(txStatus === "pending" || txStatus === "approving" || txStatus === "staking") && (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+            )}
+            <span>
+              {txStatus === "success" && lastOperation === "stake" && "✅ Staking erfolgreich abgeschlossen!"}
+              {txStatus === "success" && lastOperation === "unstake" && "✅ Unstaking erfolgreich abgeschlossen!"}
+              {txStatus === "success" && lastOperation === "claim" && "✅ Belohnungen erfolgreich eingefordert!"}
+              {txStatus === "success" && !lastOperation && "✅ Operation erfolgreich abgeschlossen!"}
+              {txStatus === "error" && lastOperation === "stake" && "❌ Staking fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && lastOperation === "unstake" && "❌ Unstaking fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && lastOperation === "claim" && "❌ Claim fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "error" && !lastOperation && "❌ Transaktion fehlgeschlagen! Bitte versuchen Sie es erneut."}
+              {txStatus === "pending" && lastOperation === "stake" && "⏳ Staking wird verarbeitet..."}
+              {txStatus === "pending" && lastOperation === "unstake" && "⏳ Unstaking wird verarbeitet..."}
+              {txStatus === "pending" && lastOperation === "claim" && "⏳ Belohnungen werden eingefordert..."}
+              {txStatus === "pending" && !lastOperation && "⏳ Transaktion wird verarbeitet..."}
+              {txStatus === "approving" && "🔐 Token-Genehmigung wird erteilt..."}
+              {txStatus === "staking" && "🔒 Staking-Vorgang läuft..."}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Stake/Unstake Tabs */}
       <div className="flex bg-zinc-800/50 rounded-xl p-1">
