@@ -438,7 +438,7 @@ export default function SendTab() {
       balance: dinvestBalance,
       icon: <img src="/D.INVEST.png" alt="D.INVEST" className="w-10 h-10 object-contain" />,
       color: "from-blue-400 to-blue-600",
-      description: "Investment Token"
+      description: "Investment & Staking Token"
     },
     { 
       key: "ETH", 
@@ -447,7 +447,7 @@ export default function SendTab() {
       balance: ethBalance,
       icon: <img src="/ETH.png" alt="ETH" className="w-8 h-8 object-contain" />,
       color: "from-purple-400 to-purple-600",
-      description: "Native ETH"
+      description: "Ethereum Native Token"
     },
   ];
 
