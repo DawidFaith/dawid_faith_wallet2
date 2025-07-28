@@ -647,7 +647,7 @@ export default function BuyTab() {
       description: "Ethereum Native Token",
       price: ethPriceEur ? `${ethPriceEur.toFixed(2)}€ pro ETH` : "~3000€ pro ETH",
       sub: "mit EUR kaufen",
-      icon: <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-10 h-10 object-contain" />,
+      icon: <img src="/ETH.png" alt="ETH" className="w-10 h-10 object-contain" />,
     },
   ];
 
@@ -678,13 +678,13 @@ export default function BuyTab() {
               className="relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 bg-zinc-800/50 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/70 hover:scale-[1.02]"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                   {token.key === 'DFAITH' ? (
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
                   ) : token.key === 'ETH' ? (
-                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-12 h-12 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
                   ) : (
                     token.icon
                   )}

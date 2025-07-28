@@ -112,9 +112,7 @@ function TokenTransferModal({
             ) : token.key === 'DINVEST' ? (
               <img src="/D.INVEST.png" alt="D.INVEST" className="w-20 h-20 object-contain" />
             ) : (
-              <div className="w-20 h-20 flex items-center justify-center">
-                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-16 h-16 object-contain" />
-              </div>
+              <img src="/ETH.png" alt="ETH" className="w-20 h-20 object-contain" />
             )}
           </div>
           <h3 className="text-xl font-bold text-white mb-1">{token.label} senden</h3>
@@ -139,7 +137,7 @@ function TokenTransferModal({
                   ) : token.key === 'DINVEST' ? (
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-6 h-6 object-contain" />
                   ) : (
-                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-5 h-5 object-contain" />
+                    <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
                   )}
                   <span className={`${
                     token.key === 'DFAITH' ? 'text-amber-300' : 
@@ -446,7 +444,7 @@ export default function SendTab() {
       label: "Ethereum", 
       symbol: "ETH",
       balance: ethBalance,
-      icon: <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-10 h-10 object-contain" />,
+      icon: <img src="/ETH.png" alt="ETH" className="w-10 h-10 object-contain" />,
       color: "from-purple-400 to-purple-600",
       description: "Native ETH"
     },
@@ -488,13 +486,15 @@ export default function SendTab() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                      <div className={`w-16 h-16 rounded-full ${token.key === 'DFAITH' || token.key === 'DINVEST' || token.key === 'ETH' ? 'bg-transparent' : `bg-gradient-to-r ${token.color}`} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                         {token.key === 'DFAITH' ? (
                           <img src="/D.FAITH.png" alt="D.FAITH" className="w-16 h-16 object-contain" />
                         ) : token.key === 'DINVEST' ? (
                           <img src="/D.INVEST.png" alt="D.INVEST" className="w-16 h-16 object-contain" />
+                        ) : token.key === 'ETH' ? (
+                          <img src="/ETH.png" alt="ETH" className="w-16 h-16 object-contain" />
                         ) : (
-                          <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="ETH" className="w-12 h-12 object-contain" />
+                          token.icon
                         )}
                       </div>
                       <div>
