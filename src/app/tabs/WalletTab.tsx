@@ -738,18 +738,15 @@ export default function WalletTab() {
           <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-t-3xl"></div>
           
           <CardContent className="p-8 relative z-10">
-            {/* Logo/Header mit Bild */}
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-0.5 shadow-lg shadow-amber-500/20">
+            {/* Logo/Header mit großem Bild, ohne Text */}
+            <div className="flex flex-col items-center justify-center mb-8">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-1 shadow-2xl shadow-amber-500/30 mb-4">
                 <img 
                   src="/Dawid Faith Wallet.jpg" 
                   alt="Dawid Faith Wallet" 
                   className="w-full h-full object-cover rounded-full"
                 />
               </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">
-                Dawid Faith Wallet
-              </h2>
             </div>
             
             <p className="text-zinc-400 text-center mb-8">
@@ -839,9 +836,6 @@ export default function WalletTab() {
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
-                <span className="text-base md:text-lg font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
-                  Dawid Faith Wallet
-                </span>
               </div>
               <ConnectButton
                 client={client}
