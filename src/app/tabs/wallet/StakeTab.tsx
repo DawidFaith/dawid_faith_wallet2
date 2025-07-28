@@ -779,11 +779,17 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             
             setTimeout(() => {
               fetchStakeInfo();
+              // Nochmalige Balance-Aktualisierung nach 3 Sekunden für Unstaking
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
             }, 3000); // Zweite Aktualisierung
             
             setTimeout(() => {
               fetchStakeInfo();
-              // Aktualisiere auch die verfügbare Balance
+              // Finale Balance-Aktualisierung nach 5 Sekunden für Unstaking
               if (account?.address) {
                 fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
                   setAvailable(Math.floor(Number(balance)).toString());
@@ -1001,9 +1007,9 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                 </div>
               )}
 
-              {/* Reward Stufen - Vereinfacht */}
+              {/* Reward Stufen - Vollständig */}
               <div className="bg-green-800/20 rounded-xl p-4 border border-green-700/50">
-                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen</h4>
+                <h4 className="font-semibold text-green-400 mb-3">Alle Reward Stufen (Halving System)</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 1:</span>
@@ -1017,10 +1023,25 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                     <span className="text-zinc-500">Stufe 3:</span>
                     <span className="text-green-400">2.50% (20k-40k D.FAITH verteilt)</span>
                   </div>
-                  <div className="text-center mt-3">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Stufe 4:</span>
+                    <span className="text-green-400">1.25% (40k-60k D.FAITH verteilt)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Stufe 5:</span>
+                    <span className="text-green-400">0.63% (60k-80k D.FAITH verteilt)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Stufe 6+:</span>
+                    <span className="text-green-400">0.31% (ab 80k D.FAITH verteilt)</span>
+                  </div>
+                  <div className="text-center mt-3 pt-2 border-t border-green-700/30">
                     <span className="text-xs text-zinc-500">
                       Aktuell verteilt: {totalRewardsDistributed} D.FAITH
                     </span>
+                    <div className="text-xs text-zinc-400 mt-1">
+                      Bei jeder Stufe halbiert sich die wöchentliche Reward-Rate
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1305,20 +1326,6 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
       {/* Unstake Interface */}
       {activeTab === "unstake" && (
         <div className="bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl p-6 border border-zinc-700 space-y-6">
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <span className="text-blue-400 text-xs">ℹ</span>
-              </div>
-              <div className="text-sm text-zinc-300">
-                <div className="font-medium">Unstaking</div>
-                <div className="text-xs text-zinc-500 mt-1">
-                  Beim Unstaking werden automatisch alle verfügbaren Rewards ausgezahlt.
-                </div>
-              </div>
-            </div>
-          </div>
-
           {staked === "0" ? (
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
               <div className="flex items-center gap-3">
