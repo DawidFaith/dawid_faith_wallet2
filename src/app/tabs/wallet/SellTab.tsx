@@ -736,7 +736,7 @@ const tokenOptions = [
                   <img src="/D.FAITH.png" alt="D.FAITH" className="w-32 h-32 object-contain" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-1">D.FAITH verkaufen</h3>
-                <p className="text-zinc-400 text-xs">Dawid Faith Token auf Base</p>
+                <p className="text-zinc-400 text-xs">Verfügbar: {dfaithBalance} D.FAITH</p>
                 {dfaithPriceEur && (
                   <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                     <span className="text-amber-400 text-xs font-semibold">
@@ -784,16 +784,13 @@ const tokenOptions = [
                       min="0"
                       step="0.01"
                       placeholder="0.0"
-                      className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-white focus:outline-none min-w-0"
+                      className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-white focus:outline-none min-w-0 text-center"
                       value={sellAmount}
                       onChange={e => setSellAmount(e.target.value)}
                       disabled={isSwapping || sellStep !== 'initial'}
                     />
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-zinc-500">Balance: {dfaithBalance} D.FAITH</span>
                     <button
-                      className="text-amber-400 hover:text-amber-300 font-medium px-2 py-1 rounded"
+                      className="text-amber-400 hover:text-amber-300 font-medium px-2 py-1 rounded flex-shrink-0"
                       onClick={() => setSellAmount((parseFloat(dfaithBalance) * 0.95).toFixed(2))}
                       disabled={isSwapping || parseFloat(dfaithBalance) <= 0 || sellStep !== 'initial'}
                     >
