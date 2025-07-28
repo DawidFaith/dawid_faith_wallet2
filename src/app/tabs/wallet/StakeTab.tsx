@@ -90,7 +90,7 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
     try {
       const staking = getContract({ client, chain: base, address: STAKING_CONTRACT });
       
-      // Versuche zuerst getUserInfo
+      // Versuche zuerst getUserInfo mit verbesserter Fehlerbehandlung
       try {
         const userInfo = await readContract({
           contract: staking,
@@ -99,58 +99,188 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
         });
         // [stakedAmount, claimableReward, stakeTimestamp, canUnstake, canClaim]
         console.log("getUserInfo Ergebnis:", userInfo);
+        console.log("Gestakte Menge (getUserInfo):", userInfo[0].toString());
+        console.log("Claimable Rewards (getUserInfo):", userInfo[1].toString());
+        
         setStaked(userInfo[0].toString());
-        setClaimableRewards((Number(userInfo[1]) / Math.pow(10, 2)).toFixed(2));
+        setClaimableRewards((Number(userInfo[1]) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
         setStakeTimestamp(Number(userInfo[2]));
         setCanUnstake(userInfo[3]);
         setCanClaim(userInfo[4]);
       } catch (userInfoError) {
         console.log("getUserInfo fehlgeschlagen, versuche stakes mapping:", userInfoError);
         
-        // Fallback: Versuche direkt das stakes mapping
-        const stakedAmount = await readContract({
-          contract: staking,
-          method: "function stakes(address) view returns (uint256)",
-          params: [account.address]
-        });
-        console.log("stakes mapping Ergebnis:", stakedAmount.toString());
-        setStaked(stakedAmount.toString());
+        // Fallback 1: Versuche direkt das stakes mapping
+        try {
+          const stakedAmount = await readContract({
+            contract: staking,
+            method: "function stakers(address) view returns (uint256,uint256,uint256,uint256)",
+            params: [account.address]
+          });
+          // [amount, lastRewardUpdate, stakeTimestamp, accumulatedRewards]
+          console.log("stakers mapping Ergebnis:", stakedAmount);
+          setStaked(stakedAmount[0].toString());
+          setStakeTimestamp(Number(stakedAmount[2]));
+          
+          // Versuche claimableReward separat zu holen
+          try {
+            const claimable = await readContract({
+              contract: staking,
+              method: "function getClaimableReward(address) view returns (uint256)",
+              params: [account.address]
+            });
+            setClaimableRewards((Number(claimable) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
+          } catch {
+            setClaimableRewards("0.00");
+          }
+          
+        } catch (stakersError) {
+          console.log("stakers mapping fehlgeschlagen, versuche einfaches stakes:", stakersError);
+          
+          // Fallback 2: Versuche einfaches stakes mapping
+          try {
+            const simpleStaked = await readContract({
+              contract: staking,
+              method: "function stakes(address) view returns (uint256)",
+              params: [account.address]
+            });
+            console.log("stakes mapping Ergebnis:", simpleStaked.toString());
+            setStaked(simpleStaked.toString());
+          } catch {
+            console.log("Alle Staking-Abfragen fehlgeschlagen");
+            setStaked("0");
+          }
+          
+          // Setze Defaults für andere Werte
+          setClaimableRewards("0.00");
+          setStakeTimestamp(0);
+        }
         
-        // Setze Defaults für andere Werte
-        setClaimableRewards("0.00");
-        setStakeTimestamp(0);
+        // Setze Defaults für canUnstake und canClaim
         setCanUnstake(false);
         setCanClaim(false);
       }
 
-      // Detailed Reward Info
-      const detailed = await readContract({
-        contract: staking,
-        method: "function getDetailedRewardInfo(address) view returns (uint256,uint256,uint256,uint256,bool)",
-        params: [account.address]
-      });
-      // [claimableReward, nextClaimTimestamp, secondsPerClaim, currentRatePercent, canClaimNow]
-      setNextClaimTimestamp(Number(detailed[1]));
-      setSecondsPerClaim(Number(detailed[2]));
-      setCurrentRewardRate(Number(detailed[3]));
-      setCanClaim(detailed[4]);
+      // Detailed Reward Info - mit Fallback
+      try {
+        const detailed = await readContract({
+          contract: staking,
+          method: "function getDetailedRewardInfo(address) view returns (uint256,uint256,uint256,uint256,bool)",
+          params: [account.address]
+        });
+        // [claimableReward, nextClaimTimestamp, secondsPerClaim, currentRatePercent, canClaimNow]
+        console.log("getDetailedRewardInfo Ergebnis:", detailed);
+        console.log("secondsPerClaim vom Contract:", Number(detailed[2]));
+        
+        // Verwende getDetailedRewardInfo für genauere claimableRewards
+        const detailedClaimable = (Number(detailed[0]) / Math.pow(10, DFAITH_DECIMALS)).toFixed(2);
+        console.log("Detaillierte claimableRewards:", detailedClaimable);
+        setClaimableRewards(detailedClaimable);
+        
+        setNextClaimTimestamp(Number(detailed[1]));
+        setSecondsPerClaim(Number(detailed[2]));
+        setCurrentRewardRate(Number(detailed[3]));
+        setCanClaim(detailed[4]);
+      } catch (detailedError) {
+        console.log("getDetailedRewardInfo fehlgeschlagen, verwende Fallback:", detailedError);
+        
+        // Fallback: Verwende getClaimableReward
+        try {
+          const claimable = await readContract({
+            contract: staking,
+            method: "function getClaimableReward(address) view returns (uint256)",
+            params: [account.address]
+          });
+          setClaimableRewards((Number(claimable) / Math.pow(10, DFAITH_DECIMALS)).toFixed(2));
+        } catch {
+          setClaimableRewards("0.00");
+        }
+        
+        // Fallback für currentRewardRate
+        try {
+          const rate = await readContract({
+            contract: staking,
+            method: "function getCurrentRewardRate() view returns (uint256)",
+            params: []
+          });
+          setCurrentRewardRate(Number(rate));
+        } catch {
+          setCurrentRewardRate(10); // Default
+        }
+        
+        // Defaults setzen
+        setNextClaimTimestamp(0);
+        setSecondsPerClaim(0);
+        setCanClaim(false);
+      }
 
-      // Contract Info
-      const contractInfo = await readContract({
-        contract: staking,
-        method: "function getContractInfo() view returns (uint256,uint256,uint8,uint256,uint256,uint256)",
-        params: []
-      });
-      // [totalStakedTokens, rewardBalance, currentStage, currentRate, totalRewardsDistributed, userCount]
-      setTotalStakedTokens(contractInfo[0].toString());
-      setCurrentStage(Number(contractInfo[2]));
-      // totalRewardsDistributed ist [4] (5. Wert)
-      setTotalRewardsDistributed((Number(contractInfo[4]) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
-      // userCount ist [5] (6. Wert)
-      setUserCount(Number(contractInfo[5]));
+      // Contract Info - mit erweiterten Fallbacks
+      try {
+        const contractInfo = await readContract({
+          contract: staking,
+          method: "function getContractInfo() view returns (uint256,uint256,uint8,uint256)",
+          params: []
+        });
+        // [totalStakedTokens, rewardBalance, currentStage, currentRate]
+        console.log("getContractInfo Ergebnis:", contractInfo);
+        setTotalStakedTokens(contractInfo[0].toString());
+        setCurrentStage(Number(contractInfo[2]));
+        // Verwende currentRate aus getContractInfo als Fallback
+        if (currentRewardRate === 10) { // Falls noch auf Default
+          setCurrentRewardRate(Number(contractInfo[3]));
+        }
+      } catch (contractInfoError) {
+        console.log("getContractInfo fehlgeschlagen, versuche alternative Methoden:", contractInfoError);
+        
+        // Fallback: Versuche getCurrentStage einzeln
+        try {
+          const stage = await readContract({
+            contract: staking,
+            method: "function getCurrentStage() view returns (uint8)",
+            params: []
+          });
+          setCurrentStage(Number(stage));
+        } catch {
+          setCurrentStage(1);
+        }
+        
+        // Fallback: Versuche totalStaked einzeln
+        try {
+          const totalStaked = await readContract({
+            contract: staking,
+            method: "function totalStaked() view returns (uint256)",
+            params: []
+          });
+          setTotalStakedTokens(totalStaked.toString());
+        } catch {
+          setTotalStakedTokens("0");
+        }
+      }
+      
+      // Versuche totalRewardsDistributed separat zu holen
+      try {
+        const rewardsDistributed = await readContract({
+          contract: staking,
+          method: "function totalRewardsDistributed() view returns (uint256)",
+          params: []
+        });
+        setTotalRewardsDistributed((Number(rewardsDistributed) / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS));
+      } catch {
+        setTotalRewardsDistributed("0.00");
+      }
 
       // Minimum Claim Amount (Konstant, aber für UI)
       setMinClaimAmount("0.01");
+      
+      // Debug: Überprüfe finale Werte
+      console.log("Finale fetchStakeInfo Werte:", {
+        staked,
+        claimableRewards,
+        currentRewardRate,
+        currentStage,
+        totalStakedTokens,
+        totalRewardsDistributed
+      });
     } catch (e) {
       setStaked("0");
       setClaimableRewards("0.00");
@@ -482,10 +612,24 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
-            // Stake-Info aktualisieren
+            // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
             setTimeout(() => {
               fetchStakeInfo();
-            }, 2000); // Längere Wartezeit für Blockchain-Bestätigung
+            }, 1000); // Erste schnelle Aktualisierung
+            
+            setTimeout(() => {
+              fetchStakeInfo();
+            }, 3000); // Zweite Aktualisierung
+            
+            setTimeout(() => {
+              fetchStakeInfo();
+              // Aktualisiere auch die verfügbare Balance
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
+            }, 5000); // Finale Aktualisierung mit Balance
             
             setTimeout(() => setTxStatus(null), 3000);
             resolve();
@@ -567,28 +711,23 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
       
       console.log(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking:`, unstakeAmountNum, "Token");
       
-      let unstakeTx;
+      // Der Smart Contract hat nur eine unstake(uint256) Funktion
+      // Diese funktioniert sowohl für partielles als auch vollständiges Unstaking
+      const unstakeTx = prepareContractCall({
+        contract: staking,
+        method: "function unstake(uint256)",
+        params: [BigInt(unstakeAmountNum)]
+      });
       
-      if (isPartial) {
-        // Verwende unstakePartial Funktion
-        unstakeTx = prepareContractCall({
-          contract: staking,
-          method: "function unstakePartial(uint256)",
-          params: [BigInt(unstakeAmountNum)]
-        });
-      } else {
-        // Verwende unstake Funktion (komplett)
-        unstakeTx = prepareContractCall({
-          contract: staking,
-          method: "function unstake()",
-          params: []
-        });
-      }
+      console.log("Unstake Transaction vorbereitet:");
+      console.log("- Contract:", STAKING_CONTRACT);
+      console.log("- Method: unstake(uint256)");
+      console.log("- Params:", [BigInt(unstakeAmountNum).toString()]);
       
       await new Promise<void>((resolve, reject) => {
         sendTransaction(unstakeTx, {
-          onSuccess: () => {
-            console.log(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking erfolgreich`);
+          onSuccess: (result) => {
+            console.log(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking erfolgreich:`, result);
             setTxStatus("success");
             
             // Callback für Parent-Komponente
@@ -596,16 +735,35 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               onStakeChanged();
             }
             
-            // Stake-Info aktualisieren
+            // Stake-Info aktualisieren - mehrfach für bessere Synchronisation
             setTimeout(() => {
               fetchStakeInfo();
-            }, 2000); // Längere Wartezeit für Blockchain-Bestätigung
+            }, 1000); // Erste schnelle Aktualisierung
+            
+            setTimeout(() => {
+              fetchStakeInfo();
+            }, 3000); // Zweite Aktualisierung
+            
+            setTimeout(() => {
+              fetchStakeInfo();
+              // Aktualisiere auch die verfügbare Balance
+              if (account?.address) {
+                fetchTokenBalanceViaInsightApi(DINVEST_TOKEN, account.address).then(balance => {
+                  setAvailable(Math.floor(Number(balance)).toString());
+                });
+              }
+            }, 5000); // Finale Aktualisierung mit Balance
             
             setTimeout(() => setTxStatus(null), 3000);
             resolve();
           },
           onError: (error) => {
             console.error(`${isPartial ? 'Partielles' : 'Vollständiges'} Unstaking fehlgeschlagen:`, error);
+            console.error("Unstake Error Details:", {
+              message: error?.message || "Unbekannter Fehler",
+              code: (error as any)?.code || "N/A",
+              data: (error as any)?.data || "N/A"
+            });
             setTxStatus("error");
             setTimeout(() => setTxStatus(null), 5000);
             reject(error);
@@ -672,7 +830,13 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
   // Hilfsfunktion für den User-Reward pro Woche
   const getUserWeeklyReward = () => {
     const stakedNum = parseInt(staked) || 0;
-    return ((stakedNum * currentRewardRate) / 100).toFixed(2);
+    const weeklyReward = ((stakedNum * currentRewardRate) / 100).toFixed(2);
+    console.log("Weekly Reward Berechnung:", {
+      staked: stakedNum,
+      currentRewardRate,
+      weeklyReward
+    });
+    return weeklyReward;
   };
 
   // Hilfsfunktion: Berechne korrekte Zeit für Claims basierend auf gestaketen Token
@@ -786,32 +950,42 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                     <span className="text-zinc-500">Total verteilt:</span>
                     <div className="text-zinc-300">{totalRewardsDistributed} D.FAITH</div>
                   </div>
+                  {secondsPerClaim > 0 && staked !== "0" && (
+                    <div>
+                      <span className="text-zinc-500">Ihr Claim-Takt:</span>
+                      <div className="text-blue-300 font-semibold">Alle {formatTime(secondsPerClaim)} → {minClaimAmount} D.FAITH</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Reward Stufen */}
               <div className="bg-green-800/20 rounded-xl p-4 border border-green-700/50">
-                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen</h4>
+                <h4 className="font-semibold text-green-400 mb-3">Reward Stufen (Halving System)</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 1 (0-10.000 D.FAITH):</span>
-                    <span className="text-green-400">0.10 D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">10.00% D.FAITH pro D.INVEST/Woche</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 2 (10.000-20.000 D.FAITH):</span>
-                    <span className="text-green-400">0.05 D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">5.00% D.FAITH pro D.INVEST/Woche</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 3 (20.000-40.000 D.FAITH):</span>
-                    <span className="text-green-400">0.03 D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">2.50% D.FAITH pro D.INVEST/Woche</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Stufe 4 (40.000-60.000 D.FAITH):</span>
-                    <span className="text-green-400">0.02 D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-green-400">1.25% D.FAITH pro D.INVEST/Woche</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Stufe 5+ (60.000+ D.FAITH):</span>
-                    <span className="text-green-400">0.01 D.FAITH pro D.INVEST/Woche</span>
+                    <span className="text-zinc-500">Stufe 5 (60.000-80.000 D.FAITH):</span>
+                    <span className="text-green-400">0.63% D.FAITH pro D.INVEST/Woche</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Stufe 6+ (80.000+ D.FAITH):</span>
+                    <span className="text-green-400">0.31% D.FAITH pro D.INVEST/Woche</span>
                   </div>
                 </div>
               </div>
@@ -820,12 +994,45 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               <div className="bg-orange-800/20 rounded-xl p-4 border border-orange-700/50">
                 <h4 className="font-semibold text-orange-400 mb-3">Regeln & Bedingungen</h4>
                 <div className="space-y-2 text-sm text-zinc-300">
-                  <div>• <strong>Mindest-Staking-Zeit:</strong> 7 Tage (1 Woche)</div>
+                  <div>• <strong>Mindest-Staking-Zeit:</strong> Keine Mindestzeit für Staking</div>
+                  <div>• <strong>Unstaking:</strong> Jederzeit möglich (vollständig oder teilweise)</div>
                   <div>• <strong>Rewards:</strong> Kontinuierliche Berechnung pro Sekunde</div>
-                  <div>• <strong>Unstaking:</strong> Vollständig oder teilweise möglich</div>
-                  <div>• <strong>Partielles Unstaking:</strong> Sie können einen gewünschten Betrag unstaken</div>
+                  <div>• <strong>Claim-Mindestbetrag:</strong> {minClaimAmount} D.FAITH</div>
+                  <div>• <strong>Halving-System:</strong> Rewards reduzieren sich mit steigender Verteilung</div>
+                  <div>• <strong>Unstake-Funktion:</strong> Einzelne <code>unstake(uint256)</code> für alle Szenarien</div>
                   <div>• <strong>Automatischer Claim:</strong> Beim Unstaking werden alle Rewards automatisch ausgezahlt</div>
-                  <div>• <strong>Sicherheit:</strong> ReentrancyGuard & Pausable Contract</div>
+                  <div>• <strong>Sicherheit:</strong> ReentrancyGuard Schutz</div>
+                </div>
+              </div>
+
+              {/* Smart Contract Funktionen */}
+              <div className="bg-purple-800/20 rounded-xl p-4 border border-purple-700/50">
+                <h4 className="font-semibold text-purple-400 mb-3">Smart Contract Funktionen</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-zinc-500">Staking:</span>
+                    <div className="text-zinc-300 font-mono text-xs">stake(uint256 _amount)</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Unstaking:</span>
+                    <div className="text-zinc-300 font-mono text-xs">unstake(uint256 _amount)</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Claim Rewards:</span>
+                    <div className="text-zinc-300 font-mono text-xs">claimReward()</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">User Info:</span>
+                    <div className="text-zinc-300 font-mono text-xs">getUserInfo(address) → (uint256,uint256,uint256,bool,bool)</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Detailed Rewards:</span>
+                    <div className="text-zinc-300 font-mono text-xs">getDetailedRewardInfo(address) → (uint256,uint256,uint256,uint256,bool)</div>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Contract Info:</span>
+                    <div className="text-zinc-300 font-mono text-xs">getContractInfo() → (uint256,uint256,uint8,uint256)</div>
+                  </div>
                 </div>
               </div>
 
@@ -838,17 +1045,41 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
                     <div className="text-purple-400 font-semibold">{totalStakedTokens} D.INVEST</div>
                   </div>
                   <div>
-                    <span className="text-zinc-500">Active Users:</span>
-                    <div className="text-purple-400 font-semibold">{userCount}</div>
+                    <span className="text-zinc-500">Current Stage:</span>
+                    <div className="text-purple-400 font-semibold">Stufe {currentStage}</div>
                   </div>
                   <div>
                     <span className="text-zinc-500">Rewards Distributed:</span>
                     <div className="text-purple-400 font-semibold">{totalRewardsDistributed} D.FAITH</div>
                   </div>
                   <div>
-                    <span className="text-zinc-500">Current Stage:</span>
-                    <div className="text-purple-400 font-semibold">Stufe {currentStage}</div>
+                    <span className="text-zinc-500">Current Rate:</span>
+                    <div className="text-purple-400 font-semibold">{(currentRewardRate / 100).toFixed(2)}% / Woche</div>
                   </div>
+                  {staked !== "0" && (
+                    <>
+                      <div>
+                        <span className="text-zinc-500">Ihre gestakten Token:</span>
+                        <div className="text-purple-400 font-semibold">{staked} D.INVEST</div>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Ihre wöchentliche Rate:</span>
+                        <div className="text-purple-400 font-semibold">{getUserWeeklyReward()} D.FAITH</div>
+                      </div>
+                    </>
+                  )}
+                  {secondsPerClaim > 0 && staked !== "0" && (
+                    <>
+                      <div>
+                        <span className="text-zinc-500">Claim Interval:</span>
+                        <div className="text-purple-400 font-semibold">{formatTime(secondsPerClaim)}</div>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Verfügbare Rewards:</span>
+                        <div className="text-purple-400 font-semibold">{claimableRewards} D.FAITH</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -927,7 +1158,9 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
               <h3 className="font-bold text-amber-400">Verfügbare Belohnungen</h3>
               <p className="text-xs text-zinc-500">
                 {!canClaim && nextClaimTimestamp > 0 
-                  ? `Nächster Claim in: ${formatTime(nextClaimTimestamp)}`
+                  ? `Nächster Claim in: ${formatTime(Math.max(0, nextClaimTimestamp - Math.floor(Date.now() / 1000)))}`
+                  : secondsPerClaim > 0 && staked !== "0"
+                  ? `Claim-Takt: alle ${formatTime(secondsPerClaim)} → ${minClaimAmount} D.FAITH`
                   : `Kontinuierliche D.FAITH Belohnungen (min. ${minClaimAmount})`
                 }
               </p>
@@ -938,6 +1171,27 @@ export default function StakeTab({ onStakeChanged }: StakeTabProps) {
             <div className="text-xs text-zinc-500">D.FAITH</div>
           </div>
         </div>
+        
+        {/* Sekunden pro Claim Anzeige */}
+        {staked !== "0" && secondsPerClaim > 0 && (
+          <div className="bg-blue-800/20 rounded-xl p-4 border border-blue-700/50 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-500/20 rounded-full">
+                <FaClock className="text-blue-400 text-sm" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-blue-400">Claim-Takt für Ihre gestakten Token</div>
+                <div className="text-xs text-zinc-400 mt-1">
+                  Mit {staked} D.INVEST erhalten Sie alle <span className="text-blue-300 font-bold">{formatTime(secondsPerClaim)}</span> den Mindestbetrag von {minClaimAmount} D.FAITH
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-blue-400">{formatTime(secondsPerClaim)}</div>
+                <div className="text-xs text-zinc-500">pro {minClaimAmount} D.FAITH</div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <Button 
           className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
