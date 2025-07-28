@@ -942,13 +942,17 @@ export default function WalletTab() {
   const renderDinvestSection = () => {
     return (
       <div className="flex flex-col items-center p-4 bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 rounded-xl border border-zinc-700 w-full">
-        <div className="uppercase text-xs tracking-widest text-amber-500/80 mb-2">D.INVEST</div>
+        <div className="uppercase text-xs tracking-widest text-amber-500/80 mb-2">D.INVEST Staking</div>
+        
+        {/* Verfügbare Rewards prominent anzeigen */}
         <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 mb-2 flex items-center">
-          {dinvestBalance?.displayValue || "0"}
+          {availableRewards}
           {(isLoadingBalances || isRefreshing) && (
             <span className="ml-2 text-xs text-amber-500/60 animate-pulse">↻</span>
           )}
         </div>
+        <div className="text-sm text-amber-400 font-medium mb-3">D.FAITH verfügbar</div>
+        
         <button 
           onClick={() => setShowStakeModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 hover:from-amber-500/30 hover:to-amber-600/30 transition-all border border-amber-500/20 mt-2"
@@ -956,21 +960,6 @@ export default function WalletTab() {
           <FaLock size={14} />
           <span className="text-sm font-medium">Staken & Verdienen</span>
         </button>
-        
-        {/* Verfügbare Rewards im Smart Contract */}
-        {parseFloat(availableRewards) > 0 && (
-          <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg w-full">
-            <div className="flex items-center justify-center gap-2">
-              <FaCoins className="text-amber-400 text-xs" />
-              <span className="text-sm font-medium text-amber-400">
-                {availableRewards} D.FAITH verfügbar
-              </span>
-            </div>
-            <div className="text-xs text-amber-300/70 mt-1 text-center">
-              Rewards im Smart Contract
-            </div>
-          </div>
-        )}
         
         {/* Gestaked Anzeige - verbessert */}
         {parseFloat(stakedBalance) > 0 ? (
@@ -985,6 +974,13 @@ export default function WalletTab() {
         ) : (
           <div className="text-xs text-zinc-500 mt-2">
             Noch nichts gestaked
+          </div>
+        )}
+        
+        {/* D.INVEST Balance klein anzeigen */}
+        {dinvestBalance?.displayValue && parseFloat(dinvestBalance.displayValue) > 0 && (
+          <div className="mt-2 text-xs text-zinc-400">
+            {dinvestBalance.displayValue} D.INVEST verfügbar zum Staken
           </div>
         )}
       </div>
