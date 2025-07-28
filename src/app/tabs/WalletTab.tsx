@@ -738,10 +738,14 @@ export default function WalletTab() {
           <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-t-3xl"></div>
           
           <CardContent className="p-8 relative z-10">
-            {/* Logo/Header */}
+            {/* Logo/Header mit Bild */}
             <div className="flex items-center justify-center gap-3 mb-8">
-              <div className="p-2 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-full">
-                <FaCoins className="text-black text-xl" />
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-yellow-400 to-amber-600 p-0.5 shadow-lg shadow-amber-500/20">
+                <img 
+                  src="/Dawid Faith Wallet.jpg" 
+                  alt="Dawid Faith Wallet" 
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">
                 Dawid Faith Wallet
@@ -825,11 +829,15 @@ export default function WalletTab() {
           <div className="absolute top-0 right-0 w-1/3 h-20 bg-amber-400/10 blur-3xl rounded-full"></div>
           
           <CardContent className="p-6 md:p-10 relative z-10">
-            {/* Header mit verbessertem Gold-Akzent */}
+            {/* Header mit verbessertem Gold-Akzent und Bild */}
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 md:p-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full shadow-lg shadow-amber-500/20">
-                  <FaCoins className="text-black text-lg md:text-xl" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-r from-amber-500 to-yellow-500 p-0.5 shadow-lg shadow-amber-500/20">
+                  <img 
+                    src="/Dawid Faith Wallet.jpg" 
+                    alt="Dawid Faith Wallet" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
                 <span className="text-base md:text-lg font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
                   Dawid Faith Wallet
