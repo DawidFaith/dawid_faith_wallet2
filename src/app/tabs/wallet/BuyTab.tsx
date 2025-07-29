@@ -279,8 +279,8 @@ export default function BuyTab() {
         const ethFormatted = Number(balance) / Math.pow(10, 18);
         console.log("Native ETH formatted:", ethFormatted);
         
-        // Auf 4 Stellen formatieren
-        setEthBalance(ethFormatted.toFixed(4));
+        // Auf 5 Stellen formatieren
+        setEthBalance(ethFormatted.toFixed(5));
         
       } catch (error) {
         console.error("Fehler beim Laden der ETH Balance:", error);
@@ -665,7 +665,7 @@ export default function BuyTab() {
               const data = await response.json();
               const ethRaw = data?.result ? BigInt(data.result) : BigInt(0);
               const currentEthBalance = Number(ethRaw) / Math.pow(10, 18);
-              setEthBalance(currentEthBalance.toFixed(4));
+              setEthBalance(currentEthBalance.toFixed(5));
             } catch (ethError) {
               console.log("ETH Balance Update Fehler (ignoriert):", ethError);
             }
@@ -734,7 +734,7 @@ export default function BuyTab() {
       balance: dfaithBalance,
       color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
       description: "Dawid Faith Token",
-      price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
+      price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(2)}€ pro D.FAITH` : (isLoadingPrice ? "Laden..." : (priceError || "Preis nicht verfügbar")),
       sub: dfaithPrice ? `1 ETH = ${(1 / dfaithPrice).toFixed(2)} D.FAITH` : "Wird geladen...",
       icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-10 h-10 object-contain" />,
     },
@@ -855,7 +855,7 @@ export default function BuyTab() {
                   {dfaithPriceEur && (
                     <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                       <span className="text-amber-400 text-xs font-semibold">
-                        €{dfaithPriceEur.toFixed(4)} / D.FAITH
+                        €{dfaithPriceEur.toFixed(2)} / D.FAITH
                       </span>
                     </div>
                   )}
@@ -907,7 +907,7 @@ export default function BuyTab() {
                       />
                       <button
                         className="text-purple-400 hover:text-purple-300 font-medium px-2 py-1 rounded flex-shrink-0"
-                        onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(4))}
+                        onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(5))}
                         disabled={isSwapping || parseFloat(ethBalance) <= 0 || buyStep !== 'initial'}
                       >
                         MAX

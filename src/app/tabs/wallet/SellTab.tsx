@@ -686,7 +686,7 @@ const tokenOptions = [
     balance: dfaithBalance,
     color: "from-transparent to-transparent", // Kein Hintergrund für D.FAITH
     description: "Dawid Faith Token",
-    price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(4)}€ pro D.FAITH` : "Wird geladen...",
+    price: dfaithPriceEur ? `${dfaithPriceEur.toFixed(2)}€ pro D.FAITH` : "Wird geladen...",
     icon: <img src="/D.FAITH.png" alt="D.FAITH" className="w-12 h-12 object-contain" />,
   },
   {
@@ -794,7 +794,7 @@ const tokenOptions = [
                 {dfaithPriceEur && (
                   <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                     <span className="text-amber-400 text-xs font-semibold">
-                      €{dfaithPriceEur.toFixed(4)} / D.FAITH
+                      €{dfaithPriceEur.toFixed(2)} / D.FAITH
                     </span>
                   </div>
                 )}
