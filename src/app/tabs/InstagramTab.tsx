@@ -177,7 +177,7 @@ export default function InstagramTab() {
 
   // UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-2 sm:p-4 relative font-[Poppins,sans-serif]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-white p-0 font-[Poppins,sans-serif]">
       {/* Lade-Overlay */}
       {loading && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex flex-col items-center justify-center">
@@ -251,7 +251,7 @@ export default function InstagramTab() {
       </Modal>
 
       {/* Card */}
-      <div className="card bg-white rounded-[28px] p-4 sm:p-8 w-full max-w-[410px] shadow-xl border border-zinc-200 text-zinc-900 text-center flex flex-col items-center relative" style={{boxShadow:'0 2px 24px 0 rgba(0,0,0,0.10)'}}>
+      <div className="card bg-white rounded-none sm:rounded-[28px] p-0 sm:p-8 w-full min-h-screen sm:min-h-fit max-w-full sm:max-w-[410px] shadow-none sm:shadow-xl border-0 sm:border border-zinc-200 text-zinc-900 text-center flex flex-col items-center relative">
         <div className="username text-[2rem] sm:text-[2.2rem] font-extrabold mb-2 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'Poppins,Arial,sans-serif'}}>
           <span>{username}</span>
         </div>
