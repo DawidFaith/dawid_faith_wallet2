@@ -1,7 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+let useContract: any, useContractRead: any;
+try {
+  // Dynamisch importieren, falls thirdweb installiert ist
+  ({ useContract, useContractRead } = require("@thirdweb-dev/react"));
+} catch (e) {
+  // Fallback: leere Funktionen, damit Build nicht crasht
+  useContract = () => ({ contract: null });
+  useContractRead = () => ({ data: null });
+}
 
 export default function TokenomicsTab() {
-  // Nur DexScreener-Chart bleibt erhalten
+  // Reward Pool aus Staking Contract (on-chain)
+  const stakingContractAddress = "0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940";
+  // useContract ohne Argumente aufrufen
+  const { contract } = useContract ? useContract() : { contract: null };
+  // useContractRead mit contract und functionName, contract ggf. mit Adresse initialisieren
+  const { data: contractInfo } =
+    useContractRead && contract
+      ? useContractRead({
+          contract,
+          functionName: "getContractInfo",
+          // ggf. args: [] falls benötigt
+        })
+      : { data: null };
+  // contractInfo: [totalStakedTokens, rewardBalance, currentStage, currentRate]
+  const rewardPool = contractInfo && contractInfo[1]
+    ? (Number(contractInfo[1]) / 100).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : null;
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
@@ -64,6 +89,16 @@ export default function TokenomicsTab() {
                   <div className="text-white font-semibold">100.000</div>
                 </div>
                 <div>
+                  <span className="text-zinc-400">Verteilung:</span>
+                  <div className="text-white text-xs">80.000 im Reward Pool (Staking Contract), 20.000 im Umlauf</div>
+                </div>
+                <div>
+                  <span className="text-zinc-400">Reward Pool:</span>
+                  <span className="text-amber-400 font-semibold" id="reward-pool">
+                    {rewardPool !== null ? `${rewardPool} D.FAITH` : "Lädt..."}
+                  </span>
+                </div>
+                <div>
                   <span className="text-zinc-400">Adresse:</span>
                   <div className="text-blue-400 font-mono text-xs break-all">
                     0x69eF...BbC1
@@ -115,6 +150,10 @@ export default function TokenomicsTab() {
                 <div>
                   <span className="text-zinc-400">Supply:</span>
                   <div className="text-white font-semibold">10.000</div>
+                </div>
+                <div>
+                  <span className="text-zinc-400">Verteilung:</span>
+                  <div className="text-white text-xs">100% im Umlauf</div>
                 </div>
                 <div>
                   <span className="text-zinc-400">Adresse:</span>
@@ -236,28 +275,28 @@ export default function TokenomicsTab() {
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded p-3">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-purple-400 font-semibold">Stufe 3</span>
-                    <span className="text-purple-400 font-bold">2,5% / Woche</span>
+                  <span className="text-purple-400 font-bold">2.5% / Woche</span>
                   </div>
                   <div className="text-xs text-zinc-400">20.000 – 40.000 D.FAITH</div>
                 </div>
                 <div className="bg-yellow-500/10 border border-yellow-500/20 rounded p-3">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-yellow-400 font-semibold">Stufe 4</span>
-                    <span className="text-yellow-400 font-bold">1,25% / Woche</span>
+                  <span className="text-yellow-400 font-bold">1.25% / Woche</span>
                   </div>
                   <div className="text-xs text-zinc-400">40.000 – 60.000 D.FAITH</div>
                 </div>
                 <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-red-400 font-semibold">Stufe 5</span>
-                    <span className="text-red-400 font-bold">0,63% / Woche</span>
+                  <span className="text-red-400 font-bold">0.63% / Woche</span>
                   </div>
                   <div className="text-xs text-zinc-400">60.000 – 80.000 D.FAITH</div>
                 </div>
                 <div className="bg-zinc-500/10 border border-zinc-500/20 rounded p-3">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-zinc-400 font-semibold">Stufe 6</span>
-                    <span className="text-zinc-400 font-bold">0,31% / Woche</span>
+                  <span className="text-zinc-400 font-bold">0.31% / Woche</span>
                   </div>
                   <div className="text-xs text-zinc-400">80.000+ D.FAITH (Finale Stufe)</div>
                 </div>
@@ -288,66 +327,13 @@ export default function TokenomicsTab() {
                 <span className="text-amber-400 font-bold">3</span>
               </div>
               <h5 className="font-semibold text-white mb-1">Auszahlen & Reinvestieren</h5>
-              <p className="text-zinc-400 text-xs">Belohnungen jederzeit auszahlen (min. 0,01 D.FAITH) oder automatisch reinvestieren</p>
+              <p className="text-zinc-400 text-xs">Belohnungen jederzeit auszahlen (min. 0.01 D.FAITH) oder automatisch reinvestieren</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Verteilungs-Info */}
-      <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
-        <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-          🎯 Token-Verteilung
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* D.FAITH Verteilung */}
-          <div className="bg-amber-500/5 rounded-lg p-4 border border-amber-500/20">
-            <h4 className="font-semibold text-amber-400 mb-3">D.FAITH Verteilung</h4>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-300">Smart Contract (Staking-Belohnungen)</span>
-                <span className="text-amber-400 font-semibold">80.000 (80%)</span>
-              </div>
-              <div className="w-full bg-zinc-700 rounded-full h-3">
-                <div className="bg-amber-400 h-3 rounded-full" style={{ width: '80%' }}></div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-300">Umlaufmenge</span>
-                <span className="text-white font-semibold">20.000 (20%)</span>
-              </div>
-              <div className="w-full bg-zinc-700 rounded-full h-3">
-                <div className="bg-zinc-400 h-3 rounded-full" style={{ width: '20%' }}></div>
-              </div>
-            </div>
-          </div>
-          {/* Wichtige Kennzahlen */}
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-400 mb-3">📊 Wichtige Kennzahlen</h4>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Max. D.FAITH durch Staking:</span>
-                <span className="text-amber-400 font-semibold">80.000</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Benötigte D.INVEST für vollen Zugang:</span>
-                <span className="text-blue-400 font-semibold">Beliebiger Betrag</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Belohnungsberechnung:</span>
-                <span className="text-green-400 font-semibold">Echtzeit</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Mindest-Auszahlung:</span>
-                <span className="text-white font-semibold">0,01 D.FAITH</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Unstaking-Dauer:</span>
-                <span className="text-green-400 font-semibold">Sofort</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Verteilungs-Info entfernt, Tokenverteilung jetzt in den Tokenboxen */}
     </div>
   );
 }
