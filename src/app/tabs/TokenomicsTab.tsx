@@ -52,24 +52,20 @@ export default function TokenomicsTab() {
               <h4 className="font-semibold text-amber-300 mb-3">📊 Token Details</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-zinc-400">Gesamtangebot:</span>
-                  <div className="text-white font-semibold">100.000 D.FAITH</div>
+                  <span className="text-zinc-400">Token Name:</span>
+                  <div className="text-white font-semibold">Dawid Faith</div>
                 </div>
                 <div>
-                  <span className="text-zinc-400">Dezimalstellen:</span>
-                  <div className="text-white font-semibold">2</div>
+                  <span className="text-zinc-400">Symbol:</span>
+                  <div className="text-white font-semibold">D.FAITH</div>
+                </div>
+                <div>
+                  <span className="text-zinc-400">Supply:</span>
+                  <div className="text-white font-semibold">100.000</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Contract:</span>
-                  <a href="https://basescan.org/address/0x7109214bafde13a6ef8060644656464bccab93cd#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Verifizierter Code</a>
-                </div>
-                <div>
-                  <span className="text-zinc-400">Im Smart Contract:</span>
-                  <div className="text-amber-400 font-semibold">80% (80.000)</div>
-                </div>
-                <div>
-                  <span className="text-zinc-400">Umlaufmenge:</span>
-                  <div className="text-white font-semibold">20% (20.000)</div>
+                  <span className="text-zinc-400">Address:</span>
+                  <a href="https://basescan.org/address/0x69eFD833288605f320d77eB2aB99DDE62919BbC1#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">0x69eFD833288605f320d77eB2aB99DDE62919BbC1</a>
                 </div>
               </div>
             </div>
@@ -106,16 +102,20 @@ export default function TokenomicsTab() {
               <h4 className="font-semibold text-blue-300 mb-3">📊 Token Details</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-zinc-400">Gesamtangebot:</span>
-                  <div className="text-white font-semibold">10.000 D.INVEST</div>
+                  <span className="text-zinc-400">Token Name:</span>
+                  <div className="text-white font-semibold">D.INVEST</div>
                 </div>
                 <div>
-                  <span className="text-zinc-400">Dezimalstellen:</span>
-                  <div className="text-white font-semibold">0</div>
+                  <span className="text-zinc-400">Symbol:</span>
+                  <div className="text-white font-semibold">D.INVEST</div>
+                </div>
+                <div>
+                  <span className="text-zinc-400">Supply:</span>
+                  <div className="text-white font-semibold">10.000</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Contract:</span>
-                  <a href="https://basescan.org/address/0x1234567890abcdef1234567890abcdef12345679#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Verifizierter Code</a>
+                  <span className="text-zinc-400">Address:</span>
+                  <a href="https://basescan.org/address/0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb</a>
                 </div>
                 <div>
                   <span className="text-zinc-400">Preis:</span>
@@ -159,9 +159,10 @@ export default function TokenomicsTab() {
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <h4 className="font-semibold text-purple-400 mb-3">📋 Vertragsdetails</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-zinc-400">Vertragstyp:</span>
                   <span className="text-white">WeeklyTokenStaking</span>
+                  <a href="https://basescan.org/address/0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940#code" target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-400 underline text-xs">Verifizierter Code</a>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Sicherheit:</span>
