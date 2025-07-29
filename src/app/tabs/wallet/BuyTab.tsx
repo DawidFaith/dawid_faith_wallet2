@@ -279,8 +279,8 @@ export default function BuyTab() {
         const ethFormatted = Number(balance) / Math.pow(10, 18);
         console.log("Native ETH formatted:", ethFormatted);
         
-        // Auf 3 Stellen formatieren
-        setEthBalance(ethFormatted.toFixed(3));
+        // Auf 4 Stellen formatieren
+        setEthBalance(ethFormatted.toFixed(4));
         
       } catch (error) {
         console.error("Fehler beim Laden der ETH Balance:", error);
@@ -665,7 +665,7 @@ export default function BuyTab() {
               const data = await response.json();
               const ethRaw = data?.result ? BigInt(data.result) : BigInt(0);
               const currentEthBalance = Number(ethRaw) / Math.pow(10, 18);
-              setEthBalance(currentEthBalance.toFixed(3));
+              setEthBalance(currentEthBalance.toFixed(4));
             } catch (ethError) {
               console.log("ETH Balance Update Fehler (ignoriert):", ethError);
             }
@@ -892,8 +892,8 @@ export default function BuyTab() {
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2 bg-purple-500/20 rounded-lg px-2 py-1 border border-purple-500/30 flex-shrink-0">
                         <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
+                        <span className="text-purple-400 text-xs font-semibold">{ethBalance}</span>
                         <span className="text-purple-300 font-semibold text-xs">ETH</span>
-                        <span className="text-purple-400 text-xs ml-1">({ethBalance})</span>
                       </div>
                       <input
                         type="number"
@@ -907,7 +907,7 @@ export default function BuyTab() {
                       />
                       <button
                         className="text-purple-400 hover:text-purple-300 font-medium px-2 py-1 rounded flex-shrink-0"
-                        onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(3))}
+                        onClick={() => setSwapAmountEth((parseFloat(ethBalance) * 0.95).toFixed(4))}
                         disabled={isSwapping || parseFloat(ethBalance) <= 0 || buyStep !== 'initial'}
                       >
                         MAX
