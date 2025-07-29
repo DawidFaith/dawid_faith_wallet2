@@ -177,7 +177,13 @@ export default function InstagramTab() {
 
   // UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-4 relative font-[Poppins,sans-serif]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e1b4b] via-[#6d28d9] via-40% to-[#f472b6] p-4 relative font-[Poppins,sans-serif]" style={{
+      backgroundImage: `url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80'), linear-gradient(135deg, #1e1b4b 0%, #6d28d9 50%, #f472b6 100%)`,
+      backgroundBlendMode: 'overlay',
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh'
+    }}>
       {/* Lade-Overlay */}
       {loading && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex flex-col items-center justify-center">
@@ -251,43 +257,46 @@ export default function InstagramTab() {
       </Modal>
 
       {/* Card */}
-      <div className="card bg-[rgba(221,42,123,0.18)] rounded-[30px] p-8 w-full max-w-[400px] shadow-2xl border-2 border-white/15 text-white text-center flex flex-col items-center" style={{boxShadow:'0 0 30px rgba(0,0,0,0.2)'}}>
-        <div className="username text-2xl font-bold mb-2">{username}</div>
+      <div className="card bg-[rgba(30,27,75,0.85)] rounded-[32px] p-8 w-full max-w-[420px] shadow-2xl border-2 border-pink-400/30 text-white text-center flex flex-col items-center relative" style={{boxShadow:'0 0 40px 0 #6d28d9, 0 0 80px 0 #f472b6'}}>
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-2 animate-bounce">
+          <span role="img" aria-label="note" className="text-pink-300 text-3xl">🎵</span>
+          <span role="img" aria-label="note2" className="text-purple-400 text-2xl">🎶</span>
+        </div>
+        <div className="username text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+          <span>{username}</span>
+          <span className="text-pink-300 animate-pulse">{level >= 10 ? "🌟" : ""}</span>
+        </div>
         <img
-          src={profileImage || "https://via.placeholder.com/100"}
+          src={profileImage || "https://cdn-icons-png.flaticon.com/512/727/727245.png"}
           alt="Profilbild"
-          className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white/20"
+          className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-pink-400/40 shadow-lg"
+          style={{boxShadow:'0 0 0 6px #f472b6, 0 0 0 12px #6d28d9'}}
         />
-        <div className="level-box bg-black/20 rounded-2xl p-4 mb-4 w-full">
+        <div className="level-box bg-gradient-to-r from-[#6d28d9]/60 via-[#f472b6]/40 to-[#1e1b4b]/60 rounded-2xl p-5 mb-4 w-full border border-pink-400/30 shadow-inner">
           <div className="flex justify-between items-center mb-2">
-            <div className="level font-bold text-lg text-yellow-300">Level {level}</div>
-            <div className="exp text-base">{exp} / {maxExp} EXP</div>
-            <button className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow border border-pink-200" title="Info" onClick={() => setModal("info")}>i</button>
+            <div className="level font-bold text-lg text-pink-200 flex items-center gap-2">
+              <span className="inline-block"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path fill="#f472b6" d="M12 2l2.09 6.26L20 9.27l-5 3.64L16.18 21 12 17.27 7.82 21 9 12.91l-5-3.64 5.91-.01L12 2z"/></svg></span>
+              Level {level}
+            </div>
+            <div className="exp text-base text-purple-200">{exp} / {maxExp} EXP</div>
+            <button className="bg-pink-200 text-[#6d28d9] font-bold rounded-full w-8 h-8 flex items-center justify-center shadow border border-pink-400/60 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>🎧</button>
           </div>
-          <div className="progress-bar relative w-full h-4 bg-[#111] rounded-full overflow-hidden mb-2">
+          <div className="progress-bar relative w-full h-5 bg-[#2d225a] rounded-full overflow-hidden mb-2 shadow-inner">
             <div
-              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4]"
-              style={{ width: `${progressPercent}%` }}
+              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#f472b6] via-[#6d28d9] to-[#1e1b4b] animate-pulse"
+              style={{ width: `${progressPercent}%`, transition: 'width 0.7s cubic-bezier(.4,2,.6,1)' }}
             ></div>
             <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs font-bold text-white drop-shadow">
-              {progressPercent}%
+              <span className="inline-block mr-1">🎵</span>{progressPercent}%
             </div>
           </div>
-          <div className="mt-2 text-yellow-300 text-base flex items-center justify-center gap-1">
-            ⛏ <span>+{miningPower} D.Faith</span>
+          <div className="mt-2 text-pink-200 text-base flex items-center justify-center gap-2">
+            <span role="img" aria-label="music">🎸</span> <span>+{miningPower} D.Faith</span>
           </div>
         </div>
-        {/* EXP-Quellen */}
-        <div className="exp-list text-left text-sm bg-white/10 rounded-xl p-3 mb-4 w-full">
-          <div className="flex justify-between"><span>TikTok:</span><span>{expTiktok} EXP</span></div>
-          <div className="flex justify-between"><span>Instagram:</span><span>{expInstagram} EXP</span></div>
-          <div className="flex justify-between"><span>Stream:</span><span>{expStream} EXP</span></div>
-          <div className="flex justify-between"><span>Facebook:</span><span>{expFacebook} EXP</span></div>
-          <div className="flex justify-between"><span>LiveExp:</span><span>+{liveExp}%</span></div>
-        </div>
         {/* System-Check */}
-        <div className="system-check border-2 border-white rounded-2xl p-4 bg-white/10 mb-4 w-full">
-          <div className="system-check-header font-bold text-base mb-2">✅ System Check</div>
+        <div className="system-check border-2 border-pink-400/30 rounded-2xl p-4 bg-[#2d225a]/60 mb-4 w-full shadow-inner">
+          <div className="system-check-header font-bold text-base mb-2 flex items-center gap-2 text-pink-200">✅ System Check <span className="text-purple-300">🎤</span></div>
           <div className="check-item flex justify-between mb-1"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
           <div className="check-item flex justify-between mb-1"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
           <div className="check-item flex justify-between mb-1"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
@@ -295,8 +304,8 @@ export default function InstagramTab() {
         </div>
         {/* Buttons */}
         <div className="button-row flex gap-4 mt-6 w-full">
-          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("claim")}>🪙 Claim</button>
+          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#f472b6] via-[#6d28d9] to-[#1e1b4b] shadow-lg hover:scale-105 transition text-white text-lg flex items-center justify-center gap-2" onClick={() => setModal("upgrade")}>🎶 <span>Upgrade</span></button>
+          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#6d28d9] via-[#f472b6] to-[#1e1b4b] shadow-lg hover:scale-105 transition text-white text-lg flex items-center justify-center gap-2" onClick={() => setModal("claim")}>🎵 <span>Claim</span></button>
         </div>
       </div>
     </div>
