@@ -316,10 +316,13 @@ export default function SellTab() {
       }
       
       setQuoteTxData(buildTxData);
-      setSpenderAddress(buildTxData.to); // ParaSwap Router Address
       
-      // 3. Prüfe Allowance für D.FAITH Token
-      console.log("3. Prüfe Allowance für ParaSwap Router:", buildTxData.to);
+      // Verwende die ParaSwap TokenTransferProxy Adresse für Base Chain
+      const paraswapTokenTransferProxy = "0x93aAAe79a53759cD164340E4C8766E4Db5331cD7"; // ParaSwap TokenTransferProxy auf Base
+      setSpenderAddress(paraswapTokenTransferProxy);
+      
+      // 3. Prüfe Allowance für D.FAITH Token mit korrekter Spender-Adresse
+      console.log("3. Prüfe Allowance für ParaSwap TokenTransferProxy:", paraswapTokenTransferProxy);
       
       try {
         const contract = getContract({
@@ -332,19 +335,19 @@ export default function SellTab() {
         const currentAllowance = await readContract({
           contract,
           method: "function allowance(address owner, address spender) view returns (uint256)",
-          params: [account.address, buildTxData.to]
+          params: [account.address, paraswapTokenTransferProxy]
         });
         
-        console.log("Aktuelle Allowance:", currentAllowance.toString());
+        console.log("Aktuelle Allowance für TokenTransferProxy:", currentAllowance.toString());
         
         const requiredAmount = BigInt(priceData.priceRoute.srcAmount);
         console.log("Benötigte Allowance:", requiredAmount.toString());
         
         if (currentAllowance < requiredAmount) {
-          console.log("Approval nötig");
+          console.log("Approval nötig für TokenTransferProxy");
           setNeedsApproval(true);
         } else {
-          console.log("Approval bereits vorhanden");
+          console.log("Approval bereits vorhanden für TokenTransferProxy");
           setNeedsApproval(false);
         }
       } catch (allowanceError) {
@@ -383,7 +386,7 @@ export default function SellTab() {
     if (!spenderAddress || !account?.address) return;
     setSwapTxStatus("approving");
     try {
-      console.log("3. Approve Transaktion starten für ParaSwap Router:", spenderAddress);
+      console.log("3. Approve Transaktion starten für ParaSwap TokenTransferProxy:", spenderAddress);
       
       const contract = getContract({
         client,
@@ -397,6 +400,7 @@ export default function SellTab() {
       console.log("Verkaufsbetrag:", sellAmount);
       console.log("Approve-Betrag:", "MAX (type(uint256).max)");
       console.log("Approve-Betrag Wert:", maxApproval.toString());
+      console.log("Spender (TokenTransferProxy):", spenderAddress);
       
       const approveTransaction = prepareContractCall({
         contract,
@@ -404,7 +408,7 @@ export default function SellTab() {
         params: [spenderAddress, maxApproval]
       });
       
-      console.log("Sending approve transaction...");
+      console.log("Sending approve transaction to TokenTransferProxy...");
       const approveResult = await sendTransaction(approveTransaction);
       console.log("Approve TX gesendet:", approveResult);
       
