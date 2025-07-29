@@ -1,6 +1,49 @@
 
 import React, { useEffect, useState } from "react";
 
+// Instagram Story-Ring SVG
+function StoryRing({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative flex items-center justify-center">
+      <svg width="104" height="104" viewBox="0 0 104 104" className="absolute z-0 animate-spin-slow" style={{filter:'drop-shadow(0 0 8px #fd1d1d88)'}}>
+        <defs>
+          <linearGradient id="ig-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#f58529"/>
+            <stop offset="50%" stopColor="#dd2a7b"/>
+            <stop offset="100%" stopColor="#515bd4"/>
+          </linearGradient>
+        </defs>
+        <circle cx="52" cy="52" r="48" stroke="url(#ig-ring)" strokeWidth="6" fill="none" />
+      </svg>
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
+
+// Kreis-Progressbar für Level
+function CircleProgress({ percent, children }: { percent: number, children?: React.ReactNode }) {
+  const r = 38, c = 2 * Math.PI * r;
+  const p = Math.max(0, Math.min(percent, 100));
+  return (
+    <svg width="90" height="90" className="block mx-auto">
+      <circle cx="45" cy="45" r={r} stroke="#eee" strokeWidth="8" fill="none" />
+      <circle cx="45" cy="45" r={r} stroke="url(#ig-ring)" strokeWidth="8" fill="none" strokeDasharray={c} strokeDashoffset={c - c * p / 100} style={{transition:'stroke-dashoffset 0.7s cubic-bezier(.4,2,.6,1)'}}/>
+      <defs>
+        <linearGradient id="ig-ring" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#f58529"/>
+          <stop offset="50%" stopColor="#dd2a7b"/>
+          <stop offset="100%" stopColor="#515bd4"/>
+        </linearGradient>
+      </defs>
+      {children && <foreignObject x="15" y="15" width="60" height="60">
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          {children}
+        </div>
+      </foreignObject>}
+    </svg>
+  );
+}
+
 // Hilfsfunktionen für Level/EXP
 const levelThresholds = [39, 119, 239, 399, 599, 839, 1119, 1439, 1799, 2199, 2639, 3119, 3639, 4199, 4799, 5439, 6119, 6839, 7599, 8399, 9239, 10119, 11039, 11999, 12999, 14039, 15119, 16239, 17399, 18599, 19839, 21119, 22439, 23799, 25199, 26639, 28119, 29639, 31199, 32799, 34439, 36119, 37839, 39599, 41399, 43239, 45119, 47039, 48999, 99999999];
 const levelMins = [0, 40, 120, 240, 400, 600, 840, 1120, 1440, 1800, 2200, 2640, 3120, 3640, 4200, 4800, 5440, 6120, 6840, 7600, 8400, 9240, 10120, 11040, 12000, 13000, 14040, 15120, 16240, 17400, 18600, 19840, 21120, 22440, 23800, 25200, 26640, 28120, 29640, 31200, 32800, 34440, 36120, 37840, 39600, 41400, 43240, 45120, 47040, 49000];
@@ -250,49 +293,87 @@ export default function InstagramTab() {
         <p><b>🔒 Wichtiger Hinweis:</b><br/><br/>Deine Wallet-Adresse wird dauerhaft mit deinem Social-Media-Account verbunden.<br/><br/>Wenn du sie ändern willst, schreib mir eine <b>DM mit dem Stichwort „Wallet“</b> auf <b>Instagram</b>.</p>
       </Modal>
 
-      {/* Card */}
-      <div className="card bg-white rounded-[28px] p-4 sm:p-8 w-full max-w-[410px] shadow-xl border border-zinc-200 text-zinc-900 text-center flex flex-col items-center relative" style={{boxShadow:'0 2px 24px 0 rgba(0,0,0,0.10)'}}>
-        <div className="username text-[2rem] sm:text-[2.2rem] font-extrabold mb-2 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'Poppins,Arial,sans-serif'}}>
-          <span>{username}</span>
+      {/* Instagram Gradient Header */}
+      <div className="w-full max-w-full sm:max-w-[410px] h-2 rounded-t-3xl mb-[-8px] bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4] animate-gradient-x" />
+      <div className="card bg-white rounded-3xl p-2 xs:p-3 sm:p-8 w-full max-w-full sm:max-w-[410px] shadow-2xl border border-zinc-200 text-zinc-900 text-center flex flex-col items-center relative" style={{boxShadow:'0 4px 32px 0 rgba(221,42,123,0.10)'}}>
+        <div className="flex flex-col items-center w-full">
+          <div className="mt-2 mb-2">
+            <StoryRing>
+              <img
+                src={profileImage || "https://via.placeholder.com/100"}
+                alt="Profilbild"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-md animate-pop"
+              />
+            </StoryRing>
+          </div>
+          <div className="username text-[2.1rem] sm:text-[2.3rem] font-extrabold mb-1 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'Poppins,Arial,sans-serif'}}>
+            <span>{username}</span>
+            <span className="inline-block text-[#fd1d1d] animate-bounce">{level >= 10 ? <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fd1d1d"/><text x="12" y="17" textAnchor="middle" fontSize="14" fill="#fff" fontWeight="bold">★</text></svg> : null}</span>
+          </div>
         </div>
-        <img
-          src={profileImage || "https://via.placeholder.com/100"}
-          alt="Profilbild"
-          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-md"
-        />
-        <div className="level-box bg-gradient-to-r from-[#f58529]/10 via-[#dd2a7b]/10 to-[#515bd4]/10 rounded-2xl p-3 sm:p-4 mb-4 w-full">
-          <div className="flex justify-between items-center mb-2">
-            <div className="level font-extrabold text-lg sm:text-xl text-[#f58529] tracking-tight">Level {level}</div>
-            <div className="exp text-base sm:text-lg font-semibold">{exp} / {maxExp} EXP</div>
-            <button className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow border border-pink-200 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
-          </div>
-          <div className="progress-bar relative w-full h-3 sm:h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
-            <div
-              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4]"
-              style={{ width: `${progressPercent}%`, transition: 'width 0.7s cubic-bezier(.4,2,.6,1)' }}
-            ></div>
-            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-bold text-white drop-shadow">
-              {progressPercent}%
+        <div className="my-2 flex flex-col items-center">
+          <CircleProgress percent={progressPercent}>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-lg sm:text-xl font-extrabold text-[#fd1d1d] drop-shadow">{progressPercent}%</span>
+              <span className="text-xs text-zinc-500 font-semibold">Level {level}</span>
             </div>
-          </div>
-          <div className="mt-2 text-yellow-500 text-base sm:text-lg flex items-center justify-center gap-1 font-semibold">
-            ⛏ <span>+{miningPower} D.Faith</span>
+          </CircleProgress>
+          <div className="mt-2 text-[#f58529] text-base sm:text-lg font-semibold">{exp} / {maxExp} EXP</div>
+          <div className="mt-1 text-yellow-500 text-base sm:text-lg flex items-center justify-center gap-1 font-semibold">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 2l2.09 6.26L20 9.27l-5 3.64L16.18 21 12 17.27 7.82 21 9 12.91l-5-3.64 5.91-.01L12 2z" fill="#fbc02d"/></svg>
+            <span>+{miningPower} D.Faith</span>
           </div>
         </div>
         {/* System-Check */}
-        <div className="system-check border border-zinc-200 rounded-2xl p-3 sm:p-4 bg-white/60 mb-4 w-full">
-          <div className="system-check-header font-bold text-base sm:text-lg mb-2 text-[#dd2a7b]">✅ System Check</div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💾 Save</span><span>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
+        <div className="system-check border border-zinc-200 rounded-2xl p-3 sm:p-4 bg-white/70 mb-4 w-full mt-2">
+          <div className="system-check-header font-bold text-base sm:text-lg mb-2 text-[#dd2a7b] flex items-center gap-2">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fd1d1d"/><text x="12" y="17" textAnchor="middle" fontSize="14" fill="#fff" fontWeight="bold">IG</text></svg>
+            System Check
+          </div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium items-center">
+            <span className="flex items-center gap-1"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#fd1d1d"/></svg> Like</span>
+            <span className={checkLike ? "text-green-600" : "text-red-400"}>{checkLike ? "✅" : "❌"} +10 EXP</span>
+          </div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium items-center">
+            <span className="flex items-center gap-1"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 6.5a2.5 2.5 0 0 0-2.5-2.5h-13A2.5 2.5 0 0 0 3 6.5v11A2.5 2.5 0 0 0 5.5 20h13a2.5 2.5 0 0 0 2.5-2.5v-11zM5.5 5h13A1.5 1.5 0 0 1 20 6.5V7H4v-.5A1.5 1.5 0 0 1 5.5 5zm13 14h-13A1.5 1.5 0 0 1 4 17.5V8h16v9.5a1.5 1.5 0 0 1-1.5 1.5z" fill="#fd1d1d"/></svg> Kommentar</span>
+            <span className={checkComment ? "text-green-600" : "text-red-400"}>{checkComment ? "✅" : "❌"} +10 EXP</span>
+          </div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium items-center">
+            <span className="flex items-center gap-1"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M17.5 6.5a5.5 5.5 0 1 0-11 0c0 2.74 2.24 5.02 5.5 8.54 3.26-3.52 5.5-5.8 5.5-8.54zM12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#fd1d1d"/></svg> Story</span>
+            <span className={checkStory ? "text-green-600" : "text-red-400"}>{checkStory ? "✅" : "❌"} +20 EXP</span>
+          </div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium items-center">
+            <span className="flex items-center gap-1"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#fd1d1d"/><path d="M8 12l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> Save</span>
+            <span className={checkSave ? "text-green-600" : "text-red-400"}>{checkSave ? "✅" : "❌"} +10 EXP</span>
+          </div>
         </div>
         {/* Buttons */}
         <div className="button-row flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
-          <button className="btn-upgrade flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-md hover:scale-105 transition text-white text-lg sm:text-xl tracking-tight" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-md hover:scale-105 transition text-white text-lg sm:text-xl tracking-tight" onClick={() => setModal("claim")}>🪙 Claim</button>
+          <button className="btn-upgrade flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-lg hover:scale-105 active:scale-95 transition text-white text-lg sm:text-xl tracking-tight flex items-center justify-center gap-2 animate-pop" onClick={() => setModal("upgrade")}>⚡ Upgrade</button>
+          <button className="btn-claim flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-lg hover:scale-105 active:scale-95 transition text-white text-lg sm:text-xl tracking-tight flex items-center justify-center gap-2 animate-pop" onClick={() => setModal("claim")}>✅ Claim</button>
         </div>
       </div>
+      <style jsx global>{`
+        @keyframes gradient-x {
+          0%,100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 4s ease-in-out infinite;
+        }
+        .animate-pop {
+          animation: pop 0.3s cubic-bezier(.4,2,.6,1);
+        }
+        @keyframes pop {
+          0% { transform: scale(0.95); }
+          80% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        .animate-spin-slow {
+          animation: spin 6s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
