@@ -59,6 +59,10 @@ export default function TokenomicsTab() {
                   <span className="text-zinc-400">Dezimalstellen:</span>
                   <div className="text-white font-semibold">2</div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-400">Contract:</span>
+                  <a href="https://basescan.org/address/0x7109214bafde13a6ef8060644656464bccab93cd#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Verifizierter Code</a>
+                </div>
                 <div>
                   <span className="text-zinc-400">Im Smart Contract:</span>
                   <div className="text-amber-400 font-semibold">80% (80.000)</div>
@@ -74,7 +78,7 @@ export default function TokenomicsTab() {
               <ul className="text-sm text-zinc-300 space-y-1">
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Handel & Staking auf Base Chain</span>
+                  <span>Handel auf der Base Chain</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
@@ -108,6 +112,10 @@ export default function TokenomicsTab() {
                 <div>
                   <span className="text-zinc-400">Dezimalstellen:</span>
                   <div className="text-white font-semibold">0</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-400">Contract:</span>
+                  <a href="https://basescan.org/address/0x1234567890abcdef1234567890abcdef12345679#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Verifizierter Code</a>
                 </div>
                 <div>
                   <span className="text-zinc-400">Preis:</span>
