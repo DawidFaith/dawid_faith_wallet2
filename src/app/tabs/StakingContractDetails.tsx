@@ -110,6 +110,54 @@ export default function StakingContractDetails() {
           </div>
         </div>
       </div>
+      {/* Reward-Stufen Übersicht */}
+      <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6 w-full mt-4">
+        <h4 className="font-semibold text-orange-400 mb-3">📈 Reward-Stufen (Halving-System)</h4>
+        <div className="space-y-3">
+          <div className="bg-green-500/10 border border-green-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-green-400 font-semibold">Stufe 1</span>
+              <span className="text-green-400 font-bold">10% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">0 – 10.000 D.FAITH ausgeschüttet</div>
+          </div>
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-blue-400 font-semibold">Stufe 2</span>
+              <span className="text-blue-400 font-bold">5% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">10.000 – 20.000 D.FAITH</div>
+          </div>
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-purple-400 font-semibold">Stufe 3</span>
+              <span className="text-purple-400 font-bold">2,5% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">20.000 – 40.000 D.FAITH</div>
+          </div>
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-yellow-400 font-semibold">Stufe 4</span>
+              <span className="text-yellow-400 font-bold">1,25% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">40.000 – 60.000 D.FAITH</div>
+          </div>
+          <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-red-400 font-semibold">Stufe 5</span>
+              <span className="text-red-400 font-bold">0,63% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">60.000 – 80.000 D.FAITH</div>
+          </div>
+          <div className="bg-zinc-500/10 border border-zinc-500/20 rounded p-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-zinc-400 font-semibold">Stufe 6</span>
+              <span className="text-zinc-400 font-bold">0,31% / Woche</span>
+            </div>
+            <div className="text-xs text-zinc-400">80.000+ D.FAITH (Finale Stufe)</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
