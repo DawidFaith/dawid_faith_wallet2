@@ -614,84 +614,94 @@ export default function BuyTab() {
       }
       
       setSwapTxStatus("verifying");
-      console.log("Verifiziere ETH-Balance-Änderung nach ParaSwap...");
+      console.log("Verifiziere D.FAITH-Balance-Erhöhung nach ParaSwap...");
       
-      // ETH-Balance-Verifizierung mit mehreren Versuchen
+      // Aktuelle D.FAITH Balance vor dem Swap speichern
+      const initialDFaithBalance = parseFloat(dfaithBalance);
+      console.log("Initiale D.FAITH Balance:", initialDFaithBalance);
+      
+      // D.FAITH-Balance-Verifizierung mit schnelleren Intervallen
       let balanceVerified = false;
       let attempts = 0;
-      const maxAttempts = 30; // Maximal 30 Versuche
+      const maxAttempts = 20; // Maximal 20 Versuche (60 Sekunden total)
       
-      // Erste Wartezeit nach Transaktionsbestätigung
-      console.log("Warte 3 Sekunden vor erster Balance-Prüfung...");
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Erste kurze Wartezeit nach Transaktionsbestätigung
+      console.log("Warte 2 Sekunden vor erster D.FAITH Balance-Prüfung...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       while (!balanceVerified && attempts < maxAttempts) {
         attempts++;
-        console.log(`ETH-Balance-Verifizierung Versuch ${attempts}/${maxAttempts} nach ParaSwap`);
+        console.log(`D.FAITH-Balance-Verifizierung Versuch ${attempts}/${maxAttempts}`);
         
         try {
-          if (attempts > 1) {
-            const waitTime = Math.min(attempts * 1000, 10000); // 1s, 2s, 3s... bis max 10s
-            console.log(`Warte ${waitTime/1000} Sekunden vor nächstem Versuch...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-          }
-          // ETH-Balance neu laden
-          const response = await fetch(base.rpc, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              method: 'eth_getBalance',
-              params: [account.address, 'latest'],
-              id: 1
-            })
-          });
-          const data = await response.json();
-          const ethRaw = data?.result ? BigInt(data.result) : BigInt(0);
-          const currentEthBalance = Number(ethRaw) / Math.pow(10, 18);
+          // D.FAITH Balance neu laden
+          const dfaithValue = await fetchTokenBalanceViaInsightApi(DFAITH_TOKEN, account.address);
+          const dfaithRaw = Number(dfaithValue);
+          const currentDFaithBalance = dfaithRaw / Math.pow(10, DFAITH_DECIMALS);
           
-          console.log(`Initiale ETH-Balance: ${initialEthBalance}, Aktuelle ETH-Balance: ${currentEthBalance}`);
+          console.log(`Initiale D.FAITH: ${initialDFaithBalance}, Aktuelle D.FAITH: ${currentDFaithBalance}`);
           
-          // Prüfe ob sich die ETH-Balance um mindestens den Kaufbetrag verringert hat (mit 10% Toleranz für Fees)
-          const expectedDecrease = ethAmount;
-          const actualDecrease = initialEthBalance - currentEthBalance;
+          // Prüfe ob sich die D.FAITH Balance erhöht hat (mindestens 0.01 D.FAITH Unterschied)
+          const balanceIncrease = currentDFaithBalance - initialDFaithBalance;
           
-          console.log(`Erwartete Verringerung: ${expectedDecrease}, Tatsächliche Verringerung: ${actualDecrease}`);
-          
-          if (actualDecrease >= (expectedDecrease * 0.9)) { // 10% Toleranz
-            console.log("✅ ETH-Balance-Änderung nach ParaSwap verifiziert - Kauf erfolgreich!");
-            setEthBalance(currentEthBalance.toFixed(3));
+          if (balanceIncrease > 0.01) { // Mindestens 0.01 D.FAITH Erhöhung
+            console.log(`✅ D.FAITH-Balance-Erhöhung verifiziert: +${balanceIncrease.toFixed(2)} D.FAITH - Kauf erfolgreich!`);
+            
+            // Balances aktualisieren
+            setDfaithBalance(currentDFaithBalance.toFixed(DFAITH_DECIMALS));
+            
+            // ETH Balance auch aktualisieren
+            try {
+              const response = await fetch(base.rpc, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  jsonrpc: '2.0',
+                  method: 'eth_getBalance',
+                  params: [account.address, 'latest'],
+                  id: 1
+                })
+              });
+              const data = await response.json();
+              const ethRaw = data?.result ? BigInt(data.result) : BigInt(0);
+              const currentEthBalance = Number(ethRaw) / Math.pow(10, 18);
+              setEthBalance(currentEthBalance.toFixed(3));
+            } catch (ethError) {
+              console.log("ETH Balance Update Fehler (ignoriert):", ethError);
+            }
+            
             balanceVerified = true;
             setBuyStep('completed');
             setSwapTxStatus("success");
             setSwapAmountEth("");
             setQuoteTxData(null);
             setSpenderAddress(null);
-            // D.FAITH Balance auch aktualisieren
-            setTimeout(async () => {
-              try {
-                const dfaithValue = await fetchTokenBalanceViaInsightApi(DFAITH_TOKEN, account.address);
-                const dfaithRaw = Number(dfaithValue);
-                const dfaithDisplay = (dfaithRaw / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS);
-                setDfaithBalance(dfaithDisplay);
-              } catch (error) {
-                console.error("Fehler beim Aktualisieren der D.FAITH Balance nach ParaSwap:", error);
-              }
-            }, 1000);
             setTimeout(() => setSwapTxStatus(null), 5000);
           } else {
-            console.log(`Versuch ${attempts}: ETH-Balance noch nicht ausreichend geändert, weiter warten...`);
+            console.log(`Versuch ${attempts}: D.FAITH-Balance noch nicht erhöht (+${balanceIncrease.toFixed(4)}), weiter warten...`);
+            
+            // Warte 3 Sekunden zwischen den Versuchen
+            if (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 3000));
+            }
           }
         } catch (balanceError) {
-          console.error(`ETH-Balance-Verifizierung Versuch ${attempts} fehlgeschlagen:`, balanceError);
+          console.error(`D.FAITH-Balance-Verifizierung Versuch ${attempts} fehlgeschlagen:`, balanceError);
+          
+          // Warte 3 Sekunden bei Fehlern
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
         }
       }
       
       if (!balanceVerified) {
-        console.log("⚠️ ETH-Balance-Verifizierung nach ParaSwap nach mehreren Versuchen nicht erfolgreich");
+        console.log("⚠️ D.FAITH-Balance-Verifizierung nach mehreren Versuchen nicht erfolgreich - Transaktion könnte trotzdem erfolgreich sein");
         setSwapTxStatus("success");
         setBuyStep('completed');
         setSwapAmountEth("");
+        setQuoteTxData(null);
+        setSpenderAddress(null);
         setTimeout(() => setSwapTxStatus(null), 8000);
       }
       
