@@ -6,6 +6,7 @@ import { base } from "thirdweb/chains";
 import { NATIVE_TOKEN_ADDRESS, getContract, prepareContractCall, sendAndConfirmTransaction, readContract } from "thirdweb";
 import { client } from "../../client";
 import { balanceOf, approve } from "thirdweb/extensions/erc20";
+import { getUniswapQuote, executeUniswapSwap, getDFAITHPriceFromUniswap, SwapQuote, SwapParams } from "../../utils/uniswapUtils";
 
 const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1"; // D.FAITH Token auf Base (aktualisiert Juli 2025)
 const DFAITH_DECIMALS = 2; // Dezimalstellen
@@ -75,6 +76,11 @@ export default function BuyTab() {
   const { mutate: sendTransaction, isPending: isSwapPending } = useSendTransaction();
   const [swapStatus, setSwapStatus] = useState<string | null>(null);
 
+  // Neue States für Uniswap
+  const [uniswapQuote, setUniswapQuote] = useState<SwapQuote | null>(null);
+  const [isGettingQuote, setIsGettingQuote] = useState(false);
+  const [uniswapError, setUniswapError] = useState<string | null>(null);
+  
   // Neuer State für mehrstufigen Kaufprozess
   const [buyStep, setBuyStep] = useState<'initial' | 'quoteFetched' | 'approved' | 'completed'>('initial');
   const [needsApproval, setNeedsApproval] = useState(false);
@@ -136,40 +142,25 @@ export default function BuyTab() {
           ethEur = 3000; // Hard fallback für ETH
         }
         
-        // 2. Hole D.FAITH Preis von OpenOcean für Base Chain (gleiche Richtung wie SellTab)
+        // 2. Hole D.FAITH Preis von Uniswap statt OpenOcean
         try {
-          const params = new URLSearchParams({
-            chain: "base",
-            inTokenAddress: DFAITH_TOKEN,
-            outTokenAddress: "0x0000000000000000000000000000000000000000", // Native ETH
-            amount: "1", // 1 D.FAITH
-            gasPrice: "0.001", // Base Chain: 0.001 Gwei statt 50 Gwei
-          });
+          const ethPerDfaith = await getDFAITHPriceFromUniswap();
           
-          const response = await fetch(`https://open-api.openocean.finance/v3/base/quote?${params}`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log("OpenOcean Response:", data);
-            if (data && data.data && data.data.outAmount && data.data.outAmount !== "0") {
-              // outAmount ist in ETH (mit 18 Decimals)
-              const ethPerDfaith = Number(data.data.outAmount) / Math.pow(10, 18);
-              setDfaithPrice(ethPerDfaith); // Wie viele ETH für 1 D.FAITH
-              // Preis pro D.FAITH in EUR: ethPerDfaith * ethEur
-              if (ethEur && ethPerDfaith > 0) {
-                dfaithPriceEur = ethPerDfaith * ethEur;
-              } else {
-                dfaithPriceEur = null;
-              }
+          if (ethPerDfaith && ethPerDfaith > 0) {
+            setDfaithPrice(ethPerDfaith); // Wie viele ETH für 1 D.FAITH
+            
+            // Preis pro D.FAITH in EUR: ethPerDfaith * ethEur
+            if (ethEur && ethPerDfaith > 0) {
+              dfaithPriceEur = ethPerDfaith * ethEur;
             } else {
-              errorMsg = "OpenOcean: Keine Liquidität verfügbar";
+              dfaithPriceEur = null;
             }
           } else {
-            errorMsg = `OpenOcean: ${response.status}`;
+            errorMsg = "Uniswap: Keine Liquidität verfügbar";
           }
         } catch (e) {
-          console.log("OpenOcean Fehler:", e);
-          errorMsg = "OpenOcean API Fehler";
+          console.log("Uniswap Fehler:", e);
+          errorMsg = "Uniswap API Fehler";
         }
         
         // Fallback auf letzte bekannte D.FAITH Preise
@@ -376,51 +367,32 @@ export default function BuyTab() {
     return () => clearInterval(interval);
   }, [account?.address]);
 
-  // D.FAITH Swap Funktion mit mehrstufigem Prozess angepasst für Base Chain
+  // D.FAITH Quote mit Uniswap holen
   const handleGetQuote = async () => {
     setSwapTxStatus("pending");
-    setQuoteError(null);
-    setQuoteTxData(null);
-    setSpenderAddress(null);
-    setNeedsApproval(false);
+    setUniswapError(null);
+    setUniswapQuote(null);
+    setIsGettingQuote(true);
 
     try {
       if (!swapAmountEth || parseFloat(swapAmountEth) <= 0 || !account?.address) return;
 
-      console.log("=== OpenOcean Quote Request für Base ===");
+      console.log("=== Uniswap Quote Request für Base ===");
       console.log("ETH Amount:", swapAmountEth);
       
-      const quoteParams = new URLSearchParams({
-        chain: "base",
-        inTokenAddress: "0x0000000000000000000000000000000000000000", // Native ETH
-        outTokenAddress: DFAITH_TOKEN, // D.FAITH
-        amount: (parseFloat(swapAmountEth) * Math.pow(10, 18)).toString(), // ETH in Wei
-        slippage: slippage,
-        gasPrice: "0.001", // Base Chain: 0.001 Gwei
-        account: account.address,
-      });
+      const swapParams: SwapParams = {
+        amountIn: swapAmountEth,
+        slippageTolerance: parseFloat(slippage),
+        recipient: account.address
+      };
       
-      const quoteUrl = `https://open-api.openocean.finance/v3/base/swap_quote?${quoteParams}`;
-      const quoteResponse = await fetch(quoteUrl);
+      const quote = await getUniswapQuote(swapParams);
       
-      if (!quoteResponse.ok) {
-        throw new Error(`OpenOcean Quote Fehler: ${quoteResponse.status}`);
+      if (!quote) {
+        throw new Error('Uniswap: Keine gültige Quote erhalten');
       }
       
-      const quoteData = await quoteResponse.json();
-      console.log("Quote Response:", quoteData);
-      
-      if (!quoteData || quoteData.code !== 200 || !quoteData.data) {
-        throw new Error('OpenOcean: Keine gültige Quote erhalten');
-      }
-      
-      const txData = quoteData.data;
-      
-      if (!txData.to || !txData.data) {
-        throw new Error('OpenOcean: Unvollständige Transaktionsdaten');
-      }
-      
-      setQuoteTxData(txData);
+      setUniswapQuote(quote);
       
       // Bei ETH-Käufen ist normalerweise kein Approval nötig, da es native Token sind
       setNeedsApproval(false);
@@ -429,9 +401,11 @@ export default function BuyTab() {
       
     } catch (e: any) {
       console.error("Quote Fehler:", e);
-      setQuoteError(e.message || "Quote Fehler");
+      setUniswapError(e.message || "Quote Fehler");
       setSwapTxStatus("error");
       setTimeout(() => setSwapTxStatus(null), 4000);
+    } finally {
+      setIsGettingQuote(false);
     }
   };
 
@@ -453,9 +427,9 @@ export default function BuyTab() {
     }
   };
 
-  // Verbesserter D.FAITH Swap mit ETH-Balance-Verifizierung für Base Chain
+  // Verbesserter D.FAITH Swap mit Uniswap
   const handleBuySwap = async () => {
-    if (!quoteTxData || !account?.address) return;
+    if (!uniswapQuote || !account?.address) return;
     setIsSwapping(true);
     setSwapTxStatus("swapping");
     
@@ -464,53 +438,15 @@ export default function BuyTab() {
     const ethAmount = parseFloat(swapAmountEth);
     
     try {
-      console.log("=== D.FAITH Kauf-Swap wird gestartet auf Base ===");
-      console.log("Verwende Quote-Daten:", quoteTxData);
+      console.log("=== D.FAITH Kauf-Swap wird gestartet auf Base mit Uniswap ===");
+      console.log("Verwende Uniswap Quote:", uniswapQuote);
       
-      const { prepareTransaction } = await import("thirdweb");
-      
-      // Stelle sicher, dass wir auf Base Chain (ID: 8453) sind
-      console.log("Target Chain:", base.name, "Chain ID:", base.id);
-      if (base.id !== 8453) {
-        throw new Error("Falsche Chain - Base Chain erwartet");
-      }
-      
-      const transaction = await prepareTransaction({
-        to: quoteTxData.to,
-        data: quoteTxData.data,
-        value: BigInt(quoteTxData.value || "0"),
-        chain: base, // Explizit Base Chain
-        client,
-        // Entferne manuelle Gas-Parameter - lass Base Chain automatisch schätzen
-      });
-      
-      console.log("Prepared Transaction:", transaction);
       setSwapTxStatus("confirming");
       
-      // Sende Transaktion mit verbesserter Fehlerbehandlung
-      try {
-        // Explizit Base Chain Context setzen vor Transaction
-        console.log("Sende Transaktion auf Base Chain (ID: 8453)");
-        sendTransaction(transaction);
-        console.log("Transaction sent successfully on Base Chain");
-        
-        // Da sendTransaction void zurückgibt, können wir nicht sofort die TxHash prüfen
-        // Die Balance-Verifizierung wird das Ergebnis bestätigen
-      } catch (txError: any) {
-        console.log("Transaction error details:", txError);
-        
-        // Ignoriere Analytics-Fehler von Thirdweb (c.thirdweb.com/event) oder Chain-bezogene 400er
-        if (txError?.message?.includes('event') || 
-            txError?.message?.includes('analytics') || 
-            txError?.message?.includes('c.thirdweb.com') ||
-            txError?.message?.includes('400') && txError?.message?.includes('thirdweb')) {
-          console.log("Thirdweb API-Fehler ignoriert, Transaktion könnte trotzdem erfolgreich sein");
-          // Gehe weiter zur Verifizierung
-        } else {
-          // Echter Transaktionsfehler
-          throw txError;
-        }
-      }
+      // Uniswap Swap über thirdweb ausführen
+      await executeUniswapSwap(uniswapQuote, sendTransaction);
+      
+      console.log("Transaction sent successfully on Base Chain via Uniswap");
       
       setSwapTxStatus("verifying");
       console.log("Verifiziere ETH-Balance-Änderung...");
@@ -564,8 +500,7 @@ export default function BuyTab() {
             setBuyStep('completed');
             setSwapTxStatus("success");
             setSwapAmountEth("");
-            setQuoteTxData(null);
-            setSpenderAddress(null);
+            setUniswapQuote(null);
             // D.FAITH Balance auch aktualisieren
             setTimeout(async () => {
               try {
@@ -720,10 +655,9 @@ export default function BuyTab() {
                   setSlippage("1");
                   setSwapTxStatus(null);
                   setBuyStep('initial');
-                  setQuoteTxData(null);
-                  setSpenderAddress(null);
+                  setUniswapQuote(null);
+                  setUniswapError(null);
                   setNeedsApproval(false);
-                  setQuoteError(null);
                 }}
                 className="p-2 text-amber-400 hover:text-yellow-300 hover:bg-zinc-800 rounded-lg transition-all flex-shrink-0"
                 disabled={isSwapping}
@@ -814,7 +748,9 @@ export default function BuyTab() {
                       </div>
                       <div className="flex-1 min-w-0 text-center">
                         <div className="text-lg sm:text-xl font-bold text-amber-400">
-                          {swapAmountEth && parseFloat(swapAmountEth) > 0 && dfaithPrice 
+                          {uniswapQuote && buyStep !== 'initial'
+                            ? parseFloat(uniswapQuote.amountOut).toFixed(2)
+                            : swapAmountEth && parseFloat(swapAmountEth) > 0 && dfaithPrice 
                             ? (parseFloat(swapAmountEth) / dfaithPrice).toFixed(2)
                             : "0.00"
                           }
@@ -895,8 +831,8 @@ export default function BuyTab() {
                         {swapTxStatus === "swapping" && "Processing Purchase..."}
                       </span>
                     </div>
-                    {swapTxStatus === "error" && quoteError && (
-                      <p className="text-sm opacity-80">{quoteError}</p>
+                    {swapTxStatus === "error" && uniswapError && (
+                      <p className="text-sm opacity-80">{uniswapError}</p>
                     )}
                   </div>
                 )}
@@ -957,10 +893,9 @@ export default function BuyTab() {
                       className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 rounded-xl text-base transition-all"
                       onClick={() => {
                         setBuyStep('initial');
-                        setQuoteTxData(null);
-                        setSpenderAddress(null);
+                        setUniswapQuote(null);
+                        setUniswapError(null);
                         setNeedsApproval(false);
-                        setQuoteError(null);
                         setSwapAmountEth("");
                         setSwapTxStatus(null);
                         setSlippage("1");
@@ -1037,10 +972,9 @@ export default function BuyTab() {
                     setSlippage("1");
                     setSwapTxStatus(null);
                     setBuyStep('initial');
-                    setQuoteTxData(null);
-                    setSpenderAddress(null);
+                    setUniswapQuote(null);
+                    setUniswapError(null);
                     setNeedsApproval(false);
-                    setQuoteError(null);
                     setCopied(false);
                   }}
                   disabled={isSwapping}
