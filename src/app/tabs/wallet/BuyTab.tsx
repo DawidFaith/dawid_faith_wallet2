@@ -380,12 +380,15 @@ export default function BuyTab() {
   }, [account?.address]);
 
   // D.FAITH Swap Funktion mit mehrstufigem Prozess angepasst für ParaSwap
+  const [priceImpact, setPriceImpact] = useState<number | null>(null); // NEU: Price Impact State
+
   const handleGetQuote = async () => {
     setSwapTxStatus("pending");
     setQuoteError(null);
     setQuoteTxData(null);
     setSpenderAddress(null);
     setNeedsApproval(false);
+    setPriceImpact(null); // Reset Impact
 
     try {
       if (!swapAmountEth || parseFloat(swapAmountEth) <= 0 || !account?.address) return;
@@ -403,16 +406,16 @@ export default function BuyTab() {
       console.log("ETH Amount in Wei:", ethAmountWei);
       
       const priceParams = new URLSearchParams({
-        srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH address for ParaSwap
-        destToken: DFAITH_TOKEN, // D.FAITH
+        srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        destToken: DFAITH_TOKEN,
         srcDecimals: ETH_DECIMALS.toString(),
         destDecimals: DFAITH_DECIMALS.toString(),
-        amount: ethAmountWei, // ETH in Wei
-        network: "8453", // Base Chain ID
+        amount: ethAmountWei,
+        network: "8453",
         side: "SELL",
         userAddress: account.address,
-        slippage: (parseFloat(slippage) * 100).toString(), // ParaSwap expects slippage in basis points
-        maxImpact: "50" // Erlaube bis zu 50% Price Impact (Standard ist 20%)
+        slippage: (parseFloat(slippage) * 100).toString(),
+        maxImpact: "10000" // UNBEGRENZT (10000% erlaubt alles)
       });
       
       console.log("Price Parameters:", Object.fromEntries(priceParams));
@@ -427,12 +430,9 @@ export default function BuyTab() {
         const errorText = await priceResponse.text();
         console.error("ParaSwap Price Response Error:", priceResponse.status, errorText);
         
-        // Spezielle Behandlung für Liquiditätsprobleme
         if (errorText.includes("No routes found with enough liquidity") || priceResponse.status === 404) {
           throw new Error("Nicht genügend Liquidität für diesen Betrag. Versuche einen größeren Betrag (min. 0.001 ETH) oder versuche es später erneut.");
         }
-        
-        // Spezielle Behandlung für Price Impact Fehler
         if (errorText.includes("ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT")) {
           try {
             const errorData = JSON.parse(errorText);
@@ -442,7 +442,6 @@ export default function BuyTab() {
             throw new Error(`Hoher Price Impact erkannt. Versuche es mit einem kleineren Betrag.`);
           }
         }
-        
         throw new Error(`ParaSwap Price Quote Fehler: ${priceResponse.status} - ${errorText}`);
       }
       
@@ -453,11 +452,23 @@ export default function BuyTab() {
         console.error("Invalid price data:", priceData);
         throw new Error('ParaSwap: Keine gültige Price Route erhalten');
       }
+
+      // Price Impact berechnen und anzeigen
+      if (priceData.priceRoute.srcUSD && priceData.priceRoute.destUSD) {
+        const srcUSD = parseFloat(priceData.priceRoute.srcUSD);
+        const destUSD = parseFloat(priceData.priceRoute.destUSD);
+        if (srcUSD > 0) {
+          const impact = Math.max(0, ((srcUSD - destUSD) / srcUSD) * 100);
+          setPriceImpact(impact);
+        } else {
+          setPriceImpact(null);
+        }
+      } else {
+        setPriceImpact(null);
+      }
       
-      // Warnung anzeigen bei hohem Price Impact
       if (priceData.priceRoute.maxImpactReached) {
         console.warn("⚠️ Hoher Price Impact erkannt:", priceData);
-        // Du könntest hier eine zusätzliche Warnung in der UI anzeigen
       }
       
       // 2. Baue Transaction mit korrekten Parametern - OHNE destAmount
@@ -505,18 +516,13 @@ export default function BuyTab() {
       }
       
       setQuoteTxData(buildTxData);
-      
-      // Bei ETH-Käufen ist normalerweise kein Approval nötig, da es native Token sind
       setNeedsApproval(false);
       setBuyStep('quoteFetched');
       setSwapTxStatus(null);
       
     } catch (e: any) {
       console.error("Quote Fehler:", e);
-      
-      // Spezifische Fehlerbehandlung für ParaSwap
       let errorMessage = e.message || "Quote Fehler";
-      
       if (errorMessage.includes("400")) {
         errorMessage = "ParaSwap: Ungültige Parameter. Möglicherweise ist die Liquidität für diesen Betrag nicht ausreichend oder der Token wird nicht unterstützt.";
       } else if (errorMessage.includes("404")) {
@@ -526,10 +532,8 @@ export default function BuyTab() {
       } else if (errorMessage.includes("Cannot specify both")) {
         errorMessage = "ParaSwap: Parameter-Konflikt behoben. Bitte erneut versuchen.";
       } else if (errorMessage.includes("Price Impact")) {
-        // Für Price Impact Fehler: Lass die Original-Nachricht durch
         // errorMessage bleibt wie es ist
       }
-      
       setQuoteError(errorMessage);
       setSwapTxStatus("error");
       setTimeout(() => setSwapTxStatus(null), 6000);
@@ -933,6 +937,12 @@ export default function BuyTab() {
                         }
                       </span>
                     </div>
+                    {/* Price Impact Anzeige */}
+                    {priceImpact !== null && (
+                      <div className={`mt-2 text-xs font-semibold ${priceImpact > 10 ? "text-red-400" : priceImpact > 3 ? "text-yellow-400" : "text-green-400"}`}>
+                        Price Impact: {priceImpact.toFixed(2)}%
+                      </div>
+                    )}
                   </div>
                 </div>
 
