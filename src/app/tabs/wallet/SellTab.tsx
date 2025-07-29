@@ -214,6 +214,52 @@ export default function SellTab() {
       const dfaithAmountRaw = (parseFloat(sellAmount) * Math.pow(10, DFAITH_DECIMALS)).toString();
       console.log("D.FAITH Amount Raw:", dfaithAmountRaw);
       
+      // Verwende die ParaSwap TokenTransferProxy Adresse für Base Chain
+      const paraswapTokenTransferProxy = "0x93aAAe79a53759cD164340E4C8766E4Db5331cD7"; // ParaSwap TokenTransferProxy auf Base
+      setSpenderAddress(paraswapTokenTransferProxy);
+      
+      // 1. ZUERST: Prüfe Allowance für D.FAITH Token mit korrekter Spender-Adresse
+      console.log("1. Prüfe Allowance für ParaSwap TokenTransferProxy:", paraswapTokenTransferProxy);
+      
+      try {
+        const contract = getContract({
+          client,
+          chain: base,
+          address: DFAITH_TOKEN
+        });
+        
+        const { readContract } = await import("thirdweb");
+        const currentAllowance = await readContract({
+          contract,
+          method: "function allowance(address owner, address spender) view returns (uint256)",
+          params: [account.address, paraswapTokenTransferProxy]
+        });
+        
+        console.log("Aktuelle Allowance für TokenTransferProxy:", currentAllowance.toString());
+        
+        const requiredAmount = BigInt(dfaithAmountRaw);
+        console.log("Benötigte Allowance:", requiredAmount.toString());
+        
+        if (currentAllowance < requiredAmount) {
+          console.log("Approval nötig für TokenTransferProxy - stoppe Quote-Anfrage");
+          setNeedsApproval(true);
+          setSellStep('quoteFetched'); // Gehe direkt zum Approval-Schritt
+          setSwapTxStatus(null);
+          return; // Stoppe hier, da Approval benötigt wird
+        } else {
+          console.log("Approval bereits vorhanden für TokenTransferProxy - fahre mit Quote fort");
+          setNeedsApproval(false);
+        }
+      } catch (allowanceError) {
+        console.error("Fehler beim Abrufen der Allowance:", allowanceError);
+        // Sicherheitshalber Approval als nötig setzen und stoppen
+        setNeedsApproval(true);
+        setSellStep('quoteFetched');
+        setSwapTxStatus(null);
+        return;
+      }
+      
+      // 2. Nur wenn Allowance OK ist: Hole Preis-Quote von ParaSwap
       const priceParams = new URLSearchParams({
         srcToken: DFAITH_TOKEN, // D.FAITH
         destToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH address for ParaSwap
@@ -229,7 +275,6 @@ export default function SellTab() {
       
       console.log("Price Parameters:", Object.fromEntries(priceParams));
       
-      // 1. Hole Preis-Quote von ParaSwap
       const priceUrl = `https://apiv5.paraswap.io/prices?${priceParams}`;
       console.log("Price URL:", priceUrl);
       
@@ -271,7 +316,7 @@ export default function SellTab() {
         console.warn("⚠️ Hoher Price Impact erkannt:", priceData);
       }
       
-      // 2. Baue Transaction mit korrekten Parametern
+      // 3. Baue Transaction mit korrekten Parametern
       const buildTxParams = {
         srcToken: DFAITH_TOKEN,
         destToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -316,46 +361,6 @@ export default function SellTab() {
       }
       
       setQuoteTxData(buildTxData);
-      
-      // Verwende die ParaSwap TokenTransferProxy Adresse für Base Chain
-      const paraswapTokenTransferProxy = "0x93aAAe79a53759cD164340E4C8766E4Db5331cD7"; // ParaSwap TokenTransferProxy auf Base
-      setSpenderAddress(paraswapTokenTransferProxy);
-      
-      // 3. Prüfe Allowance für D.FAITH Token mit korrekter Spender-Adresse
-      console.log("3. Prüfe Allowance für ParaSwap TokenTransferProxy:", paraswapTokenTransferProxy);
-      
-      try {
-        const contract = getContract({
-          client,
-          chain: base,
-          address: DFAITH_TOKEN
-        });
-        
-        const { readContract } = await import("thirdweb");
-        const currentAllowance = await readContract({
-          contract,
-          method: "function allowance(address owner, address spender) view returns (uint256)",
-          params: [account.address, paraswapTokenTransferProxy]
-        });
-        
-        console.log("Aktuelle Allowance für TokenTransferProxy:", currentAllowance.toString());
-        
-        const requiredAmount = BigInt(priceData.priceRoute.srcAmount);
-        console.log("Benötigte Allowance:", requiredAmount.toString());
-        
-        if (currentAllowance < requiredAmount) {
-          console.log("Approval nötig für TokenTransferProxy");
-          setNeedsApproval(true);
-        } else {
-          console.log("Approval bereits vorhanden für TokenTransferProxy");
-          setNeedsApproval(false);
-        }
-      } catch (allowanceError) {
-        console.error("Fehler beim Abrufen der Allowance:", allowanceError);
-        // Sicherheitshalber Approval als nötig setzen
-        setNeedsApproval(true);
-      }
-      
       setSellStep('quoteFetched');
       setSwapTxStatus(null);
       
@@ -386,7 +391,7 @@ export default function SellTab() {
     if (!spenderAddress || !account?.address) return;
     setSwapTxStatus("approving");
     try {
-      console.log("3. Approve Transaktion starten für ParaSwap TokenTransferProxy:", spenderAddress);
+      console.log("Approve Transaktion starten für ParaSwap TokenTransferProxy:", spenderAddress);
       
       const contract = getContract({
         client,
@@ -463,7 +468,7 @@ export default function SellTab() {
       
       // Wenn nach allen Versuchen keine Bestätigung, aber gehe trotzdem weiter
       if (!approveReceipt) {
-        console.log("⚠️ Keine Approval-Bestätigung erhalten, aber gehe weiter zum Swap");
+        console.log("⚠️ Keine Approval-Bestätigung erhalten, aber gehe weiter");
         approveReceipt = { status: "unknown", transactionHash: approveResult.transactionHash };
       }
       
@@ -475,6 +480,11 @@ export default function SellTab() {
       setNeedsApproval(false);
       setSellStep('approved');
       setSwapTxStatus(null);
+      
+      // Nach erfolgreichem Approval: Hole jetzt die Quote
+      console.log("Approval erfolgreich - hole jetzt Quote von ParaSwap...");
+      await handleGetQuote();
+      
     } catch (e) {
       console.error("Approve Fehler:", e);
       setSwapTxStatus("error");
