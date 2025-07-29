@@ -82,7 +82,7 @@ export default function BuyTab() {
   const [spenderAddress, setSpenderAddress] = useState<string | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
 
-  // D.FAITH Preis von OpenOcean holen und in Euro umrechnen mit Fallback
+  // D.FAITH Preis von ParaSwap holen und in Euro umrechnen mit Fallback
   useEffect(() => {
     // Lade gespeicherte Preise beim Start
     const loadStoredPrices = () => {
@@ -136,24 +136,27 @@ export default function BuyTab() {
           ethEur = 3000; // Hard fallback für ETH
         }
         
-        // 2. Hole D.FAITH Preis von OpenOcean für Base Chain (gleiche Richtung wie SellTab)
+        // 2. Hole D.FAITH Preis von ParaSwap für Base Chain
         try {
-          const params = new URLSearchParams({
-            chain: "base",
-            inTokenAddress: DFAITH_TOKEN,
-            outTokenAddress: "0x0000000000000000000000000000000000000000", // Native ETH
-            amount: "1", // 1 D.FAITH
-            gasPrice: "0.001", // Base Chain: 0.001 Gwei statt 50 Gwei
+          const priceParams = new URLSearchParams({
+            srcToken: DFAITH_TOKEN,
+            destToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH address for ParaSwap
+            srcDecimals: DFAITH_DECIMALS.toString(),
+            destDecimals: ETH_DECIMALS.toString(),
+            amount: "100", // 1 D.FAITH (100 mit 2 Decimals)
+            network: "8453", // Base Chain ID
+            side: "SELL"
           });
           
-          const response = await fetch(`https://open-api.openocean.finance/v3/base/quote?${params}`);
+          const priceResponse = await fetch(`https://apiv5.paraswap.io/prices?${priceParams}`);
           
-          if (response.ok) {
-            const data = await response.json();
-            console.log("OpenOcean Response:", data);
-            if (data && data.data && data.data.outAmount && data.data.outAmount !== "0") {
-              // outAmount ist in ETH (mit 18 Decimals)
-              const ethPerDfaith = Number(data.data.outAmount) / Math.pow(10, 18);
+          if (priceResponse.ok) {
+            const priceData = await priceResponse.json();
+            console.log("ParaSwap Price Response:", priceData);
+            
+            if (priceData && priceData.priceRoute && priceData.priceRoute.destAmount) {
+              // destAmount ist in ETH Wei (18 Decimals)
+              const ethPerDfaith = Number(priceData.priceRoute.destAmount) / Math.pow(10, 18);
               setDfaithPrice(ethPerDfaith); // Wie viele ETH für 1 D.FAITH
               // Preis pro D.FAITH in EUR: ethPerDfaith * ethEur
               if (ethEur && ethPerDfaith > 0) {
@@ -162,14 +165,14 @@ export default function BuyTab() {
                 dfaithPriceEur = null;
               }
             } else {
-              errorMsg = "OpenOcean: Keine Liquidität verfügbar";
+              errorMsg = "ParaSwap: Keine Liquidität verfügbar";
             }
           } else {
-            errorMsg = `OpenOcean: ${response.status}`;
+            errorMsg = `ParaSwap: ${priceResponse.status}`;
           }
         } catch (e) {
-          console.log("OpenOcean Fehler:", e);
-          errorMsg = "OpenOcean API Fehler";
+          console.log("ParaSwap Fehler:", e);
+          errorMsg = "ParaSwap API Fehler";
         }
         
         // Fallback auf letzte bekannte D.FAITH Preise
@@ -376,7 +379,7 @@ export default function BuyTab() {
     return () => clearInterval(interval);
   }, [account?.address]);
 
-  // D.FAITH Swap Funktion mit mehrstufigem Prozess angepasst für Base Chain
+  // D.FAITH Swap Funktion mit mehrstufigem Prozess angepasst für ParaSwap
   const handleGetQuote = async () => {
     setSwapTxStatus("pending");
     setQuoteError(null);
@@ -387,40 +390,67 @@ export default function BuyTab() {
     try {
       if (!swapAmountEth || parseFloat(swapAmountEth) <= 0 || !account?.address) return;
 
-      console.log("=== OpenOcean Quote Request für Base ===");
+      console.log("=== ParaSwap Quote Request für Base ===");
       console.log("ETH Amount:", swapAmountEth);
       
-      const quoteParams = new URLSearchParams({
-        chain: "base",
-        inTokenAddress: "0x0000000000000000000000000000000000000000", // Native ETH
-        outTokenAddress: DFAITH_TOKEN, // D.FAITH
+      const priceParams = new URLSearchParams({
+        srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH address for ParaSwap
+        destToken: DFAITH_TOKEN, // D.FAITH
+        srcDecimals: ETH_DECIMALS.toString(),
+        destDecimals: DFAITH_DECIMALS.toString(),
         amount: (parseFloat(swapAmountEth) * Math.pow(10, 18)).toString(), // ETH in Wei
-        slippage: slippage,
-        gasPrice: "0.001", // Base Chain: 0.001 Gwei
-        account: account.address,
+        network: "8453", // Base Chain ID
+        side: "SELL",
+        userAddress: account.address,
+        slippage: (parseFloat(slippage) * 100).toString() // ParaSwap expects slippage in basis points
       });
       
-      const quoteUrl = `https://open-api.openocean.finance/v3/base/swap_quote?${quoteParams}`;
-      const quoteResponse = await fetch(quoteUrl);
+      // 1. Hole Preis-Quote
+      const priceUrl = `https://apiv5.paraswap.io/prices?${priceParams}`;
+      const priceResponse = await fetch(priceUrl);
       
-      if (!quoteResponse.ok) {
-        throw new Error(`OpenOcean Quote Fehler: ${quoteResponse.status}`);
+      if (!priceResponse.ok) {
+        throw new Error(`ParaSwap Price Quote Fehler: ${priceResponse.status}`);
       }
       
-      const quoteData = await quoteResponse.json();
-      console.log("Quote Response:", quoteData);
+      const priceData = await priceResponse.json();
+      console.log("ParaSwap Price Response:", priceData);
       
-      if (!quoteData || quoteData.code !== 200 || !quoteData.data) {
-        throw new Error('OpenOcean: Keine gültige Quote erhalten');
+      if (!priceData || !priceData.priceRoute) {
+        throw new Error('ParaSwap: Keine gültige Price Route erhalten');
       }
       
-      const txData = quoteData.data;
+      // 2. Baue Transaction
+      const buildTxParams = {
+        srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        destToken: DFAITH_TOKEN,
+        srcAmount: priceData.priceRoute.srcAmount,
+        destAmount: priceData.priceRoute.destAmount,
+        priceRoute: priceData.priceRoute,
+        userAddress: account.address,
+        slippage: (parseFloat(slippage) * 100).toString()
+      };
       
-      if (!txData.to || !txData.data) {
-        throw new Error('OpenOcean: Unvollständige Transaktionsdaten');
+      const buildTxResponse = await fetch('https://apiv5.paraswap.io/transactions/8453', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(buildTxParams)
+      });
+      
+      if (!buildTxResponse.ok) {
+        throw new Error(`ParaSwap Build Transaction Fehler: ${buildTxResponse.status}`);
       }
       
-      setQuoteTxData(txData);
+      const buildTxData = await buildTxResponse.json();
+      console.log("ParaSwap Build Transaction Response:", buildTxData);
+      
+      if (!buildTxData || !buildTxData.to || !buildTxData.data) {
+        throw new Error('ParaSwap: Unvollständige Transaktionsdaten');
+      }
+      
+      setQuoteTxData(buildTxData);
       
       // Bei ETH-Käufen ist normalerweise kein Approval nötig, da es native Token sind
       setNeedsApproval(false);
@@ -453,7 +483,7 @@ export default function BuyTab() {
     }
   };
 
-  // Verbesserter D.FAITH Swap mit ETH-Balance-Verifizierung für Base Chain
+  // Verbesserter D.FAITH Swap mit ETH-Balance-Verifizierung für ParaSwap
   const handleBuySwap = async () => {
     if (!quoteTxData || !account?.address) return;
     setIsSwapping(true);
@@ -464,8 +494,8 @@ export default function BuyTab() {
     const ethAmount = parseFloat(swapAmountEth);
     
     try {
-      console.log("=== D.FAITH Kauf-Swap wird gestartet auf Base ===");
-      console.log("Verwende Quote-Daten:", quoteTxData);
+      console.log("=== D.FAITH Kauf-Swap wird gestartet mit ParaSwap auf Base ===");
+      console.log("Verwende ParaSwap Transaction-Daten:", quoteTxData);
       
       const { prepareTransaction } = await import("thirdweb");
       
@@ -481,18 +511,18 @@ export default function BuyTab() {
         value: BigInt(quoteTxData.value || "0"),
         chain: base, // Explizit Base Chain
         client,
-        // Entferne manuelle Gas-Parameter - lass Base Chain automatisch schätzen
+        // Entferne gasLimit - Thirdweb macht automatische Gas-Schätzung
       });
       
-      console.log("Prepared Transaction:", transaction);
+      console.log("Prepared ParaSwap Transaction:", transaction);
       setSwapTxStatus("confirming");
       
       // Sende Transaktion mit verbesserter Fehlerbehandlung
       try {
         // Explizit Base Chain Context setzen vor Transaction
-        console.log("Sende Transaktion auf Base Chain (ID: 8453)");
+        console.log("Sende ParaSwap Transaktion auf Base Chain (ID: 8453)");
         sendTransaction(transaction);
-        console.log("Transaction sent successfully on Base Chain");
+        console.log("ParaSwap Transaction sent successfully on Base Chain");
         
         // Da sendTransaction void zurückgibt, können wir nicht sofort die TxHash prüfen
         // Die Balance-Verifizierung wird das Ergebnis bestätigen
@@ -504,7 +534,7 @@ export default function BuyTab() {
             txError?.message?.includes('analytics') || 
             txError?.message?.includes('c.thirdweb.com') ||
             txError?.message?.includes('400') && txError?.message?.includes('thirdweb')) {
-          console.log("Thirdweb API-Fehler ignoriert, Transaktion könnte trotzdem erfolgreich sein");
+          console.log("Thirdweb API-Fehler ignoriert, ParaSwap Transaktion könnte trotzdem erfolgreich sein");
           // Gehe weiter zur Verifizierung
         } else {
           // Echter Transaktionsfehler
@@ -513,7 +543,7 @@ export default function BuyTab() {
       }
       
       setSwapTxStatus("verifying");
-      console.log("Verifiziere ETH-Balance-Änderung...");
+      console.log("Verifiziere ETH-Balance-Änderung nach ParaSwap...");
       
       // ETH-Balance-Verifizierung mit mehreren Versuchen
       let balanceVerified = false;
@@ -526,7 +556,7 @@ export default function BuyTab() {
       
       while (!balanceVerified && attempts < maxAttempts) {
         attempts++;
-        console.log(`ETH-Balance-Verifizierung Versuch ${attempts}/${maxAttempts}`);
+        console.log(`ETH-Balance-Verifizierung Versuch ${attempts}/${maxAttempts} nach ParaSwap`);
         
         try {
           if (attempts > 1) {
@@ -558,7 +588,7 @@ export default function BuyTab() {
           console.log(`Erwartete Verringerung: ${expectedDecrease}, Tatsächliche Verringerung: ${actualDecrease}`);
           
           if (actualDecrease >= (expectedDecrease * 0.9)) { // 10% Toleranz
-            console.log("✅ ETH-Balance-Änderung verifiziert - Kauf erfolgreich!");
+            console.log("✅ ETH-Balance-Änderung nach ParaSwap verifiziert - Kauf erfolgreich!");
             setEthBalance(currentEthBalance.toFixed(3));
             balanceVerified = true;
             setBuyStep('completed');
@@ -574,7 +604,7 @@ export default function BuyTab() {
                 const dfaithDisplay = (dfaithRaw / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS);
                 setDfaithBalance(dfaithDisplay);
               } catch (error) {
-                console.error("Fehler beim Aktualisieren der D.FAITH Balance nach Swap:", error);
+                console.error("Fehler beim Aktualisieren der D.FAITH Balance nach ParaSwap:", error);
               }
             }, 1000);
             setTimeout(() => setSwapTxStatus(null), 5000);
@@ -587,7 +617,7 @@ export default function BuyTab() {
       }
       
       if (!balanceVerified) {
-        console.log("⚠️ ETH-Balance-Verifizierung nach mehreren Versuchen nicht erfolgreich");
+        console.log("⚠️ ETH-Balance-Verifizierung nach ParaSwap nach mehreren Versuchen nicht erfolgreich");
         setSwapTxStatus("success");
         setBuyStep('completed');
         setSwapAmountEth("");
@@ -595,7 +625,7 @@ export default function BuyTab() {
       }
       
     } catch (error) {
-      console.error("Swap Error:", error);
+      console.error("ParaSwap Swap Error:", error);
       setSwapTxStatus("error");
       setTimeout(() => setSwapTxStatus(null), 5000);
     } finally {
