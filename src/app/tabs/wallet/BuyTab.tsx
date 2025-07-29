@@ -390,6 +390,11 @@ export default function BuyTab() {
     try {
       if (!swapAmountEth || parseFloat(swapAmountEth) <= 0 || !account?.address) return;
 
+      // Minimum Check
+      if (parseFloat(swapAmountEth) < 0.0001) {
+        throw new Error("Minimum swap amount ist 0.0001 ETH für ausreichende Liquidität");
+      }
+
       console.log("=== ParaSwap Quote Request für Base ===");
       console.log("ETH Amount:", swapAmountEth);
       console.log("Account Address:", account.address);
@@ -406,7 +411,8 @@ export default function BuyTab() {
         network: "8453", // Base Chain ID
         side: "SELL",
         userAddress: account.address,
-        slippage: (parseFloat(slippage) * 100).toString() // ParaSwap expects slippage in basis points
+        slippage: (parseFloat(slippage) * 100).toString(), // ParaSwap expects slippage in basis points
+        maxImpact: "50" // Erlaube bis zu 50% Price Impact (Standard ist 20%)
       });
       
       console.log("Price Parameters:", Object.fromEntries(priceParams));
@@ -420,6 +426,23 @@ export default function BuyTab() {
       if (!priceResponse.ok) {
         const errorText = await priceResponse.text();
         console.error("ParaSwap Price Response Error:", priceResponse.status, errorText);
+        
+        // Spezielle Behandlung für Liquiditätsprobleme
+        if (errorText.includes("No routes found with enough liquidity") || priceResponse.status === 404) {
+          throw new Error("Nicht genügend Liquidität für diesen Betrag. Versuche einen größeren Betrag (min. 0.001 ETH) oder versuche es später erneut.");
+        }
+        
+        // Spezielle Behandlung für Price Impact Fehler
+        if (errorText.includes("ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT")) {
+          try {
+            const errorData = JSON.parse(errorText);
+            const impactValue = errorData.value || "unbekannt";
+            throw new Error(`Hoher Price Impact (${impactValue}) - Swap trotzdem möglich, aber mit Verlust verbunden. Versuche es mit weniger ETH.`);
+          } catch (parseError) {
+            throw new Error(`Hoher Price Impact erkannt. Versuche es mit einem kleineren Betrag.`);
+          }
+        }
+        
         throw new Error(`ParaSwap Price Quote Fehler: ${priceResponse.status} - ${errorText}`);
       }
       
@@ -429,6 +452,12 @@ export default function BuyTab() {
       if (!priceData || !priceData.priceRoute) {
         console.error("Invalid price data:", priceData);
         throw new Error('ParaSwap: Keine gültige Price Route erhalten');
+      }
+      
+      // Warnung anzeigen bei hohem Price Impact
+      if (priceData.priceRoute.maxImpactReached) {
+        console.warn("⚠️ Hoher Price Impact erkannt:", priceData);
+        // Du könntest hier eine zusätzliche Warnung in der UI anzeigen
       }
       
       // 2. Baue Transaction mit korrekten Parametern - OHNE destAmount
@@ -496,6 +525,9 @@ export default function BuyTab() {
         errorMessage = "ParaSwap: Server-Fehler. Bitte später erneut versuchen.";
       } else if (errorMessage.includes("Cannot specify both")) {
         errorMessage = "ParaSwap: Parameter-Konflikt behoben. Bitte erneut versuchen.";
+      } else if (errorMessage.includes("Price Impact")) {
+        // Für Price Impact Fehler: Lass die Original-Nachricht durch
+        // errorMessage bleibt wie es ist
       }
       
       setQuoteError(errorMessage);
@@ -980,6 +1012,15 @@ export default function BuyTab() {
                   </div>
                 )}
 
+                {parseFloat(swapAmountEth) > 0 && parseFloat(swapAmountEth) < 0.0001 && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-2 text-yellow-400 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span>💡</span>
+                      <span>Minimum swap: 0.0001 ETH für ausreichende Liquidität</span>
+                    </div>
+                  </div>
+                )}
+
 
 
                 {/* Action Buttons */}
@@ -994,7 +1035,8 @@ export default function BuyTab() {
                         isSwapping || 
                         !account?.address || 
                         parseFloat(ethBalance) <= 0 ||
-                        parseFloat(swapAmountEth) > parseFloat(ethBalance)
+                        parseFloat(swapAmountEth) > parseFloat(ethBalance) ||
+                        parseFloat(swapAmountEth) < 0.0001
                       }
                     >
                       {isSwapping ? "Processing..." : "Get Quote"}
@@ -1043,7 +1085,8 @@ export default function BuyTab() {
               </div>
             )}
             {selectedToken === "DINVEST" && (
-              <>
+              <div className="w-full space-y-4">
+                {/* D.INVEST Kaufanleitung */}
                 <div className="text-center pb-3 border-b border-zinc-700 mb-4">
                   <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
                     <img src="/D.INVEST.png" alt="D.INVEST" className="w-32 h-32 object-contain" />
@@ -1116,7 +1159,7 @@ export default function BuyTab() {
                 >
                   Schließen
                 </Button>
-              </>
+              </div>
             )}
             {selectedToken === "ETH" && (
               <div className="w-full flex-1 flex items-center justify-center">
