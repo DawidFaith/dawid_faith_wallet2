@@ -177,7 +177,7 @@ export default function InstagramTab() {
 
   // UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-4 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-4 relative font-[Poppins,sans-serif]">
       {/* Lade-Overlay */}
       {loading && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex flex-col items-center justify-center">
@@ -185,6 +185,7 @@ export default function InstagramTab() {
           <p className="text-white font-bold text-lg drop-shadow">Wird verarbeitet...</p>
         </div>
       )}
+
       {/* Modale */}
       <Modal open={modal === "info"} onClose={() => setModal(null)}>
         <p className="text-lg font-bold mb-4">📊 Deine EXP-Quellen</p>
@@ -198,8 +199,8 @@ export default function InstagramTab() {
       </Modal>
       <Modal open={modal === "upgrade"} onClose={() => setModal(null)}>
         <p className="text-xl font-bold mb-4">✨ Upgrade deine EXP!</p>
-        <button className="modal-btn mb-2" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
-        <button className="modal-btn mb-2" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
+        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
+        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
       </Modal>
       <Modal open={modal === "claim"} onClose={() => setModal(null)}>
         <div className="flex justify-center mb-2">
@@ -215,60 +216,60 @@ export default function InstagramTab() {
           onChange={e => setWallet(e.target.value)}
           readOnly={!!wallet && wallet.startsWith("0x")}
         />
-        <button className="modal-btn" onClick={submitClaim}>✅ Claim absenden</button>
+        <button className="modal-btn bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] text-white font-bold" onClick={submitClaim}>✅ Claim absenden</button>
         <p className="mt-2" style={{ color: claimStatus.startsWith("✅") ? "green" : claimStatus.startsWith("❌") ? "red" : undefined }}>{claimStatus}</p>
       </Modal>
       <Modal open={modal === "storyHelp"} onClose={() => setModal(null)}>
-        <p>📣 Bitte teile meinen Beitrag in deiner Instagram-Story<br/>und markiere mich mit <b>@dawidfaith</b>, damit du dein Upgrade erhältst.</p>
+        <p>📣 Bitte teile meinen Beitrag in deiner Instagram-Story<br/><b>@dawidfaith</b>, damit du dein Upgrade erhältst.</p>
       </Modal>
       <Modal open={modal === "likeSave"} onClose={() => setModal(null)}>
         <p>1️⃣ Bitte entferne alle Likes und Saves von meinem Beitrag.</p>
-        <button className="modal-btn mb-2" onClick={() => setModal("confirmCheckInitial")}>✅ Check aktuelle Werte</button>
+        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("confirmCheckInitial")}>✅ Check aktuelle Werte</button>
         {likeStart !== null && saveStart !== null && (
           <div className="bg-gray-100 text-black rounded-lg p-2 my-2">Likes: {likeStart}<br/>Saves: {saveStart}</div>
         )}
         <p className="mt-4">2️⃣ Bitte like und speichere den Beitrag jetzt erneut, bevor du fortfährst!</p>
-        <button className="modal-btn mb-2" onClick={() => setModal("confirmCheckAfter")}>✅ Check neue Werte</button>
+        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("confirmCheckAfter")}>✅ Check neue Werte</button>
         {likeAfter !== null && saveAfter !== null && (
           <div className="bg-gray-100 text-black rounded-lg p-2 my-2">Likes: {likeAfter}<br/>Saves: {saveAfter}</div>
         )}
         {confirmationMessage && <p className="text-green-600 font-bold mt-2">{confirmationMessage}</p>}
-        <button className="modal-btn mt-2" onClick={() => { if (typeof window !== "undefined") { localStorage.clear(); window.location.reload(); } }}>🔄 Neu laden</button>
+        <button className="modal-btn mt-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => { if (typeof window !== "undefined") { localStorage.clear(); window.location.reload(); } }}>🔄 Neu laden</button>
       </Modal>
       <Modal open={modal === "confirmCheckInitial"} onClose={() => setModal(null)}>
         <p>Bitte <b>entferne zuerst alle Likes und Saves</b> von meinem Beitrag – danach werden die aktuellen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
-        <button className="modal-btn" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
+        <button className="modal-btn bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
       </Modal>
       <Modal open={modal === "confirmCheckAfter"} onClose={() => setModal(null)}>
         <p>Bitte <b>like und speichere den Beitrag erneut</b>, bevor du fortfährst – gleich werden die neuen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
-        <button className="modal-btn" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
+        <button className="modal-btn bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
       </Modal>
       <Modal open={modal === "walletInfo"} onClose={() => setModal(null)}>
         <p><b>🔒 Wichtiger Hinweis:</b><br/><br/>Deine Wallet-Adresse wird dauerhaft mit deinem Social-Media-Account verbunden.<br/><br/>Wenn du sie ändern willst, schreib mir eine <b>DM mit dem Stichwort „Wallet“</b> auf <b>Instagram</b>.</p>
       </Modal>
 
       {/* Card */}
-      <div className="bg-pink-600/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl border-2 border-white/15 text-white text-center">
-        <div className="text-2xl font-bold mb-2">{username}</div>
+      <div className="card bg-[rgba(221,42,123,0.18)] rounded-[30px] p-8 w-full max-w-[400px] shadow-2xl border-2 border-white/15 text-white text-center flex flex-col items-center" style={{boxShadow:'0 0 30px rgba(0,0,0,0.2)'}}>
+        <div className="username text-2xl font-bold mb-2">{username}</div>
         <img
           src={profileImage || "https://via.placeholder.com/100"}
           alt="Profilbild"
           className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white/20"
         />
-        <div className="bg-black/20 rounded-2xl p-4 mb-4">
+        <div className="level-box bg-black/20 rounded-2xl p-4 mb-4 w-full">
           <div className="flex justify-between items-center mb-2">
-            <div className="font-bold text-lg">Level {level}</div>
-            <div className="text-base">{exp} / {maxExp} EXP</div>
-            <button className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow" title="Info" onClick={() => setModal("info")}>i</button>
+            <div className="level font-bold text-lg text-yellow-300">Level {level}</div>
+            <div className="exp text-base">{exp} / {maxExp} EXP</div>
+            <button className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow border border-pink-200" title="Info" onClick={() => setModal("info")}>i</button>
           </div>
-          <div className="relative w-full h-4 bg-zinc-900 rounded-full overflow-hidden mb-2">
+          <div className="progress-bar relative w-full h-4 bg-[#111] rounded-full overflow-hidden mb-2">
             <div
-              className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4]"
+              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4]"
               style={{ width: `${progressPercent}%` }}
             ></div>
-            <div className="absolute w-full h-full flex items-center justify-center text-xs font-bold text-white drop-shadow">
+            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs font-bold text-white drop-shadow">
               {progressPercent}%
             </div>
           </div>
@@ -276,8 +277,8 @@ export default function InstagramTab() {
             ⛏ <span>+{miningPower} D.Faith</span>
           </div>
         </div>
-        {/* EXP-Quellen (optional einblendbar) */}
-        <div className="text-left text-sm bg-white/10 rounded-xl p-3 mb-4">
+        {/* EXP-Quellen */}
+        <div className="exp-list text-left text-sm bg-white/10 rounded-xl p-3 mb-4 w-full">
           <div className="flex justify-between"><span>TikTok:</span><span>{expTiktok} EXP</span></div>
           <div className="flex justify-between"><span>Instagram:</span><span>{expInstagram} EXP</span></div>
           <div className="flex justify-between"><span>Stream:</span><span>{expStream} EXP</span></div>
@@ -285,17 +286,17 @@ export default function InstagramTab() {
           <div className="flex justify-between"><span>LiveExp:</span><span>+{liveExp}%</span></div>
         </div>
         {/* System-Check */}
-        <div className="border-2 border-white rounded-2xl p-4 bg-white/10 mb-4">
-          <div className="font-bold text-base mb-2">✅ System Check</div>
-          <div className="flex justify-between mb-1"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="flex justify-between mb-1"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="flex justify-between mb-1"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
-          <div className="flex justify-between mb-1"><span>💾 Save</span><span>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
+        <div className="system-check border-2 border-white rounded-2xl p-4 bg-white/10 mb-4 w-full">
+          <div className="system-check-header font-bold text-base mb-2">✅ System Check</div>
+          <div className="check-item flex justify-between mb-1"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
+          <div className="check-item flex justify-between mb-1"><span>💾 Save</span><span>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
         </div>
         {/* Buttons */}
-        <div className="flex gap-4 mt-6">
-          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-lg hover:scale-105 transition" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-lg hover:scale-105 transition" onClick={() => setModal("claim")}>🪙 Claim</button>
+        <div className="button-row flex gap-4 mt-6 w-full">
+          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
+          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("claim")}>🪙 Claim</button>
         </div>
       </div>
     </div>
