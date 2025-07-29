@@ -982,28 +982,52 @@ export default function BuyTab() {
                   <h3 className="text-xl font-bold text-white mb-1">D.INVEST kaufen</h3>
                   <p className="text-zinc-400 text-xs">Investment & Staking Token</p>
                 </div>
-                <div className="mb-3 text-zinc-300 text-sm">
-                  <b>Preis:</b> 5€ pro D.INVEST<br />
-                  <b>Minimum:</b> 5 EUR
+                
+                <div className="mb-4 text-zinc-300 text-sm space-y-2">
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                    <p className="text-blue-400 font-medium mb-2">💡 Was ist D.INVEST?</p>
+                    <p className="text-zinc-300 text-xs leading-relaxed">
+                      D.INVEST ist das Investment-Token für das Dawid Faith Projekt. Mit diesem Token können Sie 80% des gesamten D.FAITH Supplys aus dem Smart Contract durch Staking erhalten. Es dient als langfristiges Investment in die Entwicklung und den Erfolg des Projekts.
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-xs">
+                    <span><strong>Preis:</strong> 5€ pro D.INVEST</span>
+                    <span><strong>Minimum:</strong> 5 EUR</span>
+                  </div>
                 </div>
+                
                 <div className="mb-3 text-zinc-300 text-sm">
                   {copied
-                    ? "Deine Wallet-Adresse wurde kopiert. Bitte füge sie beim Stripe-Kauf als Verwendungszweck ein, damit wir dir die Token zuweisen können."
-                    : "Bitte stelle sicher, dass du eine Wallet verbunden hast."}
+                    ? "✅ Wallet-Adresse wurde kopiert! Du wirst nun zu Stripe weitergeleitet. Bitte füge deine Wallet-Adresse als Verwendungszweck ein, damit wir dir die Token zuweisen können."
+                    : "Deine Wallet-Adresse wird automatisch kopiert, bevor du zu Stripe weitergeleitet wirst."}
                 </div>
+                
                 <Button
                   className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold py-2 rounded-xl mt-1"
                   onClick={async () => {
                     if (account?.address) {
-                      await navigator.clipboard.writeText(account.address);
-                      setCopied(true);
+                      try {
+                        await navigator.clipboard.writeText(account.address);
+                        setCopied(true);
+                        // Kurz warten, damit der User die Bestätigung sieht
+                        setTimeout(() => {
+                          window.open('https://dein-stripe-link.de', '_blank');
+                        }, 1000);
+                      } catch (error) {
+                        console.error("Fehler beim Kopieren der Wallet-Adresse:", error);
+                        // Fallback: Direkt zu Stripe weiterleiten
+                        window.open('https://dein-stripe-link.de', '_blank');
+                      }
+                    } else {
+                      alert('Bitte Wallet verbinden!');
                     }
-                    window.open('https://dein-stripe-link.de', '_blank');
                   }}
                   autoFocus
                 >
-                  Weiter zu Stripe
+                  {copied ? "Weiterleitung zu Stripe..." : "Wallet-Adresse kopieren & weiter zu Stripe"}
                 </Button>
+                
                 <Button
                   className="w-full bg-zinc-600 hover:bg-zinc-700 text-white font-bold py-2 rounded-lg text-xs mt-2"
                   onClick={() => {
@@ -1017,6 +1041,7 @@ export default function BuyTab() {
                     setSpenderAddress(null);
                     setNeedsApproval(false);
                     setQuoteError(null);
+                    setCopied(false);
                   }}
                   disabled={isSwapping}
                 >

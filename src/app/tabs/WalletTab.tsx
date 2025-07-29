@@ -918,14 +918,6 @@ export default function WalletTab() {
                 <span className="text-xs">♪</span>
               </div>
               
-              <div className="flex items-center justify-center gap-6 text-xs text-zinc-500">
-                <span>🎼 Dezentralisiert</span>
-                <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
-                <span>🎵 Sicher</span>
-                <div className="w-1 h-1 bg-zinc-600 rounded-full"></div>
-                <span>🎶 Web3</span>
-              </div>
-              
               <div className="pt-4 border-t border-zinc-800/50">
                 <p className="text-xs text-zinc-600">
                   🎤 Powered by Dawid Faith ♫
