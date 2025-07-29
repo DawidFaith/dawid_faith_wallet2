@@ -6,7 +6,7 @@ import { base } from "thirdweb/chains";
 import { NATIVE_TOKEN_ADDRESS, getContract, prepareContractCall, sendAndConfirmTransaction, readContract } from "thirdweb";
 import { client } from "../../client";
 import { balanceOf, approve } from "thirdweb/extensions/erc20";
-import { getUniswapQuote, executeUniswapSwap, getDFAITHPriceFromUniswap, SwapQuote, SwapParams } from "../../utils/uniswapUtils";
+import { getUniswapQuote, executeUniswapSwap, getDFAITHPriceFromUniswap, SwapQuote, SwapParams } from "../../utils/simpleSwapUtils";
 
 const DFAITH_TOKEN = "0x69eFD833288605f320d77eB2aB99DDE62919BbC1"; // D.FAITH Token auf Base (aktualisiert Juli 2025)
 const DFAITH_DECIMALS = 2; // Dezimalstellen
@@ -142,25 +142,35 @@ export default function BuyTab() {
           ethEur = 3000; // Hard fallback für ETH
         }
         
-        // 2. Hole D.FAITH Preis von Uniswap statt OpenOcean
-        try {
-          const ethPerDfaith = await getDFAITHPriceFromUniswap();
-          
-          if (ethPerDfaith && ethPerDfaith > 0) {
-            setDfaithPrice(ethPerDfaith); // Wie viele ETH für 1 D.FAITH
+        // 2. Hole D.FAITH Preis von Uniswap statt OpenOcean (nur im Browser)
+        if (typeof window !== 'undefined') {
+          try {
+            const ethPerDfaith = await getDFAITHPriceFromUniswap();
             
-            // Preis pro D.FAITH in EUR: ethPerDfaith * ethEur
-            if (ethEur && ethPerDfaith > 0) {
-              dfaithPriceEur = ethPerDfaith * ethEur;
+            if (ethPerDfaith && ethPerDfaith > 0) {
+              setDfaithPrice(ethPerDfaith); // Wie viele ETH für 1 D.FAITH
+              
+              // Preis pro D.FAITH in EUR: ethPerDfaith * ethEur
+              if (ethEur && ethPerDfaith > 0) {
+                dfaithPriceEur = ethPerDfaith * ethEur;
+              } else {
+                dfaithPriceEur = null;
+              }
             } else {
-              dfaithPriceEur = null;
+              errorMsg = "Uniswap: Keine Liquidität verfügbar";
             }
-          } else {
-            errorMsg = "Uniswap: Keine Liquidität verfügbar";
+          } catch (e) {
+            console.log("Uniswap Fehler:", e);
+            errorMsg = "Uniswap API Fehler";
           }
-        } catch (e) {
-          console.log("Uniswap Fehler:", e);
-          errorMsg = "Uniswap API Fehler";
+        } else {
+          // Server-side: verwende Fallback-Preise
+          if (lastKnownPrices.dfaith) {
+            setDfaithPrice(lastKnownPrices.dfaith);
+            if (lastKnownPrices.dfaithEur) {
+              dfaithPriceEur = lastKnownPrices.dfaithEur;
+            }
+          }
         }
         
         // Fallback auf letzte bekannte D.FAITH Preise
