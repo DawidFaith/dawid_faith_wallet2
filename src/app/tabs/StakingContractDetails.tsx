@@ -52,52 +52,61 @@ export default function StakingContractDetails() {
   }, []);
 
   return (
-    <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6 mt-8">
-      <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-        🔒 Staking Smart Contract – Live Daten
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-zinc-800/50 rounded-lg p-4">
-          <h4 className="font-semibold text-purple-400 mb-3">📋 Vertragsdetails</h4>
-          <div className="space-y-2 text-sm">
-            <div className="mb-2">
-              <span className="text-zinc-400">Vertragstyp:</span>
-              <span className="text-white ml-2">Staking Contract</span>
-            </div>
-            <div className="mb-2">
-              <span className="text-zinc-400">Adresse:</span>
-              <span className="text-blue-400 font-mono text-xs ml-2">0xe85b...9940</span>
-              <a href="https://basescan.org/address/0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940#code" target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-400 underline text-xs">Verifizierter Code</a>
-            </div>
-            <div className="mb-2">
-              <span className="text-zinc-400">Sicherheit:</span>
-              <span className="text-green-400 ml-2">ReentrancyGuard</span>
-            </div>
-            <div className="mb-2">
-              <span className="text-zinc-400">Staking-Token:</span>
-              <span className="text-blue-400 ml-2">D.INVEST (0 Dezimalstellen)</span>
-            </div>
-            <div className="mb-2">
-              <span className="text-zinc-400">Belohnungs-Token:</span>
-              <span className="text-amber-400 ml-2">D.FAITH (2 Dezimalstellen)</span>
-            </div>
-            <div>
-              <span className="text-zinc-400">Min. Auszahlungsbetrag:</span>
-              <span className="text-white ml-2">0.01 D.FAITH</span>
-            </div>
+    <div className="bg-zinc-900 rounded-xl border border-purple-500/30 p-6 flex flex-col gap-4 items-start mt-8">
+      {/* Kopfbereich mit Icon, Titel, Untertitel */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-purple-500/20">
+          <span className="text-purple-400 text-3xl">🔒</span>
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-purple-400">Staking Contract</h3>
+          <p className="text-zinc-400 text-sm">Smart Contract für D.INVEST Staking & Rewards</p>
+        </div>
+      </div>
+
+      {/* Details-Box */}
+      <div className="bg-purple-500/10 rounded-lg p-4 border border-purple-500/20 w-full">
+        <h4 className="font-semibold text-purple-300 mb-3">📋 Vertragsdetails</h4>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-zinc-400">Vertragstyp:</span>
+            <div className="text-white font-semibold">Staking Contract</div>
+          </div>
+          <div>
+            <span className="text-zinc-400">Adresse:</span>
+            <div className="text-blue-400 font-mono text-xs break-all">0xe85b...9940</div>
+            <a href="https://basescan.org/address/0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Vollständige Adresse</a>
+          </div>
+          <div>
+            <span className="text-zinc-400">Sicherheit:</span>
+            <div className="text-green-400 font-semibold">ReentrancyGuard</div>
+          </div>
+          <div>
+            <span className="text-zinc-400">Staking-Token:</span>
+            <div className="text-blue-400 font-semibold">D.INVEST (0 Dezimalstellen)</div>
+          </div>
+          <div>
+            <span className="text-zinc-400">Belohnungs-Token:</span>
+            <div className="text-amber-400 font-semibold">D.FAITH (2 Dezimalstellen)</div>
+          </div>
+          <div>
+            <span className="text-zinc-400">Min. Auszahlungsbetrag:</span>
+            <div className="text-white font-semibold">0.01 D.FAITH</div>
           </div>
         </div>
-        <div className="bg-zinc-800/50 rounded-lg p-4 flex flex-col justify-center">
-          <h4 className="font-semibold text-amber-400 mb-3">💸 Live Rewards</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Verfügbare Rewards im Contract:</span>
-              <span className="text-amber-400 font-semibold">{loading ? "..." : rewardBalance + " D.FAITH"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Bereits ausgeschüttete Rewards:</span>
-              <span className="text-green-400 font-semibold">{loading ? "..." : totalRewardsDistributed + " D.FAITH"}</span>
-            </div>
+      </div>
+
+      {/* Live Rewards-Box */}
+      <div className="bg-zinc-800/50 rounded-lg p-4 border border-amber-400/20 w-full">
+        <h4 className="font-semibold text-amber-400 mb-3">💸 Live Rewards</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-zinc-400">Verfügbare Rewards im Contract:</span>
+            <span className="text-amber-400 font-semibold">{loading ? "..." : rewardBalance + " D.FAITH"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-zinc-400">Bereits ausgeschüttete Rewards:</span>
+            <span className="text-green-400 font-semibold">{loading ? "..." : totalRewardsDistributed + " D.FAITH"}</span>
           </div>
         </div>
       </div>
