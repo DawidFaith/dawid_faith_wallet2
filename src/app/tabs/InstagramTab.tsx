@@ -177,7 +177,7 @@ export default function InstagramTab() {
 
   // UI
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-4 relative font-[Poppins,sans-serif]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] via-40% to-[#515bd4] p-2 sm:p-4 relative font-[Poppins,sans-serif]">
       {/* Lade-Overlay */}
       {loading && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex flex-col items-center justify-center">
@@ -251,46 +251,46 @@ export default function InstagramTab() {
       </Modal>
 
       {/* Card */}
-      <div className="card bg-white/90 rounded-[30px] p-8 w-full max-w-[400px] shadow-2xl border-2 border-white/15 text-zinc-900 text-center flex flex-col items-center relative" style={{boxShadow:'0 0 30px rgba(0,0,0,0.12)'}}>
-        <div className="username text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+      <div className="card bg-white rounded-[28px] p-4 sm:p-8 w-full max-w-[410px] shadow-xl border border-zinc-200 text-zinc-900 text-center flex flex-col items-center relative" style={{boxShadow:'0 2px 24px 0 rgba(0,0,0,0.10)'}}>
+        <div className="username text-[2rem] sm:text-[2.2rem] font-extrabold mb-2 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'Poppins,Arial,sans-serif'}}>
           <span>{username}</span>
         </div>
         <img
           src={profileImage || "https://via.placeholder.com/100"}
           alt="Profilbild"
-          className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white/20"
+          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-md"
         />
-        <div className="level-box bg-gradient-to-r from-[#f58529]/20 via-[#dd2a7b]/20 to-[#515bd4]/20 rounded-2xl p-4 mb-4 w-full">
+        <div className="level-box bg-gradient-to-r from-[#f58529]/10 via-[#dd2a7b]/10 to-[#515bd4]/10 rounded-2xl p-3 sm:p-4 mb-4 w-full">
           <div className="flex justify-between items-center mb-2">
-            <div className="level font-bold text-lg text-[#f58529]">Level {level}</div>
-            <div className="exp text-base">{exp} / {maxExp} EXP</div>
+            <div className="level font-extrabold text-lg sm:text-xl text-[#f58529] tracking-tight">Level {level}</div>
+            <div className="exp text-base sm:text-lg font-semibold">{exp} / {maxExp} EXP</div>
             <button className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow border border-pink-200 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
           </div>
-          <div className="progress-bar relative w-full h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
+          <div className="progress-bar relative w-full h-3 sm:h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
             <div
               className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#515bd4]"
               style={{ width: `${progressPercent}%`, transition: 'width 0.7s cubic-bezier(.4,2,.6,1)' }}
             ></div>
-            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs font-bold text-white drop-shadow">
+            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-bold text-white drop-shadow">
               {progressPercent}%
             </div>
           </div>
-          <div className="mt-2 text-yellow-500 text-base flex items-center justify-center gap-1">
+          <div className="mt-2 text-yellow-500 text-base sm:text-lg flex items-center justify-center gap-1 font-semibold">
             ⛏ <span>+{miningPower} D.Faith</span>
           </div>
         </div>
         {/* System-Check */}
-        <div className="system-check border-2 border-white rounded-2xl p-4 bg-white/10 mb-4 w-full">
-          <div className="system-check-header font-bold text-base mb-2 text-[#dd2a7b]">✅ System Check</div>
-          <div className="check-item flex justify-between mb-1"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
-          <div className="check-item flex justify-between mb-1"><span>💾 Save</span><span>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
+        <div className="system-check border border-zinc-200 rounded-2xl p-3 sm:p-4 bg-white/60 mb-4 w-full">
+          <div className="system-check-header font-bold text-base sm:text-lg mb-2 text-[#dd2a7b]">✅ System Check</div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>❤️ Like</span><span>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💬 Kommentar</span><span>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>📣 Story</span><span>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💾 Save</span><span>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
         </div>
         {/* Buttons */}
-        <div className="button-row flex gap-4 mt-6 w-full">
-          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-lg hover:scale-105 transition text-white text-lg" onClick={() => setModal("claim")}>🪙 Claim</button>
+        <div className="button-row flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
+          <button className="btn-upgrade flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] shadow-md hover:scale-105 transition text-white text-lg sm:text-xl tracking-tight" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
+          <button className="btn-claim flex-1 py-3 rounded-full font-extrabold bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] shadow-md hover:scale-105 transition text-white text-lg sm:text-xl tracking-tight" onClick={() => setModal("claim")}>🪙 Claim</button>
         </div>
       </div>
     </div>
