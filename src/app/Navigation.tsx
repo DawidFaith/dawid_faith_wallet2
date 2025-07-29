@@ -81,45 +81,39 @@ export default function Navigation({ activeTab, setActiveTab }: NavigationProps)
           </button>
           {open && (
             <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 bg-zinc-800 rounded-lg shadow-xl flex flex-col z-50 min-w-[140px] border border-zinc-700 overflow-hidden">
-              {activeSocial !== "instagram" && (
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    setActiveSocial("instagram");
-                    setActiveTab("instagram");
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200 border-b border-zinc-700"
-                >
-                  <FaInstagram className="text-pink-500" /> 
-                  <span className="font-medium">Instagram</span>
-                </button>
-              )}
-              {activeSocial !== "tiktok" && (
-                <button
-                  onClick={() => {
-                    setActiveSocial("tiktok");
-                    setActiveTab("tiktok");
-                    setOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200 border-b border-zinc-700"
-                >
-                  <FaTiktok className="text-zinc-100" /> 
-                  <span className="font-medium">TikTok</span>
-                </button>
-              )}
-              {activeSocial !== "facebook" && (
-                <button
-                  onClick={() => {
-                    setActiveSocial("facebook");
-                    setActiveTab("facebook");
-                    setOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200"
-                >
-                  <FaFacebook className="text-blue-600" /> 
-                  <span className="font-medium">Facebook</span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setActiveSocial("instagram");
+                  setActiveTab("instagram");
+                }}
+                className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200 border-b border-zinc-700"
+              >
+                <FaInstagram className="text-pink-500" /> 
+                <span className="font-medium">Instagram</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveSocial("tiktok");
+                  setActiveTab("tiktok");
+                  setOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200 border-b border-zinc-700"
+              >
+                <FaTiktok className="text-zinc-100" /> 
+                <span className="font-medium">TikTok</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveSocial("facebook");
+                  setActiveTab("facebook");
+                  setOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-3 hover:bg-zinc-700 text-zinc-100 w-full transition-colors duration-200"
+              >
+                <FaFacebook className="text-blue-600" /> 
+                <span className="font-medium">Facebook</span>
+              </button>
             </div>
           )}
         </li>
