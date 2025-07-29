@@ -431,16 +431,14 @@ export default function BuyTab() {
         throw new Error('ParaSwap: Keine gültige Price Route erhalten');
       }
       
-      // 2. Baue Transaction mit korrekten Parametern
+      // 2. Baue Transaction mit korrekten Parametern - OHNE destAmount
       const buildTxParams = {
         srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         destToken: DFAITH_TOKEN,
         srcAmount: priceData.priceRoute.srcAmount,
-        destAmount: priceData.priceRoute.destAmount,
         priceRoute: priceData.priceRoute,
         userAddress: account.address,
-        slippage: (parseFloat(slippage) * 100).toString(), // Basis points
-        // Entferne partner und andere optionale Parameter die Probleme verursachen könnten
+        slippage: (parseFloat(slippage) * 100).toString()
       };
       
       console.log("Build TX Parameters:", buildTxParams);
@@ -449,7 +447,6 @@ export default function BuyTab() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Füge User-Agent hinzu falls erforderlich
           'User-Agent': 'DawidFaithWallet/1.0'
         },
         body: JSON.stringify(buildTxParams)
@@ -497,6 +494,8 @@ export default function BuyTab() {
         errorMessage = "ParaSwap: Route nicht gefunden. Token möglicherweise nicht verfügbar auf Base Chain.";
       } else if (errorMessage.includes("500")) {
         errorMessage = "ParaSwap: Server-Fehler. Bitte später erneut versuchen.";
+      } else if (errorMessage.includes("Cannot specify both")) {
+        errorMessage = "ParaSwap: Parameter-Konflikt behoben. Bitte erneut versuchen.";
       }
       
       setQuoteError(errorMessage);
