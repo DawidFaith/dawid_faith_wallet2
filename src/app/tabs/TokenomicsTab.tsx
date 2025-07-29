@@ -1,5 +1,5 @@
 export default function TokenomicsTab() {
   return (
-    <div className="text-white text-xl">Tokenomics Bereich</div>
+    <div className="text-white text-xl">Tokenomics Bereiche</div>
   );
 }
