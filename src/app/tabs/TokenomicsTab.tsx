@@ -63,9 +63,12 @@ export default function TokenomicsTab() {
                   <span className="text-zinc-400">Supply:</span>
                   <div className="text-white font-semibold">100.000</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Address:</span>
-                  <a href="https://basescan.org/address/0x69eFD833288605f320d77eB2aB99DDE62919BbC1#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">0x69eFD833288605f320d77eB2aB99DDE62919BbC1</a>
+                <div>
+                  <span className="text-zinc-400">Adresse:</span>
+                  <div className="text-blue-400 font-mono text-xs break-all">
+                    0x69eF...BbC1
+                  </div>
+                  <a href="https://basescan.org/address/0x69eFD833288605f320d77eB2aB99DDE62919BbC1#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Vollständige Adresse</a>
                 </div>
               </div>
             </div>
@@ -113,9 +116,12 @@ export default function TokenomicsTab() {
                   <span className="text-zinc-400">Supply:</span>
                   <div className="text-white font-semibold">10.000</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-zinc-400">Address:</span>
-                  <a href="https://basescan.org/address/0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb</a>
+                <div>
+                  <span className="text-zinc-400">Adresse:</span>
+                  <div className="text-blue-400 font-mono text-xs break-all">
+                    0x6F1f...F4bb
+                  </div>
+                  <a href="https://basescan.org/address/0x6F1fFd03106B27781E86b33Df5dBB734ac9DF4bb#code" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline text-xs">Vollständige Adresse</a>
                 </div>
                 <div>
                   <span className="text-zinc-400">Preis:</span>
@@ -140,7 +146,7 @@ export default function TokenomicsTab() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Rewards ab 0,01 D.FAITH jederzeit</span>
+                  <span>Rewards ab 0.01 D.FAITH jederzeit</span>
                 </li>
               </ul>
             </div>
@@ -159,26 +165,30 @@ export default function TokenomicsTab() {
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <h4 className="font-semibold text-purple-400 mb-3">📋 Vertragsdetails</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
+                <div className="mb-2">
                   <span className="text-zinc-400">Vertragstyp:</span>
-                  <span className="text-white">WeeklyTokenStaking</span>
+                  <span className="text-white ml-2">Staking Contract</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-zinc-400">Adresse:</span>
+                  <span className="text-blue-400 font-mono text-xs ml-2">0xe85b...9940</span>
                   <a href="https://basescan.org/address/0xe85b32a44b9eD3ecf8bd331FED46fbdAcDBc9940#code" target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-400 underline text-xs">Verifizierter Code</a>
                 </div>
-                <div className="flex justify-between">
+                <div className="mb-2">
                   <span className="text-zinc-400">Sicherheit:</span>
-                  <span className="text-green-400">ReentrancyGuard</span>
+                  <span className="text-green-400 ml-2">ReentrancyGuard</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="mb-2">
                   <span className="text-zinc-400">Staking-Token:</span>
-                  <span className="text-blue-400">D.INVEST (0 Dezimalstellen)</span>
+                  <span className="text-blue-400 ml-2">D.INVEST (0 Dezimalstellen)</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="mb-2">
                   <span className="text-zinc-400">Belohnungs-Token:</span>
-                  <span className="text-amber-400">D.FAITH (2 Dezimalstellen)</span>
+                  <span className="text-amber-400 ml-2">D.FAITH (2 Dezimalstellen)</span>
                 </div>
-                <div className="flex justify-between">
+                <div>
                   <span className="text-zinc-400">Min. Auszahlungsbetrag:</span>
-                  <span className="text-white">0,01 D.FAITH</span>
+                  <span className="text-white ml-2">0.01 D.FAITH</span>
                 </div>
               </div>
             </div>
