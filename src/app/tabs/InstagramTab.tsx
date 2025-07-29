@@ -74,8 +74,8 @@ export default function InstagramTab() {
   const levelRange = maxExp - minExp;
   const progressPercent = Math.round((currentLevelExp / (levelRange || 1)) * 100);
 
-  // uuid aus URL
-  const uuid = typeof window !== "undefined" ? getQueryParam("uuid") : null;
+  // uuid aus URL oder Defaultwert
+  const uuid = typeof window !== "undefined" && getQueryParam("uuid") ? getQueryParam("uuid") : "dfaith3789953";
 
   // Userdaten laden
   useEffect(() => {
