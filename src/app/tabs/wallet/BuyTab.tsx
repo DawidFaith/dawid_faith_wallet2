@@ -392,35 +392,46 @@ export default function BuyTab() {
 
       console.log("=== ParaSwap Quote Request für Base ===");
       console.log("ETH Amount:", swapAmountEth);
+      console.log("Account Address:", account.address);
+      
+      const ethAmountWei = (parseFloat(swapAmountEth) * Math.pow(10, 18)).toString();
+      console.log("ETH Amount in Wei:", ethAmountWei);
       
       const priceParams = new URLSearchParams({
         srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH address for ParaSwap
         destToken: DFAITH_TOKEN, // D.FAITH
         srcDecimals: ETH_DECIMALS.toString(),
         destDecimals: DFAITH_DECIMALS.toString(),
-        amount: (parseFloat(swapAmountEth) * Math.pow(10, 18)).toString(), // ETH in Wei
+        amount: ethAmountWei, // ETH in Wei
         network: "8453", // Base Chain ID
         side: "SELL",
         userAddress: account.address,
         slippage: (parseFloat(slippage) * 100).toString() // ParaSwap expects slippage in basis points
       });
       
+      console.log("Price Parameters:", Object.fromEntries(priceParams));
+      
       // 1. Hole Preis-Quote
       const priceUrl = `https://apiv5.paraswap.io/prices?${priceParams}`;
+      console.log("Price URL:", priceUrl);
+      
       const priceResponse = await fetch(priceUrl);
       
       if (!priceResponse.ok) {
-        throw new Error(`ParaSwap Price Quote Fehler: ${priceResponse.status}`);
+        const errorText = await priceResponse.text();
+        console.error("ParaSwap Price Response Error:", priceResponse.status, errorText);
+        throw new Error(`ParaSwap Price Quote Fehler: ${priceResponse.status} - ${errorText}`);
       }
       
       const priceData = await priceResponse.json();
       console.log("ParaSwap Price Response:", priceData);
       
       if (!priceData || !priceData.priceRoute) {
+        console.error("Invalid price data:", priceData);
         throw new Error('ParaSwap: Keine gültige Price Route erhalten');
       }
       
-      // 2. Baue Transaction
+      // 2. Baue Transaction mit korrekten Parametern
       const buildTxParams = {
         srcToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         destToken: DFAITH_TOKEN,
@@ -428,25 +439,42 @@ export default function BuyTab() {
         destAmount: priceData.priceRoute.destAmount,
         priceRoute: priceData.priceRoute,
         userAddress: account.address,
-        slippage: (parseFloat(slippage) * 100).toString()
+        slippage: (parseFloat(slippage) * 100).toString(), // Basis points
+        // Entferne partner und andere optionale Parameter die Probleme verursachen könnten
       };
+      
+      console.log("Build TX Parameters:", buildTxParams);
       
       const buildTxResponse = await fetch('https://apiv5.paraswap.io/transactions/8453', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          // Füge User-Agent hinzu falls erforderlich
+          'User-Agent': 'DawidFaithWallet/1.0'
         },
         body: JSON.stringify(buildTxParams)
       });
       
+      console.log("Build TX Response Status:", buildTxResponse.status);
+      
       if (!buildTxResponse.ok) {
-        throw new Error(`ParaSwap Build Transaction Fehler: ${buildTxResponse.status}`);
+        const errorText = await buildTxResponse.text();
+        console.error("ParaSwap Build Transaction Error:", buildTxResponse.status, errorText);
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error("ParaSwap Error Details:", errorJson);
+          throw new Error(`ParaSwap Build Transaction Fehler: ${buildTxResponse.status} - ${errorJson.error || errorJson.message || errorText}`);
+        } catch (parseError) {
+          throw new Error(`ParaSwap Build Transaction Fehler: ${buildTxResponse.status} - ${errorText}`);
+        }
       }
       
       const buildTxData = await buildTxResponse.json();
       console.log("ParaSwap Build Transaction Response:", buildTxData);
       
       if (!buildTxData || !buildTxData.to || !buildTxData.data) {
+        console.error("Invalid transaction data:", buildTxData);
         throw new Error('ParaSwap: Unvollständige Transaktionsdaten');
       }
       
@@ -459,9 +487,21 @@ export default function BuyTab() {
       
     } catch (e: any) {
       console.error("Quote Fehler:", e);
-      setQuoteError(e.message || "Quote Fehler");
+      
+      // Spezifische Fehlerbehandlung für ParaSwap
+      let errorMessage = e.message || "Quote Fehler";
+      
+      if (errorMessage.includes("400")) {
+        errorMessage = "ParaSwap: Ungültige Parameter. Möglicherweise ist die Liquidität für diesen Betrag nicht ausreichend oder der Token wird nicht unterstützt.";
+      } else if (errorMessage.includes("404")) {
+        errorMessage = "ParaSwap: Route nicht gefunden. Token möglicherweise nicht verfügbar auf Base Chain.";
+      } else if (errorMessage.includes("500")) {
+        errorMessage = "ParaSwap: Server-Fehler. Bitte später erneut versuchen.";
+      }
+      
+      setQuoteError(errorMessage);
       setSwapTxStatus("error");
-      setTimeout(() => setSwapTxStatus(null), 4000);
+      setTimeout(() => setSwapTxStatus(null), 6000);
     }
   };
 
