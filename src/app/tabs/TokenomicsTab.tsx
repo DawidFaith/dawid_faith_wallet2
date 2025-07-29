@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 export default function TokenomicsTab() {
+  const [activeChart, setActiveChart] = useState<'tradingview' | 'dexscreener' | 'geckoterminal'>('dexscreener');
+
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -16,18 +20,99 @@ export default function TokenomicsTab() {
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           📈 Live Price Chart
         </h3>
-        <div className="w-full h-96 rounded-lg overflow-hidden">
-          <iframe 
-            height="100%" 
-            width="100%" 
-            id="geckoterminal-embed" 
-            title="GeckoTerminal Embed" 
-            src="https://www.geckoterminal.com/base/pools/0x7109214bafde13a6ef8060644656464bccab93cd?embed=1&info=1&swaps=1&grayscale=1&light_chart=0&chart_type=price&resolution=1h" 
-            frameBorder="0" 
-            allow="clipboard-write" 
-            allowFullScreen
-            className="w-full h-full"
-          />
+        
+        {/* Chart Options Tabs */}
+        <div className="flex gap-2 mb-4 overflow-x-auto">
+          <button 
+            onClick={() => setActiveChart('tradingview')}
+            className={`px-3 py-1 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+              activeChart === 'tradingview' 
+                ? 'bg-amber-500 text-black' 
+                : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+            }`}
+          >
+            TradingView
+          </button>
+          <button 
+            onClick={() => setActiveChart('dexscreener')}
+            className={`px-3 py-1 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+              activeChart === 'dexscreener' 
+                ? 'bg-amber-500 text-black' 
+                : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+            }`}
+          >
+            DexScreener
+          </button>
+          <button 
+            onClick={() => setActiveChart('geckoterminal')}
+            className={`px-3 py-1 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+              activeChart === 'geckoterminal' 
+                ? 'bg-amber-500 text-black' 
+                : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+            }`}
+          >
+            GeckoTerminal
+          </button>
+        </div>
+        
+        {/* TradingView Widget */}
+        {activeChart === 'tradingview' && (
+          <div className="w-full h-96 rounded-lg overflow-hidden bg-zinc-800">
+            <iframe
+              src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_76d87&symbol=BASE%3AD.FAITH&interval=1H&hidesidetoolbar=1&hidetabs=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=&hideideas=1&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=de"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allowTransparency={true}
+              scrolling="no"
+              className="w-full h-full"
+              title="TradingView Chart"
+            />
+          </div>
+        )}
+        
+        {/* DexScreener */}
+        {activeChart === 'dexscreener' && (
+          <div className="w-full h-96 rounded-lg overflow-hidden bg-zinc-800">
+            <iframe
+              src="https://dexscreener.com/base/0x7109214bafde13a6ef8060644656464bccab93cd?embed=1&theme=dark&trades=0&info=0"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              className="w-full h-full"
+              title="DexScreener Chart"
+            />
+          </div>
+        )}
+        
+        {/* GeckoTerminal */}
+        {activeChart === 'geckoterminal' && (
+          <div className="w-full h-96 rounded-lg overflow-hidden bg-zinc-800">
+            <iframe 
+              height="100%" 
+              width="100%" 
+              title="GeckoTerminal Embed" 
+              src="https://www.geckoterminal.com/base/pools/0x7109214bafde13a6ef8060644656464bccab93cd?embed=1&info=1&swaps=1&grayscale=1&light_chart=0&chart_type=price&resolution=1h" 
+              frameBorder="0" 
+              allow="clipboard-write" 
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
+        )}
+        
+        {/* Chart Info */}
+        <div className="mt-4 text-xs text-zinc-400 text-center">
+          Live-Daten von Base Chain • Pool: 0x7109214bafde13a6ef8060644656464bccab93cd
+          {activeChart === 'dexscreener' && (
+            <span className="ml-2 text-green-400">• DexScreener: Speziell für DEX-Trading optimiert</span>
+          )}
+          {activeChart === 'tradingview' && (
+            <span className="ml-2 text-blue-400">• TradingView: Professionelle Chart-Analyse</span>
+          )}
+          {activeChart === 'geckoterminal' && (
+            <span className="ml-2 text-purple-400">• GeckoTerminal: Vollständige Trading-Informationen</span>
+          )}
         </div>
       </div>
 
