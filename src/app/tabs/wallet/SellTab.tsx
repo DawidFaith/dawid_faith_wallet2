@@ -181,7 +181,7 @@ export default function SellTab() {
     }
   };
 
-  // Funktion um eine Verkaufs-Quote zu erhalten
+  // Funktion um eine Verkaufs-Quote zu erhalten (ParaSwap statt OpenOcean)
   const handleGetQuote = async () => {
     setSwapTxStatus("pending");
     setQuoteError(null);
@@ -192,89 +192,93 @@ export default function SellTab() {
     try {
       if (!sellAmount || parseFloat(sellAmount) <= 0 || !account?.address) return;
 
-      // Erster Schritt: Quote von OpenOcean API holen
-      console.log("1. Quote anfordern für", sellAmount, "D.FAITH");
-      
-      const params = new URLSearchParams({
-        chain: "base",
-        inTokenAddress: DFAITH_TOKEN,
-        outTokenAddress: "0x0000000000000000000000000000000000000000", // Native ETH
-        amount: sellAmount,
-        slippage: slippage,
-        gasPrice: "0.001", // Base Chain: 0.001 Gwei
-        account: account.address,
-      });
-      const url = `https://open-api.openocean.finance/v3/base/swap_quote?${params}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`OpenOcean API Fehler: ${response.status}`);
-      const data = await response.json();
-      if (!data || !data.data) throw new Error("OpenOcean: Keine Daten erhalten");
-      const txData = data.data;
-      
-      console.log("Quote erhalten:", txData);
+      // 1. Quote von ParaSwap holen
+      console.log("1. ParaSwap Quote anfordern für", sellAmount, "D.FAITH");
 
-      // Spenderadresse für Base Chain (OpenOcean Router)
-      const spender = "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64"; // OpenOcean Router auf Base
-      setQuoteTxData(txData);
+      // D.FAITH amount in kleinste Einheit (2 Decimals)
+      const sellAmountUnits = (parseFloat(sellAmount) * Math.pow(10, DFAITH_DECIMALS)).toString();
+
+      const priceParams = new URLSearchParams({
+        srcToken: DFAITH_TOKEN,
+        destToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // ETH für ParaSwap
+        srcDecimals: DFAITH_DECIMALS.toString(),
+        destDecimals: "18",
+        amount: sellAmountUnits,
+        network: "8453",
+        side: "SELL",
+        userAddress: account.address,
+        slippage: (parseFloat(slippage) * 100).toString()
+      });
+
+      const priceUrl = `https://apiv5.paraswap.io/prices?${priceParams}`;
+      const priceResponse = await fetch(priceUrl);
+      if (!priceResponse.ok) {
+        const errorText = await priceResponse.text();
+        throw new Error(`ParaSwap Price Fehler: ${priceResponse.status} - ${errorText}`);
+      }
+      const priceData = await priceResponse.json();
+      if (!priceData || !priceData.priceRoute) throw new Error("ParaSwap: Keine gültige Price Route erhalten");
+
+      // 2. Transaction bauen (ParaSwap)
+      const buildTxParams = {
+        srcToken: DFAITH_TOKEN,
+        destToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        srcAmount: priceData.priceRoute.srcAmount,
+        priceRoute: priceData.priceRoute,
+        userAddress: account.address,
+        slippage: (parseFloat(slippage) * 100).toString()
+      };
+
+      const buildTxResponse = await fetch('https://apiv5.paraswap.io/transactions/8453', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'DawidFaithWallet/1.0'
+        },
+        body: JSON.stringify(buildTxParams)
+      });
+
+      if (!buildTxResponse.ok) {
+        const errorText = await buildTxResponse.text();
+        throw new Error(`ParaSwap Build Transaction Fehler: ${buildTxResponse.status} - ${errorText}`);
+      }
+
+      const buildTxData = await buildTxResponse.json();
+      if (!buildTxData || !buildTxData.to || !buildTxData.data) {
+        throw new Error('ParaSwap: Unvollständige Transaktionsdaten');
+      }
+
+      setQuoteTxData(buildTxData);
+
+      // Spenderadresse für Approval (ParaSwap spender)
+      // Hole Spenderadresse von ParaSwap API
+      const spenderRes = await fetch(`https://apiv5.paraswap.io/spender?network=8453`);
+      let spender = "";
+      if (spenderRes.ok) {
+        const spenderData = await spenderRes.json();
+        spender = spenderData.address;
+      }
       setSpenderAddress(spender);
 
-      // Zweiter Schritt: Prüfen, ob Approval nötig ist
-      console.log("2. Prüfe Approval für", spender);
-      
-      const allowanceParams = new URLSearchParams({
-        chain: "base",
-        account: account.address,
-        inTokenAddress: DFAITH_TOKEN
-      });
-      const allowanceUrl = `https://open-api.openocean.finance/v3/base/allowance?${allowanceParams}`;
-      const allowanceResponse = await fetch(allowanceUrl);
+      // Approval prüfen (wie gehabt)
+      // Hole Allowance von ParaSwap API
+      const allowanceRes = await fetch(
+        `https://apiv5.paraswap.io/allowance?userAddress=${account.address}&tokenAddress=${DFAITH_TOKEN}&spender=${spender}&network=8453`
+      );
       let allowanceValue = "0";
-      if (allowanceResponse.ok) {
-        const allowanceData = await allowanceResponse.json();
-        console.log("Allowance Daten:", allowanceData);
-        
-        if (allowanceData && allowanceData.data !== undefined && allowanceData.data !== null) {
-          if (typeof allowanceData.data === "object") {
-            if (Array.isArray(allowanceData.data)) {
-              const first = allowanceData.data[0];
-              if (typeof first === "object" && first !== null) {
-                const values = Object.values(first);
-                if (values.length > 0) allowanceValue = values[0]?.toString() ?? "0";
-              }
-            } else {
-              const values = Object.values(allowanceData.data);
-              if (values.length > 0) allowanceValue = values[0]?.toString() ?? "0";
-            }
-          } else {
-            allowanceValue = allowanceData.data.toString();
-          }
-        }
-        
-        console.log("Aktuelle Allowance:", allowanceValue);
-        
-        let currentAllowance: bigint;
-        try {
-          currentAllowance = BigInt(allowanceValue);
-        } catch {
-          currentAllowance = BigInt(0);
-        }
-        const requiredAmount = BigInt(Math.floor(parseFloat(sellAmount)).toString());
-
-        console.log("Benötigte Allowance:", requiredAmount.toString());
-        console.log("Aktuelle Allowance:", currentAllowance.toString());
-        
-        if (currentAllowance < requiredAmount) {
-          console.log("Approval nötig");
-          setNeedsApproval(true);
-        } else {
-          console.log("Approval bereits vorhanden");
-          setNeedsApproval(false);
-        }
-      } else {
-        console.log("Fehler beim Abrufen der Allowance - setze Approval als nötig");
-        setNeedsApproval(true);
+      if (allowanceRes.ok) {
+        const allowanceData = await allowanceRes.json();
+        allowanceValue = allowanceData.allowance || "0";
       }
-      
+      const currentAllowance = BigInt(allowanceValue);
+      const requiredAmount = BigInt(sellAmountUnits);
+
+      if (currentAllowance < requiredAmount) {
+        setNeedsApproval(true);
+      } else {
+        setNeedsApproval(false);
+      }
+
       setSellStep('quoteFetched');
       setSwapTxStatus(null);
     } catch (e: any) {
@@ -385,207 +389,126 @@ export default function SellTab() {
     }
   };
 
-  // Funktion für den eigentlichen Token-Swap
+  // Funktion für den eigentlichen Token-Swap (ParaSwap)
   const handleSellSwap = async () => {
     if (!quoteTxData || !account?.address) return;
     setIsSwapping(true);
     setSwapTxStatus("swapping");
-    
+
     // Aktuelle Balance vor dem Swap speichern
     const initialBalance = parseFloat(dfaithBalance);
-    
+
     try {
-      console.log("4. Swap Transaktion starten");
-      console.log("Verwende ursprüngliche Quote-Daten:", quoteTxData);
-      
+      console.log("4. Swap Transaktion starten (ParaSwap)");
       const { prepareTransaction } = await import("thirdweb");
-      
-      // Keine manuelle Nonce - lass Thirdweb das automatisch machen
-      console.log("Bereite Transaktion vor...");
-      
-      // Verwende automatische Gas-Schätzung statt manuelle Werte
+
       const tx = prepareTransaction({
         to: quoteTxData.to,
         data: quoteTxData.data,
         value: BigInt(quoteTxData.value || "0"),
         chain: base,
         client,
-        // Entferne manuelle Nonce - lass Thirdweb das automatisch machen
-        // Entferne manuelle Gas-Parameter - lass Base Chain das automatisch schätzen
       });
-      
-      console.log("Sende Transaktion...");
+
+      console.log("Sende ParaSwap Transaktion...");
       const swapResult = await sendTransaction(tx);
       console.log("Swap TX gesendet:", swapResult);
-      console.log("Transaction Hash:", swapResult.transactionHash);
-      
-      // Prüfe sofort nach dem Senden, ob die Transaktion im Mempool ist
-      try {
-        const txResponse = await fetch(base.rpc, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_getTransactionByHash',
-            params: [swapResult.transactionHash],
-            id: 1
-          })
-        });
-        const txData = await txResponse.json();
-        if (!txData.result) {
-          console.warn("⚠️ Transaktion nicht im Mempool gefunden. Könnte ein Gas-Problem sein.");
-        } else {
-          console.log("✅ Transaktion im Mempool bestätigt:", txData.result);
-        }
-      } catch (mempoolError) {
-        console.log("Mempool-Prüfung fehlgeschlagen:", mempoolError);
-      }
-    
-    setSwapTxStatus("confirming");
-    
-    // Robuste Transaktionsüberwachung für Base Chain
-    console.log("Warte auf Transaktionsbestätigung...");
-    let receipt = null;
-    let confirmationAttempts = 0;
-    const maxConfirmationAttempts = 60; // 60 Versuche = ca. 2 Minuten
-    
-    while (!receipt && confirmationAttempts < maxConfirmationAttempts) {
-      confirmationAttempts++;
-      try {
-        console.log(`Bestätigungsversuch ${confirmationAttempts}/${maxConfirmationAttempts}`);
-        
-        // Versuche Receipt über RPC zu holen statt waitForReceipt
-        const txHash = swapResult.transactionHash;
-        const receiptResponse = await fetch(base.rpc, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_getTransactionReceipt',
-            params: [txHash],
-            id: 1
-          })
-        });
-        
-        const receiptData = await receiptResponse.json();
-        
-        if (receiptData.result && receiptData.result.status) {
-          receipt = {
-            status: receiptData.result.status === "0x1" ? "success" : "reverted",
-            transactionHash: receiptData.result.transactionHash,
-            gasUsed: receiptData.result.gasUsed,
-            logs: receiptData.result.logs
-          };
-          console.log("Transaktion bestätigt via RPC:", receipt);
-          break;
-        } else {
-          // Wenn noch nicht bestätigt, warte 2 Sekunden
+
+      setSwapTxStatus("confirming");
+
+      // Warte auf Bestätigung (wie gehabt)
+      let receipt = null;
+      let confirmationAttempts = 0;
+      const maxConfirmationAttempts = 60;
+      while (!receipt && confirmationAttempts < maxConfirmationAttempts) {
+        confirmationAttempts++;
+        try {
+          const txHash = swapResult.transactionHash;
+          const receiptResponse = await fetch(base.rpc, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_getTransactionReceipt',
+              params: [txHash],
+              id: 1
+            })
+          });
+          const receiptData = await receiptResponse.json();
+          if (receiptData.result && receiptData.result.status) {
+            receipt = {
+              status: receiptData.result.status === "0x1" ? "success" : "reverted",
+              transactionHash: receiptData.result.transactionHash,
+              gasUsed: receiptData.result.gasUsed,
+              logs: receiptData.result.logs
+            };
+            break;
+          } else {
+            if (confirmationAttempts < maxConfirmationAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+        } catch {
           if (confirmationAttempts < maxConfirmationAttempts) {
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
-      } catch (receiptError) {
-        console.log(`Bestätigungsversuch ${confirmationAttempts} fehlgeschlagen:`, receiptError);
-        if (confirmationAttempts < maxConfirmationAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      if (!receipt) {
+        receipt = { status: "unknown", transactionHash: swapResult.transactionHash };
+      }
+      if (receipt.status === "reverted") {
+        throw new Error(`Transaktion fehlgeschlagen - Status: ${receipt.status}. Hash: ${receipt.transactionHash}`);
+      }
+
+      setSwapTxStatus("verifying");
+
+      // Balance-Verifizierung (wie gehabt)
+      let balanceVerified = false;
+      let attempts = 0;
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      while (!balanceVerified) {
+        attempts++;
+        try {
+          if (attempts > 1) {
+            const waitTime = Math.min(attempts * 2000, 15000);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+          const dfaithValue = await fetchTokenBalanceViaInsightApi(DFAITH_TOKEN, account.address);
+          const dfaithRaw = Number(dfaithValue);
+          const currentBalance = dfaithRaw / Math.pow(10, DFAITH_DECIMALS);
+          const expectedDecrease = parseFloat(sellAmount);
+          const actualDecrease = initialBalance - currentBalance;
+          if (actualDecrease >= (expectedDecrease * 0.9)) {
+            setDfaithBalance(currentBalance.toFixed(DFAITH_DECIMALS));
+            balanceVerified = true;
+            setSellStep('completed');
+            setSwapTxStatus("success");
+            setSellAmount("");
+            setQuoteTxData(null);
+            setSpenderAddress(null);
+            setTimeout(() => setSwapTxStatus(null), 5000);
+          }
+        } catch {}
+        if (attempts >= 50) {
+          throw new Error("Balance-Verifizierung nach 50 Versuchen noch nicht erfolgreich - manuell prüfen");
         }
       }
-    }
-    
-    // Wenn nach allen Versuchen keine Bestätigung, ignoriere und gehe zur Balance-Verifizierung
-    if (!receipt) {
-      console.log("⚠️ Keine Transaktionsbestätigung erhalten, aber gehe zur Balance-Verifizierung");
-      receipt = { status: "unknown", transactionHash: swapResult.transactionHash };
-    }
-    
-    // Prüfe ob Transaktion erfolgreich war (nur bei bekanntem Status)
-    if (receipt.status === "reverted") {
-      console.error("Transaktion Details:", receipt);
-      throw new Error(`Transaktion fehlgeschlagen - Status: ${receipt.status}. Hash: ${receipt.transactionHash}`);
-    }
-    
-    setSwapTxStatus("verifying");
-    console.log("5. Verifiziere Balance-Änderung...");
-    
-    // Unendliche Balance-Verifizierung bis Erfolg bestätigt
-    let balanceVerified = false;
-    let attempts = 0;
-    
-    // Erste längere Wartezeit nach Transaktionsbestätigung
-    console.log("Warte 5 Sekunden vor erster Balance-Prüfung...");
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    // Läuft so lange bis Balance-Änderung verifiziert ist
-    while (!balanceVerified) {
-      attempts++;
-      console.log(`Balance-Verifizierung Versuch ${attempts}`);
-      
+    } catch (error) {
+      console.error("Swap Fehler:", error);
+      setSwapTxStatus("error");
       try {
-        // Stufenweise längere Wartezeiten, aber maximal 15 Sekunden
-        if (attempts > 1) {
-          const waitTime = Math.min(attempts * 2000, 15000); // 2s, 4s, 6s... bis max 15s
-          console.log(`Warte ${waitTime/1000} Sekunden vor nächstem Versuch...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-        
         const dfaithValue = await fetchTokenBalanceViaInsightApi(DFAITH_TOKEN, account.address);
         const dfaithRaw = Number(dfaithValue);
-        const currentBalance = dfaithRaw / Math.pow(10, DFAITH_DECIMALS);
-        
-        console.log(`Initiale Balance: ${initialBalance}, Aktuelle Balance: ${currentBalance}`);
-        
-        // Prüfe ob sich die Balance um mindestens den Verkaufsbetrag verringert hat
-        const expectedDecrease = parseFloat(sellAmount);
-        const actualDecrease = initialBalance - currentBalance;
-        
-        console.log(`Erwartete Verringerung: ${expectedDecrease}, Tatsächliche Verringerung: ${actualDecrease}`);
-        
-        // Großzügige Toleranz für Rundungsfehler
-        if (actualDecrease >= (expectedDecrease * 0.9)) { // 10% Toleranz
-          console.log("✅ Balance-Änderung verifiziert - Swap erfolgreich!");
-          setDfaithBalance(currentBalance.toFixed(DFAITH_DECIMALS));
-          balanceVerified = true;
-          setSellStep('completed');
-          setSwapTxStatus("success");
-          setSellAmount("");
-          setQuoteTxData(null);
-          setSpenderAddress(null);
-          setTimeout(() => setSwapTxStatus(null), 5000);
-        } else {
-          console.log(`Versuch ${attempts}: Balance noch nicht ausreichend geändert, weiter warten...`);
-          // Kein throw - einfach weiter versuchen
-        }
-      } catch (balanceError) {
-        console.error(`Balance-Verifizierung Versuch ${attempts} fehlgeschlagen:`, balanceError);
-        // Auch bei Fehlern: weiter versuchen, nicht abbrechen
-        console.log("Balance-Abfrage fehlgeschlagen, versuche es weiter...");
-      }
-      
-      // Sicherheitsventil: Nach 50 Versuchen (ca. 25+ Minuten) Fehler werfen
-      if (attempts >= 50) {
-        throw new Error("Balance-Verifizierung nach 50 Versuchen noch nicht erfolgreich - manuell prüfen");
-      }
+        const currentBalance = (dfaithRaw / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS);
+        setDfaithBalance(currentBalance);
+      } catch {}
+      setTimeout(() => setSwapTxStatus(null), 5000);
+    } finally {
+      setIsSwapping(false);
     }
-    
-  } catch (error) {
-    console.error("Swap Fehler:", error);
-    setSwapTxStatus("error");
-    
-    // Versuche trotzdem die Balance zu aktualisieren
-    try {
-      const dfaithValue = await fetchTokenBalanceViaInsightApi(DFAITH_TOKEN, account.address);
-      const dfaithRaw = Number(dfaithValue);
-      const currentBalance = (dfaithRaw / Math.pow(10, DFAITH_DECIMALS)).toFixed(DFAITH_DECIMALS);
-      setDfaithBalance(currentBalance);
-    } catch (balanceError) {
-      console.error("Fehler beim Aktualisieren der Balance nach Swap-Fehler:", balanceError);
-    }
-    
-    setTimeout(() => setSwapTxStatus(null), 5000);
-  } finally {
-    setIsSwapping(false);
-  }
-};
+  };
 
 // Alle Schritte in einer Funktion
 const handleSellAllInOne = async () => {
