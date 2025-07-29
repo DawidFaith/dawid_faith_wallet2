@@ -852,7 +852,6 @@ export default function BuyTab() {
                     <img src="/D.FAITH.png" alt="D.FAITH" className="w-32 h-32 object-contain" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1">D.FAITH kaufen</h3>
-                  <p className="text-zinc-400 text-xs">Verfügbar: {ethBalance} ETH</p>
                   {dfaithPriceEur && (
                     <div className="mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full inline-block">
                       <span className="text-amber-400 text-xs font-semibold">
@@ -894,6 +893,7 @@ export default function BuyTab() {
                       <div className="flex items-center gap-2 bg-purple-500/20 rounded-lg px-2 py-1 border border-purple-500/30 flex-shrink-0">
                         <img src="/ETH.png" alt="ETH" className="w-6 h-6 object-contain" />
                         <span className="text-purple-300 font-semibold text-xs">ETH</span>
+                        <span className="text-purple-400 text-xs ml-1">({ethBalance})</span>
                       </div>
                       <input
                         type="number"
