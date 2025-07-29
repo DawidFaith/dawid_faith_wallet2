@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../../../components/ui/button";
-import { FaPaperPlane, FaLock, FaCoins, FaEthereum, FaExchangeAlt, FaWallet, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaLock, FaCoins, FaEthereum, FaExchangeAlt, FaWallet, FaTimes, FaQrcode } from "react-icons/fa";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { base } from "thirdweb/chains";
 import { getContract, prepareContractCall } from "thirdweb";
 import { client } from "../../client";
 import { fetchAllBalances, TOKEN_ADDRESSES, TOKEN_DECIMALS } from "../../utils/balanceUtils";
+import QRScanner from "../../components/QRScanner";
 
 // Modal Komponente für Token Transfer (mit echter Transaktion und Bestätigung)
 function TokenTransferModal({ 
@@ -27,12 +28,14 @@ function TokenTransferModal({
   const [sendToAddress, setSendToAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [txError, setTxError] = useState<string | null>(null);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setSendAmount("");
       setSendToAddress("");
       setTxError(null);
+      setShowQRScanner(false);
     }
   }, [open]);
 
@@ -60,6 +63,11 @@ function TokenTransferModal({
 
   const handleMax = () => {
     setSendAmount(token.balance.replace(",", "."));
+  };
+
+  const handleQRScan = (scannedAddress: string) => {
+    setSendToAddress(scannedAddress);
+    setShowQRScanner(false);
   };
 
   const isAmountValid = sendAmount && 
@@ -190,14 +198,24 @@ function TokenTransferModal({
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-300">Empfänger</label>
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-3">
-              <input
-                type="text"
-                placeholder="0x... oder ENS Name"
-                className="w-full bg-transparent text-white placeholder-zinc-500 focus:outline-none text-sm font-mono"
-                value={sendToAddress}
-                onChange={e => setSendToAddress(e.target.value)}
-                disabled={isSending}
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="0x... oder ENS Name"
+                  className="flex-1 bg-transparent text-white placeholder-zinc-500 focus:outline-none text-sm font-mono"
+                  value={sendToAddress}
+                  onChange={e => setSendToAddress(e.target.value)}
+                  disabled={isSending}
+                />
+                <button
+                  onClick={() => setShowQRScanner(true)}
+                  className="flex-shrink-0 p-2 bg-amber-400/20 text-amber-400 rounded-lg hover:bg-amber-400/30 hover:text-amber-300 transition-all border border-amber-400/30"
+                  disabled={isSending}
+                  title="QR-Code scannen"
+                >
+                  <FaQrcode className="text-lg" />
+                </button>
+              </div>
               <div className="text-xs text-zinc-500 mt-1">
                 Base Network Adresse
               </div>
@@ -281,6 +299,13 @@ function TokenTransferModal({
           </div>
         </div>
       </div>
+
+      {/* QR Scanner */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onScan={handleQRScan}
+        onClose={() => setShowQRScanner(false)}
+      />
     </div>
   );
 }
