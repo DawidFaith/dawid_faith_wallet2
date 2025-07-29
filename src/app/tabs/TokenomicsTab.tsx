@@ -71,22 +71,18 @@ export default function TokenomicsTab() {
             </div>
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <h4 className="font-semibold text-white mb-3">💰 Nutzen</h4>
-              <ul className="text-sm text-zinc-300 space-y-2">
+              <ul className="text-sm text-zinc-300 space-y-1">
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Handelbarer Token auf der Base Chain</span>
+                  <span>Handel & Staking auf Base Chain</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Staking-Belohnungen für D.INVEST Holder</span>
+                  <span>Exklusiver Merch-Kauf</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Kauf von exklusivem Merch möglich</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-400 mt-1">✓</span>
-                  <span>Steigerung der Social Media Aktivität und Community-Engagement</span>
+                  <span>Social Media Boost & Community</span>
                 </li>
               </ul>
             </div>
@@ -125,18 +121,18 @@ export default function TokenomicsTab() {
             </div>
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <h4 className="font-semibold text-white mb-3">🎯 Vorteile</h4>
-              <ul className="text-sm text-zinc-300 space-y-2">
+              <ul className="text-sm text-zinc-300 space-y-1">
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Staking für D.FAITH-Belohnungen</span>
+                  <span>D.FAITH-Staking für Rewards</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Zugang zu 80% des D.FAITH-Angebots durch Staking</span>
+                  <span>Zugang zu 80% D.FAITH Supply</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">✓</span>
-                  <span>Wöchentliche Belohnungsauszahlung</span>
+                  <span>Rewards ab 0,01 D.FAITH jederzeit</span>
                 </li>
               </ul>
             </div>
