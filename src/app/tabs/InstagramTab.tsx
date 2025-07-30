@@ -199,8 +199,10 @@ export default function InstagramTab() {
       </Modal>
       <Modal open={modal === "upgrade"} onClose={() => setModal(null)}>
         <p className="text-xl font-bold mb-4">✨ Upgrade deine EXP!</p>
-        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
-        <button className="modal-btn mb-2 bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
+        <div className="flex flex-col gap-3 w-full">
+          <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
+          <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
+        </div>
       </Modal>
       <Modal open={modal === "claim"} onClose={() => setModal(null)}>
         <div className="flex justify-center mb-2">
@@ -267,23 +269,36 @@ export default function InstagramTab() {
         <div className="level-box bg-white/70 rounded-2xl p-4 sm:p-5 mb-4 w-full border border-zinc-200 shadow-inner">
           <div className="flex justify-between items-center mb-2">
             <div className="level font-semibold text-lg sm:text-xl text-zinc-900 tracking-tight flex items-center gap-2">
-              <svg width='22' height='22' fill='none' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='#e5e7eb'/></svg>
               Level {level}
             </div>
             <div className="exp text-sm sm:text-base font-semibold text-zinc-500">{exp} / {maxExp} EXP</div>
             <button className="bg-zinc-100 text-zinc-500 font-bold rounded-full w-8 h-8 flex items-center justify-center shadow border border-zinc-200 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
           </div>
           <div className="progress-bar relative w-full h-3 sm:h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
-            <div
-              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#b6b6b6] via-[#e5e7eb] to-[#f8fafc] shadow" 
-              style={{ width: `${progressPercent}%`, transition: 'width 0.7s cubic-bezier(.4,2,.6,1)' }}
-            ></div>
-            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-semibold text-zinc-500">
+            <svg className="absolute left-0 top-0 h-full w-full" width="100%" height="100%" viewBox="0 0 100 16" preserveAspectRatio="none" style={{zIndex:1}}>
+              <defs>
+                <linearGradient id="gold-bar" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#FFD700"/>
+                  <stop offset="1" stopColor="#FFA500"/>
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width={progressPercent} height="16" fill="url(#gold-bar)" rx="8" />
+            </svg>
+            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-semibold text-zinc-500" style={{zIndex:2}}>
               {progressPercent}%
             </div>
           </div>
           <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M2 21l1-1 7-7V7.83l2-2V11l7 7 1 1-1.41 1.41L12 13.41l-6.59 6.59L2 21z" fill="#b6b6b6"/><rect x="11" y="2" width="2" height="6" rx="1" fill="#b6b6b6"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <defs>
+                <linearGradient id="gold-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#FFD700"/>
+                  <stop offset="1" stopColor="#FFA500"/>
+                </linearGradient>
+              </defs>
+              <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#gold-gradient)"/>
+              <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#gold-gradient)"/>
+            </svg>
             <span>+{miningPower} D.Faith</span>
           </div>
         </div>
