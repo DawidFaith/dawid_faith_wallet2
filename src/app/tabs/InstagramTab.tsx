@@ -193,7 +193,7 @@ export default function InstagramTab() {
           <div className="flex items-center gap-2 border-l-4 border-black pl-2"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" className="w-5 h-5 rounded-full" /><b>TikTok:</b> <span>{expTiktok} EXP</span></div>
           <div className="flex items-center gap-2 border-l-4 border-blue-600 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" className="w-5 h-5" /><b>Facebook:</b> <span>{expFacebook} EXP</span></div>
           <div className="flex items-center gap-2 border-l-4 border-purple-700 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" alt="Stream" className="w-5 h-5 rounded-full" /><b>Stream:</b> <span>{expStream} EXP</span></div>
-          <div className="flex items-center gap-2 border-l-4 border-yellow-400 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Live" className="w-5 h-5 rounded-full" /><b>Live EXP:</b> <span>+{liveExp}%</span></div>
+          <div className="flex items-center gap-2 border-l-4 border-yellow-400 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Live" className="w-5 h-5 rounded-full" /><b>Live:</b> <span>{liveExp} EXP</span></div>
         </div>
       </Modal>
       <Modal open={modal === "upgrade"} onClose={() => setModal(null)}>
@@ -208,7 +208,7 @@ export default function InstagramTab() {
           <div onClick={() => setModal("walletInfo")}
             className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow cursor-pointer">i</div>
         </div>
-        <p>Gib deine Wallet-Adresse ein, um dein Account Upgrade zu erhalten:</p>
+        <p>Gib deine Wallet-Adresse ein, um deinen Claim zu erhalten:</p>
         {!wallet || !wallet.startsWith("0x") ? (
           <div className="mb-2 text-sm text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg p-2 flex flex-col items-center justify-center gap-2">
             <div className="flex items-center gap-2">
@@ -239,8 +239,8 @@ export default function InstagramTab() {
           className="modal-btn w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-zinc-900 shadow-lg hover:from-yellow-500 hover:to-orange-500 active:from-yellow-600 active:to-orange-600 transition text-base tracking-tight flex items-center justify-center gap-2 border border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
           onClick={submitClaim}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="mr-1"><defs><linearGradient id="mining-claim-btn" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#mining-claim-btn)"/><rect x="11" y="2" width="2" height="6" rx="1" fill="url(#mining-claim-btn)"/></svg>
-          Account Upgrade
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="mr-1"><circle cx="12" cy="12" r="10" fill="#FFD700" stroke="#FFA500" strokeWidth="2"/><text x="12" y="16" textAnchor="middle" fontSize="12" fill="#fff" fontWeight="bold">₿</text></svg>
+          Claim
         </button>
         <p className="mt-2" style={{ color: claimStatus.startsWith("✅") ? "green" : claimStatus.startsWith("❌") ? "red" : undefined }}>{claimStatus}</p>
       </Modal>
@@ -259,7 +259,7 @@ export default function InstagramTab() {
             <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#gold-gradient-modal)"/>
             <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#gold-gradient-modal)"/>
           </svg>
-          <p className="text-lg font-bold text-zinc-900">Claim Upgrade</p>
+          <p className="text-lg font-bold text-zinc-900">Account Upgrade</p>
         </div>
         <div className="flex flex-col gap-4">
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-zinc-800 text-base flex flex-col items-center">
@@ -341,18 +341,8 @@ export default function InstagramTab() {
             </div>
           </div>
         <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <defs>
-              <linearGradient id="pickaxe-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#FFD700"/>
-                <stop offset="1" stopColor="#FFA500"/>
-              </linearGradient>
-            </defs>
-            <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#pickaxe-gradient)"/>
-            <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#pickaxe-gradient)"/>
-          </svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="mr-1"><defs><linearGradient id="mining-claim-btn" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#mining-claim-btn)"/><rect x="11" y="2" width="2" height="6" rx="1" fill="url(#mining-claim-btn)"/></svg>
           <span>+{miningPower} D.FAITH</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="ml-1"><defs><linearGradient id="mining-symbol" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#mining-symbol)"/><path d="M12 7v5l3 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
         </div>
         {/* System-Check */}
@@ -366,7 +356,7 @@ export default function InstagramTab() {
         {/* Buttons */}
         <div className="button-row flex flex-col gap-3 mt-6 w-full">
           <button className="btn-upgrade w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("upgrade")}>✨ Sammle mehr EXP</button>
-          <button className="btn-claim w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-zinc-900 shadow-lg hover:from-yellow-500 hover:to-orange-500 active:from-yellow-600 active:to-orange-600 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400" onClick={() => setModal("claim")}>⛏️ Account Upgrade</button>
+          <button className="btn-claim w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-zinc-900 shadow-lg hover:from-yellow-500 hover:to-orange-500 active:from-yellow-600 active:to-orange-600 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400" onClick={() => setModal("claim")}>🪙 Claim</button>
         </div>
       </div>
     </div>
