@@ -211,20 +211,25 @@ export default function InstagramTab() {
         <p>Gib deine Wallet-Adresse ein, um deinen Claim zu erhalten:</p>
         {!wallet || !wallet.startsWith("0x") ? (
           <div className="mb-2 text-sm text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg p-2 flex flex-col items-center justify-center gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#FFD700"/><path d="M12 7v5l3 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span>Du hast noch keine Wallet hinterlegt.<br/><b>Du kannst sofort eine Wallet im <span className='underline text-blue-700 cursor-pointer' onClick={() => { if (typeof window !== 'undefined') window.location.href = '/wallet'; }}>Wallet Tab</span> erstellen!</b></span>
+              <span>Du hast noch keine Wallet hinterlegt.</span>
             </div>
-            <button
-              className="mt-2 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-semibold border border-yellow-500 shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  window.location.href = '/wallet';
-                }
-              }}
-            >
-              Zum Wallet Tab
-            </button>
+            <div className="w-full flex flex-col items-center gap-1">
+              <span className="font-bold text-base text-blue-700 underline cursor-pointer hover:text-blue-900 transition" onClick={() => { if (typeof window !== 'undefined') window.location.href = '/wallet'; }}>
+                ➡️ Wallet jetzt im Wallet Tab erstellen
+              </span>
+              <button
+                className="mt-1 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-semibold border border-yellow-500 shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.location.href = '/wallet';
+                  }
+                }}
+              >
+                Zum Wallet Tab
+              </button>
+            </div>
           </div>
         ) : null}
         <input
