@@ -177,7 +177,7 @@ export default function InstagramTab() {
 
   // UI
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] p-0 font-[Poppins,sans-serif]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#f8fafc] to-[#e5e7eb] p-0 font-[SF Pro Display,Poppins,sans-serif]">
       {/* Lade-Overlay */}
       {loading && (
         <div className="fixed inset-0 z-[9999] bg-black/60 flex flex-col items-center justify-center">
@@ -194,7 +194,7 @@ export default function InstagramTab() {
           <div className="flex items-center gap-2 border-l-4 border-black pl-2"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" className="w-5 h-5 rounded-full" /><b>TikTok:</b> <span>{expTiktok} EXP</span></div>
           <div className="flex items-center gap-2 border-l-4 border-blue-600 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" className="w-5 h-5" /><b>Facebook:</b> <span>{expFacebook} EXP</span></div>
           <div className="flex items-center gap-2 border-l-4 border-purple-700 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" alt="Stream" className="w-5 h-5 rounded-full" /><b>Stream:</b> <span>{expStream} EXP</span></div>
-          <div className="flex items-center gap-2 border-l-4 border-yellow-400 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Live" className="w-5 h-5 rounded-full" /><b>Live EXP Bonus:</b> <span>+{liveExp}%</span></div>
+          <div className="flex items-center gap-2 border-l-4 border-yellow-400 pl-2"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Live" className="w-5 h-5 rounded-full" /><b>Live EXP:</b> <span>+{liveExp}%</span></div>
         </div>
       </Modal>
       <Modal open={modal === "upgrade"} onClose={() => setModal(null)}>
@@ -251,54 +251,54 @@ export default function InstagramTab() {
       </Modal>
 
       {/* Card */}
-      <div className="card w-full max-w-[340px] bg-gradient-to-br from-zinc-900/95 to-black/95 rounded-xl shadow-2xl border border-zinc-700/50 relative overflow-hidden backdrop-blur-xl p-4 sm:p-6 text-white text-center flex flex-col items-center" style={{boxShadow:'0 4px 32px 0 #6c47b6cc, 0 1.5px 8px 0 #fff2'}}>
-        <div className="username text-[2rem] sm:text-[2.3rem] font-bold mb-2 flex items-center justify-center gap-2 tracking-tight drop-shadow-lg" style={{fontFamily:'Poppins,Arial,sans-serif', letterSpacing:'0.04em'}}>
-          <span className="bg-gradient-to-r from-[#fbc2eb] via-[#6c47b6] to-[#232946] bg-clip-text text-transparent">{username}</span>
+      <div className="card w-full max-w-[350px] bg-white/90 rounded-3xl shadow-xl border border-zinc-200/80 relative overflow-hidden p-6 sm:p-8 text-zinc-900 text-center flex flex-col items-center" style={{boxShadow:'0 8px 32px 0 #0001, 0 1.5px 8px 0 #fff8'}}>
+        <div className="username text-[2.1rem] sm:text-[2.4rem] font-semibold mb-2 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'SF Pro Display,Poppins,Arial,sans-serif', letterSpacing:'0.01em'}}>
+          <span className="text-zinc-900/90">{username}</span>
         </div>
         <div className="relative mb-4">
           <img
             src={profileImage || "https://via.placeholder.com/100"}
             alt="Profilbild"
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto border-4 border-white/40 shadow-lg"
-            style={{boxShadow:'0 0 0 4px #6c47b6cc, 0 2px 16px 0 #fff4'}}
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto border-4 border-zinc-200 shadow-md"
+            style={{boxShadow:'0 0 0 4px #e5e7eb, 0 2px 16px 0 #0001'}}
           />
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#6c47b6]/60 via-[#fbc2eb]/40 to-[#232946]/60 blur-[6px] z-[-1]"></div>
+          <div className="absolute -inset-1 rounded-full bg-white/60 blur-[8px] z-[-1]"></div>
         </div>
-        <div className="level-box backdrop-blur-md bg-gradient-to-r from-[#6c47b6]/30 via-[#232946]/20 to-[#fff]/10 rounded-2xl p-3 sm:p-4 mb-4 w-full border border-white/10 shadow-inner">
+        <div className="level-box bg-white/70 rounded-2xl p-4 sm:p-5 mb-4 w-full border border-zinc-200 shadow-inner">
           <div className="flex justify-between items-center mb-2">
-            <div className="level font-bold text-lg sm:text-xl text-[#fbc2eb] tracking-tight flex items-center gap-2">
-              <svg width='22' height='22' fill='none' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='#6c47b6'/></svg>
+            <div className="level font-semibold text-lg sm:text-xl text-zinc-900 tracking-tight flex items-center gap-2">
+              <svg width='22' height='22' fill='none' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='#e5e7eb'/></svg>
               Level {level}
             </div>
-            <div className="exp text-sm sm:text-base font-semibold text-white/80">{exp} / {maxExp} EXP</div>
-            <button className="bg-white/10 text-[#fbc2eb] font-bold rounded-full w-8 h-8 flex items-center justify-center shadow border border-white/20 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
+            <div className="exp text-sm sm:text-base font-semibold text-zinc-500">{exp} / {maxExp} EXP</div>
+            <button className="bg-zinc-100 text-zinc-500 font-bold rounded-full w-8 h-8 flex items-center justify-center shadow border border-zinc-200 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
           </div>
-          <div className="progress-bar relative w-full h-3 sm:h-4 bg-white/10 rounded-full overflow-hidden mb-2">
+          <div className="progress-bar relative w-full h-3 sm:h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
             <div
-              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#fbc2eb] via-[#6c47b6] to-[#232946] animate-pulse shadow-lg"
+              className="progress absolute left-0 top-0 h-full bg-gradient-to-r from-[#b6b6b6] via-[#e5e7eb] to-[#f8fafc] shadow" 
               style={{ width: `${progressPercent}%`, transition: 'width 0.7s cubic-bezier(.4,2,.6,1)' }}
             ></div>
-            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-bold text-[#fbc2eb] drop-shadow">
+            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-semibold text-zinc-500">
               {progressPercent}%
             </div>
           </div>
-          <div className="mt-1 text-[#fbc2eb] text-sm sm:text-base flex items-center justify-center gap-1 font-semibold">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2l2.09 6.26L20 9.27l-5 3.64L16.18 21 12 17.27 7.82 21 9 12.91l-5-3.64 5.91-.01L12 2z" fill="#fbc2eb"/></svg>
+          <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M2 21l1-1 7-7V7.83l2-2V11l7 7 1 1-1.41 1.41L12 13.41l-6.59 6.59L2 21z" fill="#b6b6b6"/><rect x="11" y="2" width="2" height="6" rx="1" fill="#b6b6b6"/></svg>
             <span>+{miningPower} D.Faith</span>
           </div>
         </div>
         {/* System-Check */}
-        <div className="system-check backdrop-blur-md border border-white/10 rounded-2xl p-3 sm:p-4 bg-white/10 mb-4 w-full">
-          <div className="system-check-header font-bold text-sm sm:text-base mb-2 text-[#fbc2eb]">✅ System Check</div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-semibold"><span>❤️ Like</span><span className={checkLike ? "text-green-400" : "text-red-400"}>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-semibold"><span>💬 Kommentar</span><span className={checkComment ? "text-green-400" : "text-red-400"}>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-semibold"><span>📣 Story</span><span className={checkStory ? "text-green-400" : "text-red-400"}>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
-          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-semibold"><span>💾 Save</span><span className={checkSave ? "text-green-400" : "text-red-400"}>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
+        <div className="system-check border border-zinc-200 rounded-2xl p-4 sm:p-5 bg-white/60 mb-4 w-full shadow-sm">
+          <div className="system-check-header font-semibold text-sm sm:text-base mb-2 text-zinc-700">✅ System Check</div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>❤️ Like</span><span className={checkLike ? "text-green-500" : "text-red-400"}>{checkLike ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💬 Kommentar</span><span className={checkComment ? "text-green-500" : "text-red-400"}>{checkComment ? "✅" : "❌"} +10 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>📣 Story</span><span className={checkStory ? "text-green-500" : "text-red-400"}>{checkStory ? "✅" : "❌"} +20 EXP</span></div>
+          <div className="check-item flex justify-between mb-1 text-[1rem] sm:text-[1.1rem] font-medium"><span>💾 Save</span><span className={checkSave ? "text-green-500" : "text-red-400"}>{checkSave ? "✅" : "❌"} +10 EXP</span></div>
         </div>
         {/* Buttons */}
-        <div className="button-row flex flex-col sm:flex-row gap-3 mt-6 w-full">
-          <button className="btn-upgrade flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#fbc2eb] via-[#6c47b6] to-[#232946] shadow-lg hover:scale-105 active:scale-95 transition text-white text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-white/20 ring-1 ring-[#fbc2eb]/30 focus:outline-none focus:ring-2 focus:ring-[#fbc2eb]/60" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim flex-1 py-3 rounded-full font-bold bg-gradient-to-r from-[#6c47b6] via-[#232946] to-[#fbc2eb] shadow-lg hover:scale-105 active:scale-95 transition text-white text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-white/20 ring-1 ring-[#6c47b6]/30 focus:outline-none focus:ring-2 focus:ring-[#6c47b6]/60" onClick={() => setModal("claim")}>🎉 Claim</button>
+        <div className="button-row flex flex-col gap-3 mt-6 w-full">
+          <button className="btn-upgrade w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
+          <button className="btn-claim w-full py-3 rounded-2xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("claim")}>🎉 Claim</button>
         </div>
       </div>
     </div>
