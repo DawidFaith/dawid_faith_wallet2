@@ -213,7 +213,7 @@ export default function InstagramTab() {
           <div className="mb-2 text-sm text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg p-2 flex flex-col items-center justify-center gap-2">
             <div className="flex items-center gap-2">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#FFD700"/><path d="M12 7v5l3 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span>Du hast noch keine Wallet hinterlegt. Gehe zum <b>Wallet Tab</b>, um deine Wallet zu registrieren.</span>
+              <span>Du hast noch keine Wallet hinterlegt.<br/><b>Du kannst sofort eine Wallet im <span className='underline text-blue-700 cursor-pointer' onClick={() => { if (typeof window !== 'undefined') window.location.href = '/wallet'; }}>Wallet Tab</span> erstellen!</b></span>
             </div>
             <button
               className="mt-2 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-semibold border border-yellow-500 shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
