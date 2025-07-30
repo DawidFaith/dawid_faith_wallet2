@@ -236,7 +236,7 @@ export default function InstagramTab() {
             <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#gold-gradient-modal)"/>
             <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#gold-gradient-modal)"/>
           </svg>
-          <p className="text-lg font-bold text-zinc-900">Mining-Upgrade</p>
+          <p className="text-lg font-bold text-zinc-900">Claim Upgrade</p>
         </div>
         <div className="flex flex-col gap-4">
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-zinc-800 text-base flex flex-col items-center">
@@ -266,12 +266,18 @@ export default function InstagramTab() {
       <Modal open={modal === "confirmCheckInitial"} onClose={() => setModal(null)}>
         <p>Bitte <b>entferne zuerst alle Likes und Saves</b> von meinem Beitrag – danach werden die aktuellen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
-        <button className="modal-btn bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
+        <div className="flex gap-3 mt-4">
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❌ Abbrechen</button>
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
+        </div>
       </Modal>
       <Modal open={modal === "confirmCheckAfter"} onClose={() => setModal(null)}>
         <p>Bitte <b>like und speichere den Beitrag erneut</b>, bevor du fortfährst – gleich werden die neuen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
-        <button className="modal-btn bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white font-bold" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
+        <div className="flex gap-3 mt-4">
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❌ Abbrechen</button>
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
+        </div>
       </Modal>
       <Modal open={modal === "walletInfo"} onClose={() => setModal(null)}>
         <p><b>🔒 Wichtiger Hinweis:</b><br/><br/>Deine Wallet-Adresse wird dauerhaft mit deinem Social-Media-Account verbunden.<br/><br/>Wenn du sie ändern willst, schreib mir eine <b>DM mit dem Stichwort „Wallet“</b> auf <b>Instagram</b>.</p>
@@ -316,13 +322,13 @@ export default function InstagramTab() {
           <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <defs>
-                <linearGradient id="fire-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <linearGradient id="pickaxe-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
                   <stop stopColor="#FFD700"/>
-                  <stop offset="0.5" stopColor="#FFA500"/>
-                  <stop offset="1" stopColor="#FF4500"/>
+                  <stop offset="1" stopColor="#FFA500"/>
                 </linearGradient>
               </defs>
-              <path d="M12 2C12 2 10 7 14 10C14 10 13 8 15 7C15 7 15 10 17 12C18.5 13.5 19 15 19 16.5C19 19.5 16.5 22 12 22C7.5 22 5 19.5 5 16.5C5 14.5 6.5 12.5 8 11C8 11 8 13 10 13C10 13 8 10 12 2Z" fill="url(#fire-gradient)"/>
+              <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#pickaxe-gradient)"/>
+              <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#pickaxe-gradient)"/>
             </svg>
             <span>+{miningPower} D.Faith</span>
           </div>
