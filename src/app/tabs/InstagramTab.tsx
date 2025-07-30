@@ -197,7 +197,7 @@ export default function InstagramTab() {
         </div>
       </Modal>
       <Modal open={modal === "upgrade"} onClose={() => setModal(null)}>
-        <p className="text-xl font-bold mb-4">✨ Upgrade deine EXP!</p>
+        <p className="text-xl font-bold mb-4">✨ Sammle mehr EXP!</p>
         <div className="flex flex-col gap-3 w-full">
           <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
           <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
@@ -208,7 +208,25 @@ export default function InstagramTab() {
           <div onClick={() => setModal("walletInfo")}
             className="bg-white text-pink-600 font-bold rounded-full w-7 h-7 flex items-center justify-center shadow cursor-pointer">i</div>
         </div>
-        <p>Gib deine Wallet-Adresse ein, um deinen Claim auszulösen:</p>
+        <p>Gib deine Wallet-Adresse ein, um dein Account Upgrade zu erhalten:</p>
+        {!wallet || !wallet.startsWith("0x") ? (
+          <div className="mb-2 text-sm text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg p-2 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#FFD700"/><path d="M12 7v5l3 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span>Du hast noch keine Wallet hinterlegt. Gehe zum <b>Wallet Tab</b>, um deine Wallet zu registrieren.</span>
+            </div>
+            <button
+              className="mt-2 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-semibold border border-yellow-500 shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.location.href = '/wallet';
+                }
+              }}
+            >
+              Zum Wallet Tab
+            </button>
+          </div>
+        ) : null}
         <input
           className="w-full p-2 my-2 rounded-lg border border-gray-300 text-black text-base"
           type="text"
@@ -218,10 +236,11 @@ export default function InstagramTab() {
           readOnly={!!wallet && wallet.startsWith("0x")}
         />
         <button
-          className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+          className="modal-btn w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-zinc-900 shadow-lg hover:from-yellow-500 hover:to-orange-500 active:from-yellow-600 active:to-orange-600 transition text-base tracking-tight flex items-center justify-center gap-2 border border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
           onClick={submitClaim}
         >
-          ✅ Claim absenden
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="mr-1"><defs><linearGradient id="mining-claim-btn" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#mining-claim-btn)"/><rect x="11" y="2" width="2" height="6" rx="1" fill="url(#mining-claim-btn)"/></svg>
+          Account Upgrade
         </button>
         <p className="mt-2" style={{ color: claimStatus.startsWith("✅") ? "green" : claimStatus.startsWith("❌") ? "red" : undefined }}>{claimStatus}</p>
       </Modal>
@@ -321,19 +340,20 @@ export default function InstagramTab() {
               {progressPercent}%
             </div>
           </div>
-          <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <defs>
-                <linearGradient id="pickaxe-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FFD700"/>
-                  <stop offset="1" stopColor="#FFA500"/>
-                </linearGradient>
-              </defs>
-              <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#pickaxe-gradient)"/>
-              <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#pickaxe-gradient)"/>
-            </svg>
-            <span>+{miningPower} D.Faith</span>
-          </div>
+        <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="pickaxe-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#FFD700"/>
+                <stop offset="1" stopColor="#FFA500"/>
+              </linearGradient>
+            </defs>
+            <path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#pickaxe-gradient)"/>
+            <rect x="11" y="2" width="2" height="6" rx="1" fill="url(#pickaxe-gradient)"/>
+          </svg>
+          <span>+{miningPower} D.FAITH</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="ml-1"><defs><linearGradient id="mining-symbol" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#mining-symbol)"/><path d="M12 7v5l3 3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
         </div>
         {/* System-Check */}
         <div className="system-check border border-zinc-200 rounded-2xl p-4 sm:p-5 bg-white/60 mb-4 w-full shadow-sm">
@@ -345,8 +365,8 @@ export default function InstagramTab() {
         </div>
         {/* Buttons */}
         <div className="button-row flex flex-col gap-3 mt-6 w-full">
-          <button className="btn-upgrade w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("upgrade")}>✨ Upgrade</button>
-          <button className="btn-claim w-full py-3 rounded-2xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("claim")}>🎉 Claim</button>
+          <button className="btn-upgrade w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("upgrade")}>✨ Sammle mehr EXP</button>
+          <button className="btn-claim w-full py-3 rounded-2xl font-semibold bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-zinc-900 shadow-lg hover:from-yellow-500 hover:to-orange-500 active:from-yellow-600 active:to-orange-600 transition text-base sm:text-lg tracking-tight flex items-center justify-center gap-2 border border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400" onClick={() => setModal("claim")}>⛏️ Account Upgrade</button>
         </div>
       </div>
     </div>
