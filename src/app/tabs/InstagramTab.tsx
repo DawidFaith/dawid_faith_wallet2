@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 
 // Hilfsfunktionen für Level/EXP
@@ -218,7 +217,12 @@ export default function InstagramTab() {
           onChange={e => setWallet(e.target.value)}
           readOnly={!!wallet && wallet.startsWith("0x")}
         />
-        <button className="modal-btn bg-gradient-to-r from-[#dd2a7b] via-[#8134af] to-[#515bd4] text-white font-bold" onClick={submitClaim}>✅ Claim absenden</button>
+        <button
+          className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+          onClick={submitClaim}
+        >
+          ✅ Claim absenden
+        </button>
         <p className="mt-2" style={{ color: claimStatus.startsWith("✅") ? "green" : claimStatus.startsWith("❌") ? "red" : undefined }}>{claimStatus}</p>
       </Modal>
       <Modal open={modal === "storyHelp"} onClose={() => setModal(null)}>
@@ -267,16 +271,14 @@ export default function InstagramTab() {
         <p>Bitte <b>entferne zuerst alle Likes und Saves</b> von meinem Beitrag – danach werden die aktuellen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
         <div className="flex gap-3 mt-4">
-          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❌ Abbrechen</button>
-          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300 w-full" onClick={() => { setModal("likeSave"); checkInitial(); }}>✅ Ja, fortfahren</button>
         </div>
       </Modal>
       <Modal open={modal === "confirmCheckAfter"} onClose={() => setModal(null)}>
         <p>Bitte <b>like und speichere den Beitrag erneut</b>, bevor du fortfährst – gleich werden die neuen Zahlen gespeichert.</p>
         <p className="text-yellow-400 font-bold mt-2">⚠️ Diese Aktion ist nur einmal möglich pro Beitrag!</p>
         <div className="flex gap-3 mt-4">
-          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❌ Abbrechen</button>
-          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
+          <button className="modal-btn flex-1 py-2 rounded-xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300 w-full" onClick={() => { setModal("likeSave"); checkAfter(); }}>✅ Ja, fortfahren</button>
         </div>
       </Modal>
       <Modal open={modal === "walletInfo"} onClose={() => setModal(null)}>
