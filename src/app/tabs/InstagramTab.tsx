@@ -217,12 +217,12 @@ export default function InstagramTab() {
           onChange={e => setWallet(e.target.value)}
           readOnly={!!wallet && wallet.startsWith("0x")}
         />
-        {!wallet &&
+        {!wallet && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-yellow-700 text-sm mt-2 mb-2">
             Du hast noch keine Wallet-Adresse hinterlegt.<br />
             <b>Bitte gehe in den <span className="underline cursor-pointer text-pink-600" onClick={() => { window.location.href = '/tabs/wallet'; }}>Wallet-Tab</span> und trage dort deine Adresse ein.</b>
           </div>
-        }
+        )}
         <button
           className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300"
           onClick={submitClaim}
@@ -270,6 +270,10 @@ export default function InstagramTab() {
         </div>
         <p className="text-left text-sm text-gray-500">*Die Vorteile werden nach Überprüfung deiner Aktionen innerhalb von 24 Stunden aktiviert.</p>
       </Modal>
+      {/* Card */}
+      <div className="card w-full max-w-[350px] bg-white/90 rounded-3xl shadow-xl border border-zinc-200/80 relative overflow-hidden p-6 sm:p-8 text-zinc-900 text-center flex flex-col items-center" style={{boxShadow:'0 8px 32px 0 #0001, 0 1.5px 8px 0 #fff8'}}>
+        {/* ...existing code... */}
+      </div>
     </div>
   );
 }
