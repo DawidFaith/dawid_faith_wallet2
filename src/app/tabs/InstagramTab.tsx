@@ -200,7 +200,7 @@ export default function InstagramTab() {
         <p className="text-xl font-bold mb-4">✨ Sammle mehr EXP!</p>
         <div className="flex flex-col gap-3 w-full">
           <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("likeSave")}>❤️ 💾 <span>Like + Save</span></button>
-          <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-white text-zinc-900 shadow hover:bg-zinc-100 active:bg-zinc-200 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
+          <button className="modal-btn w-full py-3 rounded-2xl font-semibold bg-zinc-900/90 text-white shadow hover:bg-zinc-900/95 active:bg-zinc-800 transition text-base tracking-tight flex items-center justify-center gap-2 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-300" onClick={() => setModal("storyHelp")}>📣 <span>Story teilen</span></button>
         </div>
       </Modal>
       <Modal open={modal === "claim"} onClose={() => setModal(null)}>
@@ -326,24 +326,23 @@ export default function InstagramTab() {
             <div className="exp text-sm sm:text-base font-semibold text-zinc-500">{exp} / {maxExp} EXP</div>
             <button className="bg-zinc-100 text-zinc-500 font-bold rounded-full w-8 h-8 flex items-center justify-center shadow border border-zinc-200 hover:scale-110 transition" title="Info" onClick={() => setModal("info")}>i</button>
           </div>
-          <div className="progress-bar relative w-full h-3 sm:h-4 bg-zinc-200 rounded-full overflow-hidden mb-2">
-            <svg className="absolute left-0 top-0 h-full w-full" width="100%" height="100%" viewBox="0 0 100 16" preserveAspectRatio="none" style={{zIndex:1}}>
-              <defs>
-                <linearGradient id="gold-bar" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FFD700"/>
-                  <stop offset="1" stopColor="#FFA500"/>
-                </linearGradient>
-              </defs>
-              <rect x="0" y="0" width={progressPercent} height="16" fill="url(#gold-bar)" rx="8" />
-            </svg>
-            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-semibold text-zinc-500" style={{zIndex:2}}>
-              {progressPercent}%
+          <div className="progress-bar relative w-full h-4 bg-gradient-to-r from-yellow-200 via-yellow-400 to-orange-300 rounded-full overflow-hidden mb-2 border border-yellow-300 shadow-inner">
+            <div
+              className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${progressPercent}%`,
+                background: "linear-gradient(90deg, #FFD700 0%, #FFA500 100%)",
+                boxShadow: '0 0 8px 2px #FFD70055',
+                zIndex: 1
+              }}
+            ></div>
+            <div className="progress-label absolute w-full h-full flex items-center justify-center text-xs sm:text-sm font-bold text-zinc-800" style={{zIndex:2, letterSpacing:'0.01em'}}>
+              {currentLevelExp} / {levelRange} EXP
             </div>
           </div>
-        <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="mr-1"><defs><linearGradient id="mining-claim-btn" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#FFD700"/><stop offset="1" stopColor="#FFA500"/></linearGradient></defs><path d="M3 21l2-2 7-7V7.83l2-2V11l7 7 2 2-1.41 1.41L12 13.41l-7.59 7.59L3 21z" fill="url(#mining-claim-btn)"/><rect x="11" y="2" width="2" height="6" rx="1" fill="url(#mining-claim-btn)"/></svg>
-          <span>+{miningPower} D.FAITH</span>
-        </div>
+          <div className="mt-1 text-zinc-700 text-sm sm:text-base flex items-center justify-center gap-1 font-medium">
+            <span>+{miningPower} D.FAITH</span>
+          </div>
         </div>
         {/* System-Check */}
         <div className="system-check border border-zinc-200 rounded-2xl p-4 sm:p-5 bg-white/60 mb-4 w-full shadow-sm">
