@@ -251,7 +251,7 @@ export default function InstagramTab() {
       </Modal>
 
       {/* Card */}
-      <div className="card bg-gradient-to-br from-[#fff] via-[#fbc2eb] to-[#f58529] rounded-none sm:rounded-3xl p-0 sm:p-10 w-full min-h-screen sm:min-h-fit max-w-none sm:max-w-[600px] shadow-none sm:shadow-2xl border-0 sm:border-2 sm:border-[#dd2a7b]/40 text-[#232526] text-center flex flex-col items-center relative" style={{boxShadow:'none'}}>
+      <div className="card bg-gradient-to-br from-[#fff] via-[#fbc2eb] to-[#f58529] rounded-3xl p-4 sm:p-8 w-full max-w-md shadow-xl border border-[#fbc2eb] text-[#232526] text-center flex flex-col items-center relative" style={{boxShadow:'0 4px 24px 0 #fbc2eb88'}}>
         <div className="username text-[2.2rem] sm:text-[2.6rem] font-extrabold mb-2 flex items-center justify-center gap-2 tracking-tight" style={{fontFamily:'Poppins,Arial,sans-serif', letterSpacing:'0.04em'}}>
           <span>{username}</span>
         </div>
