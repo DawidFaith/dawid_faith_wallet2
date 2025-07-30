@@ -216,9 +216,13 @@ export default function InstagramTab() {
               <span>Du hast noch keine Wallet hinterlegt.</span>
             </div>
             <div className="w-full flex flex-col items-center gap-1">
-              <span className="font-bold text-base text-blue-700 underline cursor-pointer hover:text-blue-900 transition" onClick={() => { if (typeof window !== 'undefined') window.location.href = '/wallet'; }}>
+              <a
+                href="/wallet"
+                className="font-bold text-base text-blue-700 underline cursor-pointer hover:text-blue-900 transition"
+                style={{ textDecoration: "underline" }}
+              >
                 ➡️ Wallet jetzt im Wallet Tab erstellen
-              </span>
+              </a>
               <button
                 className="mt-1 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-semibold border border-yellow-500 shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 onClick={() => {
